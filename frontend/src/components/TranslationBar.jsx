@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
-export const TranslationBar = () => {
-    const [fromLanguage, setFromLanguage] = useState('Finnish');
+export const TranslationBar = ({fromLanguage, setFromLanguage}) => {
     const languages = ['Finnish', 'Korean', 'Chinese', 'Vietnamese'];
 
     const handleLanguageChange = (language) => {
