@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "fs": "^0.0.1-security",
-    "uuid": "^9.0.1"
-  }
-}
