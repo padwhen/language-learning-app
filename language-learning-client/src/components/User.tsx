@@ -1,3 +1,7 @@
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { RegisterPage } from "./RegisterPage";
+
 export const User = () => {
     return (
         <div className="flex items-center justify-start"> 
@@ -9,12 +13,25 @@ export const User = () => {
                     </svg>
                     Username
                 </h1>
-                <a className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400" href="#">
-                    Log Out
-                </a>
-                <a className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400" href="#">
-                    View All Your Decks
-                </a>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <a className="cursor-pointer mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400">
+                            Register
+                        </a>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[555px] h-[370px]">
+                            <DialogHeader>
+                                <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
+                            </DialogHeader>
+                            <RegisterPage />
+                        <DialogFooter>
+                            <Button type="submit">Save changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                    <a className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400" href="#">
+                        View All Your Decks
+                    </a>
                 </div>  
             </div>
         </div>
