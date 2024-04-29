@@ -6,3 +6,10 @@ export interface Word {
     pronunciation: string;
     comment: string;
 }
+
+export interface DockCardData {
+    name: string;
+    completePercentage: number;
+    flashcardsCount: number;
+    badgeWords: string[];
+}

@@ -10,8 +10,13 @@ import {
 } from "@/components/ui/dialog"
 import { Word } from "@/types"
 import { DialogClose } from "@radix-ui/react-dialog"
+import { CurrentDecks } from "./CurrentDecks"
+import { useState } from "react"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
+  const [deckNames, setDecksNames] = useState<string[]>([]);
+  const [displayCurrentDecks, setDisplayCurrentDecks] = useState<boolean>(true);
+  console.log(deckNames)
   const { fi, en, pronunciation, original_word, comment } = word;
   return (
     <Dialog>
@@ -43,8 +48,22 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
           </div>
         </DialogDescription>
         <DialogFooter>
+          <Dialog>
+            <DialogTrigger>
+            {deckNames.length === 0 ? (
+                <Button type="submit">Save this to a deck</Button>
+              ) : (
+                <Button type="submit">{deckNames.join(" / ")}</Button>
+              )}
+            </DialogTrigger>
+            {displayCurrentDecks && (
+              <DialogContent className="p-0">
+                <CurrentDecks deckNames={deckNames} setDecksName={setDecksNames} setDisplayCurrentDecks={setDisplayCurrentDecks} />
+              </DialogContent>  
+            )}
+          </Dialog>
           <DialogClose>
-              <Button type="submit">Save this to a deck</Button>
+            <Button type="submit" className="bg-gray-500">Close</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

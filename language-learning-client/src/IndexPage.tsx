@@ -13,7 +13,7 @@ export const IndexPage = () => {
     const [inputText, setInputText] = useState<string>('');
     const [ready, setReady] = useState<boolean>(true)
     const exampleResponse = jsonData
-    const [response, setResponse] = useState<any>(null)
+    const [response, setResponse] = useState<any>(exampleResponse)
     const handleTranslation = async () => {
         setReady(false)
         const response_json = await chatCompletion({ language: fromLanguage, text: inputText })
