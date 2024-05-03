@@ -12,11 +12,12 @@ import { Word } from "@/types"
 import { DialogClose } from "@radix-ui/react-dialog"
 import { CurrentDecks } from "./CurrentDecks"
 import { useState } from "react"
+import { NewDeckCard } from "./NewDeckCard"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
   const [deckNames, setDecksNames] = useState<string[]>([]);
   const [displayCurrentDecks, setDisplayCurrentDecks] = useState<boolean>(true);
-  console.log(deckNames)
+  const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
   const { fi, en, pronunciation, original_word, comment } = word;
   return (
     <Dialog>
@@ -57,8 +58,12 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
               )}
             </DialogTrigger>
             {displayCurrentDecks && (
-              <DialogContent className="p-0">
-                <CurrentDecks deckNames={deckNames} setDecksName={setDecksNames} setDisplayCurrentDecks={setDisplayCurrentDecks} />
+              <DialogContent className="p-0 flex gap-4 flex-grow-1">
+                <CurrentDecks deckNames={deckNames} 
+                              setDecksName={setDecksNames} 
+                              setDisplayCurrentDecks={setDisplayCurrentDecks}
+                              setOpenNewDeck={setOpenNewDeck} />
+                {openNewDeck && (<NewDeckCard setOpenNewDeck={setOpenNewDeck} />)}
               </DialogContent>  
             )}
           </Dialog>
