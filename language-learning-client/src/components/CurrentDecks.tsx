@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { DockCard } from "./DockCard"
+import { DockCard } from "./DockCardSmall"
 import exampleData from '../../dockcard.json'
  
 export const CurrentDecks:React.FC<{
