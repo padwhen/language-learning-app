@@ -1,5 +1,6 @@
 import { AllDecks } from './AllDecksPage'
 import './App.css'
+import { DeckDetailsPage } from './DeckDetailsPage'
 import { IndexPage } from './IndexPage'
 import { NewDeckCard } from './components/NewDeckCard'
 
@@ -8,7 +9,8 @@ function App() {
     <div>
       {/* <IndexPage /> */}
       {/* <NewDeckCard /> */}
-      <AllDecks />
+      {/* <AllDecks /> */}
+      <DeckDetailsPage />
     </div>
   )
 }
