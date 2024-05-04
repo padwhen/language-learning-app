@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { DockCardLarge } from "./components/DockCardLarge"
 import { Button } from "./components/ui/button"
 
@@ -9,7 +10,7 @@ export const AllDecks = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                     </svg>
-                    <span className="text-gray-700">Back to translate page</span>
+                    <span className="text-gray-700"><Link to={"/"}>Back to translate page</Link></span>
                 </div>
             </header>
             <div className="flex items-center justify-center pr-[50px]">

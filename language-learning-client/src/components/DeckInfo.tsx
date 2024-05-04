@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom"
+
 export const DeckInfo = () => {
     return (
         <div className="flex items-center justify-start mt-5"> 
@@ -27,9 +29,9 @@ export const DeckInfo = () => {
                         <div className="w-1/4 flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500"></div>
                     </div>
                 </div>
-                <a className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400" href="#">
-                    View Details
-                </a>
+                <div className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400">
+                    <Link to={"/view-decks-id"}>View Details</Link>
+                </div>
                 </div>  
             </div>
         </div>

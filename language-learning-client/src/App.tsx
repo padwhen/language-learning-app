@@ -1,17 +1,20 @@
+import { Route, Routes } from 'react-router-dom'
 import { AllDecks } from './AllDecksPage'
 import './App.css'
 import { DeckDetailsPage } from './DeckDetailsPage'
 import { IndexPage } from './IndexPage'
-import { NewDeckCard } from './components/NewDeckCard'
+import axios from 'axios'
+
+axios.defaults.baseURL = 'http://localhost:2323/api'
+axios.defaults.withCredentials = true
 
 function App() {
   return (
-    <div>
-      {/* <IndexPage /> */}
-      {/* <NewDeckCard /> */}
-      {/* <AllDecks /> */}
-      <DeckDetailsPage />
-    </div>
+    <Routes>
+      <Route index element={<IndexPage />} />
+      <Route path="/view-all-decks" element={<AllDecks />} />
+      <Route path="/view-decks-id" element={<DeckDetailsPage />} />
+    </Routes>
   )
 }
 

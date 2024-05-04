@@ -1,8 +1,30 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { RegisterPage } from "./RegisterPage";
+import { RegisterPage } from "./UsersComponents/RegisterPage";
+import { Link, Navigate } from "react-router-dom";
+import { ChangeEvent, useState } from "react";
+import { FormData } from "@/types";
+import axios from "axios";
 
 export const User = () => {
+    const [formData, setFormData] = useState<FormData>({name: 'Your name', username: '@yourusername', pin: ''})
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        setFormData({ ...formData, [name]: value });
+    };
+    const handleRegister = async () => {
+        if (!formData.name || !formData.username || !formData.pin) {
+            console.error('Please fill out all required fields')
+            return
+        }
+        try {
+            await axios.post('/register', formData)
+            alert('Registeration succesful. Now you can login!')
+            return <Navigate to={'/'} />
+        } catch (error) {
+            console.error('Error registering: ', error)
+        }
+    }
     return (
         <div className="flex items-center justify-start"> 
             <div className="w-64 flex flex-col bg-white border border-blue-600 shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
@@ -23,15 +45,15 @@ export const User = () => {
                             <DialogHeader>
                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
                             </DialogHeader>
-                            <RegisterPage />
+                            <RegisterPage formData={formData} setFormData={setFormData} handleChange={handleChange} />
                         <DialogFooter>
-                            <Button type="submit">Save changes</Button>
+                            <Button type="submit" onClick={handleRegister}>Register</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-                    <a className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400" href="#">
-                        View All Your Decks
-                    </a>
+                    <div className="mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400">
+                        <Link to={"/view-all-decks"}>View All Your Decks</Link>
+                    </div>
                 </div>  
             </div>
         </div>
