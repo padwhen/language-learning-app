@@ -22,7 +22,7 @@ export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ chi
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const { data } = await axios.get<User>('/api/profile');
+                const { data } = await axios.get<User>('/profile');
                 setUser(data);
             } catch (error) {
                 console.error('Error fetching user profile:', error);

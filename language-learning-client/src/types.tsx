@@ -15,7 +15,7 @@ export interface DockCardData {
 }
 
 export interface FormData {
-    name: string;
+    name?: string;
     username: string;
     pin: string;
 }

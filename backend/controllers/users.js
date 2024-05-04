@@ -6,10 +6,10 @@ const User = require('../models/User')
 const { JWT_SECRET, BCRYPT_SALT } = require('../utils/config')
 
 usersRouter.post('/api/register', async (request, response) => {
-    const { username, name, pin } = request.body
+    const { name, username, pin } = request.body
     try {
         const userDoc = await User.create({
-            username, name, pin: bcrypt.hashSync(pin, BCRYPT_SALT)
+            name, username, pin: bcrypt.hashSync(pin, BCRYPT_SALT)
         })
         response.json(userDoc)
     } catch (error) {
