@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { RegisterPage } from "./UsersComponents/RegisterPage";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ChangeEvent, useContext, useState } from "react";
 import { FormData } from "@/types";
 import axios from "axios";
@@ -20,7 +20,6 @@ export const User = () => {
     const clearFormData = () => {
         setFormData({ name: '', username: '', pin: ''})
     }
-
 
     const handleRegister = async () => {
         if (!formData.name || !formData.username || !formData.pin) {

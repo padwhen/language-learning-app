@@ -1,7 +1,7 @@
 import { InputOTP, InputOTPGroup, InputOTPSlot} from "@/components/ui/input-otp"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent } from "react"
 import { FormData } from "@/types"
 
 interface Props {

@@ -2,6 +2,7 @@ import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 
 interface User {
+    _id: string;
     username: string;
     name: string;
 }
@@ -18,7 +19,7 @@ export const UserContext = createContext<UserContextType>({
 
 export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-
+    console.log(user)
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {

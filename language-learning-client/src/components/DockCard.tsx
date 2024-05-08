@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { BadgeComponent } from "./Badge";
+import { BadgeComponent } from "../composables/Badge";
 import { DockCardData } from '@/types';
 
 interface DockCardProps {

@@ -31,20 +31,20 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
         <DialogDescription>
           <div className="overflow-y-auto">
             <div className="flex mt-1 gap-2">
-              <h4 className="text-md font-bold text-gray-800 min-w-[150px]">Original word</h4>
-              <p className="text-gray-800 text-md">{original_word}</p>
+              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Original word</h4>
+              <p className="text-gray-800 text-lg/6">{original_word}</p>
             </div>
             <div className="flex mt-1 gap-2">
-              <h4 className="text-md font-bold text-gray-800 min-w-[150px]">Pronunciation</h4>
-              <p className="text-gray-800 text-md">{pronunciation}</p>
+              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Pronunciation</h4>
+              <p className="text-gray-800 text-lg/6">{pronunciation}</p>
             </div>
             <div className="flex mt-1 gap-2">
-              <h4 className="text-md font-bold text-gray-800 min-w-[150px]">Meaning</h4>
-              <p className="text-gray-800 text-md">{en}</p>
+              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Meaning</h4>
+              <p className="text-gray-800 text-lg/6">{en}</p>
             </div>
             <div className="flex mt-1 gap-2">
-              <h4 className="text-md font-bold text-gray-800 min-w-[150px]">Explanation</h4>
-              <p className="text-gray-800 text-md">{comment}</p>
+              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Explanation</h4>
+              <p className="text-gray-800 text-lg/6">{comment}</p>
             </div>
           </div>
         </DialogDescription>
@@ -62,7 +62,9 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
                 <CurrentDecks deckNames={deckNames} 
                               setDecksName={setDecksNames} 
                               setDisplayCurrentDecks={setDisplayCurrentDecks}
-                              setOpenNewDeck={setOpenNewDeck} />
+                              setOpenNewDeck={setOpenNewDeck}
+                              openNewDeck={openNewDeck}
+                              />
                 {openNewDeck && (<NewDeckCard setOpenNewDeck={setOpenNewDeck} />)}
               </DialogContent>  
             )}

@@ -52,8 +52,8 @@ usersRouter.get('/api/profile', async (request, response) => {
             if (!user) {
                 return response.status(500).json({ error: 'User not found' })
             }
-            const { username, name } = user
-            response.json({ username, name })
+            const { username, name, _id } = user
+            response.json({ username, name, _id })
         })
     } catch (error) {
         console.error('Error in /api/profile: ', error)

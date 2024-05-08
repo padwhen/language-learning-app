@@ -8,10 +8,10 @@ export interface Word {
 }
 
 export interface DockCardData {
-    name: string;
-    completePercentage: number;
-    flashcardsCount: number;
-    badgeWords: string[];
+    deckName: string;
+    deckPercentage: number;
+    deckQuantity: number;
+    deckTags: string[];
 }
 
 export interface FormData {

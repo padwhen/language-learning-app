@@ -1,26 +1,20 @@
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChangeEvent, useState } from "react"
-import { BadgeComponent } from "./Badge"
+import { BadgeComponent } from "../composables/Badge"
+import axios from "axios"
 
 export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = ({setOpenNewDeck}) => {
+  const [name, setName] = useState<string>('');
   const [tags, setTags] = useState<string[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+
+  const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value)
+  }
 
   const handleTagsChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newTags = event.target.value.split(' ').filter(tag => tag.trim() !== '');
@@ -29,11 +23,23 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
     setTags(array);
   };
   
-
   const handleLanguageSelect = (language: string) => {
     const normalizedLanguage = language.toLowerCase()
     setSelectedLanguage(normalizedLanguage)
     setTags((prevTags) => [...prevTags, normalizedLanguage])
+  }
+
+  const handleAddDeck = async () => {
+    try {
+      const response = await axios.post('/decks', {
+        deckName: name,
+        deckTags: tags
+      })
+      console.log(response.data)
+      setOpenNewDeck(false)
+    } catch (error) {
+      console.error('Error creating deck: ', error)
+    }
   }
 
   return (
@@ -46,7 +52,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
           <form className="grid grid-cols-1 gap-y-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Name of the new deck" />
+              <Input id="name" placeholder="Name of the new deck" onChange={handleNameChange} />
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="languages">Languages</Label>
@@ -75,7 +81,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
         </CardContent>
         <CardFooter className="flex justify-end gap-4">
           <Button variant="outline" onClick={() => setOpenNewDeck(false)}>Cancel</Button>
-          <Button onClick={() => setOpenNewDeck(false)}>Add Deck</Button>
+          <Button onClick={handleAddDeck}>Add Deck</Button>
         </CardFooter>
       </Card>
     </div>

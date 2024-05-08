@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { BadgeComponent } from "./Badge";
+import { BadgeComponent } from "../composables/Badge";
 import { DockCardData } from '@/types';
 
 interface DockCardProps {
@@ -9,10 +9,10 @@ interface DockCardProps {
 }
 
 export const DockCard: React.FC<DockCardProps> = ({info, onSelect}) => {
-    const {name, completePercentage, flashcardsCount, badgeWords} = info
+    const {deckName, deckPercentage, deckQuantity, deckTags} = info
     const [isClicked, setIsClicked] = useState(false);
     const handleClick = () => {
-        onSelect(name)
+        onSelect(deckName)
         setIsClicked(!isClicked);
     };
 
@@ -23,13 +23,13 @@ export const DockCard: React.FC<DockCardProps> = ({info, onSelect}) => {
         >
         <div className="p-5">
             <div className="flex flex-row justify-between items-center">
-            <CardTitle className='text-xl'>{name}</CardTitle>
-                <CardDescription className="mt-1">{completePercentage}% complete</CardDescription>
-                <CardDescription className="mt-1">{flashcardsCount} flashcards</CardDescription>
+            <CardTitle className='text-xl'>{deckName}</CardTitle>
+                <CardDescription className="mt-1">{deckPercentage}% complete</CardDescription>
+                <CardDescription className="mt-1">{deckQuantity} flashcards</CardDescription>
             </div>
             <CardContent>
             <div className="flex space-x-2 w-full mt-3 items-center justify-center">
-                {badgeWords.map((word: string, index: React.Key | null | undefined) => (
+                {deckTags.map((word: string, index: React.Key | null | undefined) => (
                     <BadgeComponent key={index} word={word} />
                 ))}
             </div>
