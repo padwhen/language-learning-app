@@ -1,45 +1,95 @@
 {
-    "sentence": "Your translation will be here. And your words will be below here. These are some words of the week, feel free to checkout.",
+    "sentence": "The suspect in the Viertola school shooting planned to shoot several people - this is how the events unfolded.",
     "words": [
-        {"fi": "pyrkimys", "en": "endeavor", "type": "noun", "original_word": "pyrkimys", "pronunciation": "pyr-ki-mys", "comment": "Noun meaning 'endeavor' or 'effort'."},
-        {"fi": "tavaroiden", "en": "goods", "type": "noun", "original_word": "tavara", "pronunciation": "ta-va-ra", "comment": "Plural form of the noun 'tavara' (good, item)."},
-        {"fi": "korjaamismahdollisuuksien", "en": "repair options", "type": "noun", "original_word": "korjaamismahdollisuus", "pronunciation": "kor-ja-a-mis-mah-dol-li-suuk-si-en", "comment": "Plural form of the noun 'korjaamismahdollisuus' (repair option)."},
-        {"fi": "täysistuntoviikon", "en": "plenary week", "type": "noun", "original_word": "täysistuntoviikko", "pronunciation": "täy-sis-tun-to-viik-ko", "comment": "Noun meaning 'plenary week'."},
-        {"fi": "sovusta", "en": "agreement", "type": "noun", "original_word": "sovusto", "pronunciation": "sovus-to", "comment": "Noun meaning 'agreement'. Lemmatized form of the word."},
-        {"fi": "kodinkoneiden", "en": "household appliances", "type": "noun", "original_word": "kodinkone", "pronunciation": "ko-din-ko-nei-den", "comment": "Plural form of the noun 'kodinkone' (household appliance)."},
-        {"fi": "puhelimia", "en": "phones", "type": "noun", "original_word": "puhelin", "pronunciation": "pu-he-li-mi-a", "comment": "Plural form of the noun 'puhelin' (phone)."},
-        {"fi": "pudonnut", "en": "dropped", "type": "noun", "original_word": "pudota", "pronunciation": "pu-do-nnut", "comment": "Past participle form of the verb 'pudota' (to drop)."},
-        {"fi": "rahaa", "en": "money", "type": "noun", "original_word": "raha", "pronunciation": "ra-haa", "comment": "Noun meaning 'money'."},
-        {"fi": "muutoksiin", "en": "changes", "type": "noun", "original_word": "muutos", "pronunciation": "muu-tok-siin", "comment": "Plural form of the noun 'muutos' (change)."},
-        {"fi": "parantaa", "en": "improve", "type": "verb", "original_word": "parantaa", "pronunciation": "pa-ran-taa", "comment": "Infinitive form of the verb 'parantaa' (to improve)."},
-        {"fi": "saatavuutta", "en": "availability", "type": "verb", "original_word": "saatavuus", "pronunciation": "saa-ta-vuu-ta", "comment": "Noun meaning 'availability'."},
-        {"fi": "tehdä", "en": "make", "type": "verb", "original_word": "tehdä", "pronunciation": "teh-dä", "comment": "Infinitive form of the verb 'tehdä' (to make, to do)."},
-        {"fi": "jatkossa", "en": "in the future", "type": "verb", "original_word": "jatkossa", "pronunciation": "jat-kos-sa", "comment": "Adverb meaning 'in the future' or 'from now on'."},
-        {"fi": "vauhdittamiseksi", "en": "to boost", "type": "verb", "original_word": "vauhdittaa", "pronunciation": "vauh-dit-ta-mi-sek-si", "comment": "Participle form of the verb 'vauhdittaa' (to boost)."},
-        {"fi": "toteuttaa", "en": "implement", "type": "verb", "original_word": "toteuttaa", "pronunciation": "to-teut-taa", "comment": "Infinitive form of the verb 'toteuttaa' (to implement)."},
-        {"fi": "kääntyy", "en": "turn", "type": "verb", "original_word": "kääntyä", "pronunciation": "kään-tyy", "comment": "3rd person singular present indicative form of the verb 'kääntyä' (to turn)."},
-        {"fi": "kuva", "en": "depict", "type": "verb", "original_word": "kuva", "pronunciation": "ku-va", "comment": "Verb meaning 'depict' or 'picture'. Lemmatized form of the word."},
-        {"fi": "hyväksynyt", "en": "approved", "type": "verb", "original_word": "hyväksyä", "pronunciation": "hy-väk-sy-nyt", "comment": "Past participle form of the verb 'hyväksyä' (to approve)."},
-        {"fi": "päätöstä", "en": "decide", "type": "verb", "original_word": "päätös", "pronunciation": "pää-tös-tä", "comment": "Noun meaning 'decision'. Used here as the infinitive form of the verb 'päättää' (to decide)."},
-        {"fi": "uuden", "en": "new", "type": "adjective", "original_word": "uusi", "pronunciation": "uu-den", "comment": "Genitive singular form of the adjective 'uusi' (new)."},
-        {"fi": "sähkö- ja elektroniikkaromun", "en": "electrical and electronic waste", "type": "adjective", "original_word": "sähkö- ja elektroniikkaromu", "pronunciation": "säh-kö-ja-e-lek-tro-nii-kka-ro-mun", "comment": "Compound adjective meaning 'electrical and electronic waste'."},
-        {"fi": "alustavasta", "en": "preliminary", "type": "adjective", "original_word": "alustava", "pronunciation": "a-lus-ta-vas-ta", "comment": "Genitive singular form of the adjective 'alustava' (preliminary)."},
-        {"fi": "mahdotonta", "en": "impossible", "type": "adjective", "original_word": "mahdoton", "pronunciation": "mah-do-ton", "comment": "Partitive singular form of the adjective 'mahdoton' (impossible)."},
-        {"fi": "avattavissa", "en": "openable", "type": "adjective", "original_word": "avattava", "pronunciation": "a-vat-ta-vis-sa", "comment": "Inessive plural form of the adjective 'avattava' (openable)."},
-        {"fi": "edullisia", "en": "affordable", "type": "adjective", "original_word": "edullinen", "pronunciation": "e-dul-li-sia", "comment": "Partitive plural form of the adjective 'edullinen' (affordable)."},
-        {"fi": "suomalaisen", "en": "Finnish", "type": "adjective", "original_word": "suomalainen", "pronunciation": "suo-ma-lai-sen", "comment": "Genitive singular form of the adjective 'suomalainen' (Finnish)."},
-        {"fi": "tärkeä", "en": "important", "type": "adjective", "original_word": "tärkeä", "pronunciation": "tär-kä-ä", "comment": "Nominative singular form of the adjective 'tärkeä' (important)."},
-        {"fi": "suurempia", "en": "larger", "type": "adjective", "original_word": "suuri", "pronunciation": "suu-rempi-a", "comment": "Partitive plural form of the adjective 'suuri' (large)."},
-        {"fi": "tiukempia", "en": "tighter", "type": "adjective", "original_word": "tiukka", "pronunciation": "tiuk-em-pi-a", "comment": "Partitive plural form of the adjective 'tiukka' (tight)."},
-        {"fi": "myötä", "en": "with", "type": "other", "original_word": "myötä", "pronunciation": "myö-tä", "comment": "Noun meaning 'with' or 'along with'. Used in expressions like 'myötävaikutuksella' (with influence) or 'myötätuulessa' (with tailwind)."},
-        {"fi": "myös", "en": "also", "type": "other", "original_word": "myös", "pronunciation": "myös", "comment": "Adverb meaning 'also' or 'too'."},
-        {"fi": "kuitenkin", "en": "however", "type": "other", "original_word": "kuitenkin", "pronunciation": "kui-ten-kin", "comment": "Adverb meaning 'however' or 'nevertheless'."},
-        {"fi": "niin", "en": "so", "type": "other", "original_word": "niin", "pronunciation": "niin", "comment": "Adverb meaning 'so' or 'thus'."},
-        {"fi": "joskus", "en": "sometimes", "type": "other", "original_word": "joskus", "pronunciation": "jos-kus", "comment": "Adverb meaning 'sometimes' or 'occasionally'."},
-        {"fi": "kun", "en": "when", "type": "other", "original_word": "kun", "pronunciation": "kun", "comment": "Conjunction meaning 'when'."},
-        {"fi": "jos", "en": "if", "type": "other", "original_word": "jos", "pronunciation": "jos", "comment": "Conjunction meaning 'if'. It's often used in conditional sentences."},
-        {"fi": "tällöin", "en": "then", "type": "other", "original_word": "tällöin", "pronunciation": "täl-löin", "comment": "Adverb meaning 'then' or 'at that time'."},
-        {"fi": "myöhemmin", "en": "later", "type": "other", "original_word": "myöhemmin", "pronunciation": "myö-hem-min", "comment": "Adverb meaning 'later' or 'afterwards'."},
-        {"fi": "joskus", "en": "sometimes", "type": "other", "original_word": "joskus", "pronunciation": "jos-kus", "comment": "Adverb meaning 'sometimes' or 'occasionally'."}
+        {
+            "fi": "Viertolan",
+            "en": "Viertola",
+            "type": "noun",
+            "original_word": "Viertolan",
+            "pronunciation": "Vi-er-to-lan",
+            "comment": "Proper noun.",
+            "id": "9fb0d67d-ae6b-4707-a47b-d0720258018f"
+        },
+        {
+            "fi": "kouluampumisesta",
+            "en": "school shooting",
+            "type": "noun",
+            "original_word": "kouluampumisesta",
+            "pronunciation": "kou-lu-am-pu-mi-se-sta",
+            "comment": "Compound noun.",
+            "id": "62e8a1c7-0e74-476e-b562-5693baf4f7fb"
+        },
+        {
+            "fi": "epäilty",
+            "en": "suspect",
+            "type": "noun",
+            "original_word": "epäilty",
+            "pronunciation": "epäil-ty",
+            "comment": "Noun form of the word 'epäilty' (suspected).",
+            "id": "673d3ff9-662f-419f-9737-3634234ef445"
+        },
+        {
+            "fi": "suunnitteli",
+            "en": "planned",
+            "type": "verb",
+            "original_word": "suunnitella",
+            "pronunciation": "suun-ni-tel-la",
+            "comment": "Infinitive form of the verb 'suunnitella' (to plan).",
+            "id": "46e3a352-8752-4017-b30a-11b3bcff80c3"
+        },
+        {
+            "fi": "ampuvansa",
+            "en": "to shoot",
+            "type": "verb",
+            "original_word": "ampua",
+            "pronunciation": "am-pu-van-sa",
+            "comment": "Infinitive form of the verb 'ampua' (to shoot).",
+            "id": "da6c5334-2a67-42f8-9d26-fe839e145cab"
+        },
+        {
+            "fi": "useita",
+            "en": "several",
+            "type": "adjective",
+            "original_word": "usea",
+            "pronunciation": "u-sei-ta",
+            "comment": "Partitive plural form of the adjective 'usea' (several).",
+            "id": "1f881fd6-97a0-49ce-ad44-c180305722f6"
+        },
+        {
+            "fi": "ihmisiä",
+            "en": "people",
+            "type": "noun",
+            "original_word": "ihminen",
+            "pronunciation": "ih-mi-si-ä",
+            "comment": "Partitive plural form of the noun 'ihminen' (people).",
+            "id": "11ae7ddb-47e7-49d1-8b0b-f25dbf751646"
+        },
+        {
+            "fi": "näin",
+            "en": "this way",
+            "type": "adverb",
+            "original_word": "näin",
+            "pronunciation": "näin",
+            "comment": "Adverb meaning 'this way'.",
+            "id": "98e39919-1b3d-46a3-bfde-784a60936aa5"
+        },
+        {
+            "fi": "tapahtumat",
+            "en": "events",
+            "type": "noun",
+            "original_word": "tapahtuma",
+            "pronunciation": "ta-pah-tu-mat",
+            "comment": "Noun form of the word 'tapahtumat' (events).",
+            "id": "25b813d7-342b-40fa-88b3-a2aead04f45b"
+        },
+        {
+            "fi": "etenivät",
+            "en": "unfolded",
+            "type": "verb",
+            "original_word": "edetä",
+            "pronunciation": "e-de-tä",
+            "comment": "3rd person plural past tense form of the verb 'edetä' (to unfold).",
+            "id": "faa57d30-75c3-4145-91f1-17b88b43189b"
+        }
     ]
-}  
+}

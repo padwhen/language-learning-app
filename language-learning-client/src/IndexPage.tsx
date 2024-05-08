@@ -7,6 +7,7 @@ import { Translation } from "./components/Translation";
 import { WordDetails } from "./components/Details";
 import { User } from "./components/User";
 import { DeckInfo } from "./components/DeckInfo";
+import { v4 as uuidv4 } from 'uuid';
 
 export const IndexPage = () => {
     const [fromLanguage, setFromLanguage] = useState<string>('Finnish');
@@ -15,22 +16,39 @@ export const IndexPage = () => {
     const exampleResponse = jsonData
     const [response, setResponse] = useState<any>(exampleResponse)
     const handleTranslation = async () => {
-        setReady(false)
-        const response_json = await chatCompletion({ language: fromLanguage, text: inputText })
+        setReady(false);
+        const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
+        console.log(response_json)
         if (response_json !== null) {
-            setResponse(JSON.parse(response_json))
+            const parsedResponse = JSON.parse(response_json);
+            const { sentence, words } = parsedResponse
+            if (sentence) {
+                setResponse((prevResponse: any) => ({
+                    ...prevResponse,
+                    sentence: sentence
+                }))
+            }
+            if (words) {
+                const wordsWithUUID = words.map((word: any) => ({
+                    ...word, id: uuidv4()
+                }));
+                setResponse((prevResponse: any) => ({
+                    ...prevResponse, words: wordsWithUUID
+                }));
+            }
         }
-        setReady(true) 
-    }
+        setReady(true);
+    };    
+    console.log(response)
     return (
         <div className="h-96 flex">
             <div className="mt-8 w-3/4 pt-1 flex flex-col items-center">
                 <TranslationBar fromLanguage={fromLanguage} setFromLanguage={setFromLanguage} />
                 <InputBar inputText={inputText} setInputText={setInputText} handleTranslation={handleTranslation} ready={ready} />
-                {response && response.sentence && (
+                {response.sentence && response.sentence && (
                     <Translation text={response.sentence} />    
                 )}
-                {response && response.words && (
+                {response.words && response.words && (
                     <WordDetails words={response.words} />    
                 )}
             </div>

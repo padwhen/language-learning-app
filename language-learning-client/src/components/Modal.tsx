@@ -1,24 +1,34 @@
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Word } from "@/types"
 import { DialogClose } from "@radix-ui/react-dialog"
 import { CurrentDecks } from "./CurrentDecks"
 import { useState } from "react"
 import { NewDeckCard } from "./NewDeckCard"
+import axios from "axios"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
-  const [deckNames, setDecksNames] = useState<string[]>([]);
+  const [deckNames, setDecksNames] = useState<{id: string; name: string}[]>([]);
   const [displayCurrentDecks, setDisplayCurrentDecks] = useState<boolean>(true);
   const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
-  const { fi, en, pronunciation, original_word, comment } = word;
+  const { fi, en, pronunciation, original_word, comment, id } = word;
+
+  const saveWordToDeck = async (deckId: string) => {
+    try {
+      const wordResponse = await axios.post('/cards', { engCard: en, userLangCard: fi })
+      console.log(wordResponse)
+      await axios.put(`/decks/${deckId}`, { 
+        cards: [{ 
+          _id: wordResponse.data._id,
+          engCard: en, userLangCard: fi, cardScore: 0
+        }]
+      })
+      console.log('Word saved to deck successfully')
+    } catch (error) {
+      console.error('Error saving word: ', error)
+    }
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -54,7 +64,9 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
             {deckNames.length === 0 ? (
                 <Button type="submit">Save this to a deck</Button>
               ) : (
-                <Button type="submit">{deckNames.join(" / ")}</Button>
+                <Button type="submit">
+                  {deckNames.map(deck => deck.name).join(" / ")}
+                </Button>
               )}
             </DialogTrigger>
             {displayCurrentDecks && (
@@ -64,6 +76,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
                               setDisplayCurrentDecks={setDisplayCurrentDecks}
                               setOpenNewDeck={setOpenNewDeck}
                               openNewDeck={openNewDeck}
+                              onSelectDeck={saveWordToDeck}
                               />
                 {openNewDeck && (<NewDeckCard setOpenNewDeck={setOpenNewDeck} />)}
               </DialogContent>  

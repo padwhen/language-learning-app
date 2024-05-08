@@ -1,4 +1,5 @@
 export interface Word {
+    id: string;
     fi: string;
     en: string;
     type: string;
@@ -8,6 +9,7 @@ export interface Word {
 }
 
 export interface DockCardData {
+    _id: string;
     deckName: string;
     deckPercentage: number;
     deckQuantity: number;

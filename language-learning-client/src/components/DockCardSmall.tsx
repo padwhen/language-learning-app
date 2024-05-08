@@ -5,14 +5,14 @@ import { DockCardData } from '@/types';
 
 interface DockCardProps {
     info: DockCardData;
-    onSelect: (deckName: string) => void;
+    onSelect: (deckName: { _id: string; deckName: string }) => void;
 }
 
 export const DockCard: React.FC<DockCardProps> = ({info, onSelect}) => {
-    const {deckName, deckPercentage, deckQuantity, deckTags} = info
+    const {deckName, deckPercentage, deckQuantity, deckTags, _id} = info
     const [isClicked, setIsClicked] = useState(false);
     const handleClick = () => {
-        onSelect(deckName)
+        onSelect({_id, deckName})
         setIsClicked(!isClicked);
     };
 

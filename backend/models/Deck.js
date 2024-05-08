@@ -7,7 +7,11 @@ const DeckSchema = new Schema({
     deckPercentage: { type: String, default: 0}, 
     deckQuantity: { type: String, default: 0 },
     deckTags: [{ type: String, required: true }],
-    cardIds: [{type: mongoose.Schema.Types.ObjectId, ref: 'Card' }]
+    cards: [{ 
+        engCard: { type: String, required: true },
+        userLangCard: { type: String, required: true },
+        cardScore: { type: Number, default: 0 }
+    }]
 })
 
 const DeckModel = mongoose.model('Deck', DeckSchema)
