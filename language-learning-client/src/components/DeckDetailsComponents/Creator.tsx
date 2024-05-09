@@ -1,8 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ToolTip } from "../ToolTip"
 import { Delete, Download, Pencil } from "lucide-react"
+import { useContext } from "react"
+import { UserContext } from "@/UserContext"
 
 export const CreatorBar = () => {
+    const { user } = useContext(UserContext)
     return (
         <div className="flex gap-2 justify-between max-w-[875px]">
             <div className="flex gap-4 items-center justify-center">
@@ -11,7 +14,7 @@ export const CreatorBar = () => {
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>
-                    <h1 className="text-xl font-semibold">Username</h1>
+                    <h1 className="text-xl font-semibold">{user?.username}</h1>
                     <h3 className="text-md text-gray-500">Created 2 weeks ago</h3>
                 </div>    
             </div>

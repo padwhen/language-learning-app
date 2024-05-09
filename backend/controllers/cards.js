@@ -29,4 +29,21 @@ cardRouter.post('/api/cards', async (request, response) => {
     }
 })
 
+cardRouter.put('/api/cards/:cardId', async (request, response) => {
+    const { cardId } = request.params
+    const { cardScore } = request.body;
+    try {
+        const updatedCard = await Card.findByIdAndUpdate(
+            cardId, { cardScore }, { new: true }
+        )
+        if (!updatedCard) {
+            return response.status(404).json({ message: 'Card not found' })
+        }
+        response.json(updatedCard)
+    } catch (error) {
+        console.error('Error updating card score: ', error)
+        response.status(500).json({ message: 'Internal Server Error' })
+    }
+})
+
 module.exports = cardRouter
