@@ -39,7 +39,6 @@ export const IndexPage = () => {
         }
         setReady(true);
     };    
-    console.log(response)
     return (
         <div className="h-96 flex">
             <div className="mt-8 w-3/4 pt-1 flex flex-col items-center">
@@ -55,7 +54,6 @@ export const IndexPage = () => {
             <div className="w-1/4 pt-1 pr-8 mt-8 flex flex-col">
                 <User />
                 <div className="mt-5">
-                    <DeckInfo />
                     <DeckInfo />
                 </div>
             </div>

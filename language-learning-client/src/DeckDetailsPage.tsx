@@ -1,21 +1,42 @@
-import { useState } from "react"
-import ReactCardFlip from "react-card-flip"
-import { FrontCard } from "./components/FlashCardComponents/FrontCard"
-import { BackCard } from "./components/FlashCardComponents/BackCard"
-import { MoveLeft, MoveRight, Play, Settings, Shuffle } from "lucide-react"
-import { ToolTip } from "./components/ToolTip"
-import { Progress } from "@/components/ui/progress"
-import { CreatorBar } from "./components/DeckDetailsComponents/Creator"
-import { Word } from "./components/DeckDetailsComponents/Word"
+import { useEffect, useState } from "react";
+import ReactCardFlip from "react-card-flip";
+import { FrontCard } from "./components/FlashCardComponents/FrontCard";
+import { BackCard } from "./components/FlashCardComponents/BackCard";
+import { MoveLeft, MoveRight, Play, Settings, Shuffle } from "lucide-react";
+import { ToolTip } from "./components/ToolTip";
+import { Progress } from "@/components/ui/progress";
+import { CreatorBar } from "./components/DeckDetailsComponents/Creator";
+import { Word } from "./components/DeckDetailsComponents/Word";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 export const DeckDetailsPage = () => {
-    const [isFlipped, setIsFlipped] = useState<boolean>(false)
-    const handleFlip = () => {
-        setIsFlipped(!isFlipped)
-    }
+    const [isFlipped, setIsFlipped] = useState<boolean>(false);
+    const [currentCardIndex, setCurrentCardIndex] = useState<number>(0); 
+    const { id } = useParams();
+    const [deck, setDeck] = useState<any>({ cards: [] }); 
+    const fetchDeck = async () => {
+        await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
+    };
+    useEffect(() => {
+        fetchDeck();
+    }, []);
+    const { deckName, deckPercentage, deckTags, owner, cards } = deck;
+
+    const moveLeft = () => {
+        if (currentCardIndex > 0) {
+            setCurrentCardIndex(currentCardIndex - 1);
+        }
+    };
+    const moveRight = () => {
+        if (currentCardIndex < cards.length - 1) {
+            setCurrentCardIndex(currentCardIndex + 1);
+        }
+    };
+
     return (
         <div className="pt-[50px] ml-16">
-            <h1 className="text-4xl font-bold mt-4">Hello</h1>
+            <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
             <div className="pt-5 flex flex-row gap-[25px]">
                 <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Flashcards</a>
                 <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Learn</a>
@@ -24,11 +45,11 @@ export const DeckDetailsPage = () => {
             </div>
             <div className="w-[875px] border mt-5">
                 <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
-                    <div key="front" onClick={handleFlip}>
-                        <FrontCard />
+                    <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
+                        <FrontCard word={cards[currentCardIndex]?.userLangCard} />
                     </div>
-                    <div key="back" onClick={handleFlip}>
-                        <BackCard />
+                    <div key="back" onClick={() => setIsFlipped(!isFlipped)}>
+                        <BackCard word={cards[currentCardIndex]?.engCard} />
                     </div>
                 </ReactCardFlip>
             </div>
@@ -38,9 +59,13 @@ export const DeckDetailsPage = () => {
                     <ToolTip trigger={<Shuffle />} content="Shuffle" />
                 </div>
                 <div className="flex items-center justify-center gap-5">
-                    <div className="border rounded-full hover:bg-gray-200"><MoveLeft size={45} /></div>
-                    <div className="text-3xl"> 5 / 17</div>
-                    <div className="border rounded-full hover:bg-gray-200"><MoveRight size={45} /></div>
+                    <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1" onClick={moveLeft}>
+                        <MoveLeft size={45} />
+                    </div>
+                    <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
+                    <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1" onClick={moveRight}>
+                        <MoveRight size={45} />
+                    </div>
                 </div>
                 <div className="flex items-center justify-center">
                     <ToolTip trigger={<Settings />} content="Settings" />
@@ -79,5 +104,5 @@ export const DeckDetailsPage = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

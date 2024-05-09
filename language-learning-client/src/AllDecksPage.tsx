@@ -1,8 +1,21 @@
 import { Link } from "react-router-dom"
 import { DockCardLarge } from "./components/DockCardLarge"
 import { Button } from "./components/ui/button"
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "./UserContext";
+import axios from "axios";
 
 export const AllDecks = () => {
+    const { user } = useContext(UserContext);
+    const [decks, setDecks] = useState([])
+    const fetchData = async () => {
+        const response = await axios.get('/decks')
+        setDecks(response.data)
+    }
+    console.log(decks)
+    useEffect(() => {
+        fetchData()
+    }, [])
     return (
         <div className="pt-[30px] ml-5">
             <header className="flex justify-between items-center">
@@ -14,7 +27,7 @@ export const AllDecks = () => {
                 </div>
             </header>
             <div className="flex items-center justify-center pr-[50px]">
-                    <h1 className="text-4xl font-bold text-gray-900">[username] all decks</h1>
+                    <h1 className="text-4xl font-bold text-gray-900">@{user?.username} all decks</h1>
             </div>
             <div className="pt-[50px]">
                 <div className="flex gap-1 items-center">
@@ -23,9 +36,9 @@ export const AllDecks = () => {
                     </Button>
                 </div>
                 <div className="flex flex-row gap-5 flex-row-3 justify-center items-center mt-5">
-                    <DockCardLarge />
-                    <DockCardLarge />
-                    <DockCardLarge />
+                    {decks.length > 0 && decks.map((deck) => (
+                        <DockCardLarge key={deck} deck={deck} />
+                    ))}
                 </div>
             </div>
             <div className="pt-[50px]">
@@ -35,9 +48,9 @@ export const AllDecks = () => {
                     </Button>
                 </div>
                 <div className="flex flex-row gap-5 flex-row-3 justify-center items-center mt-5">
-                    <DockCardLarge />
-                    <DockCardLarge />
-                    <DockCardLarge />
+                    {decks.length > 0 && decks.map((deck) => (
+                        <DockCardLarge key={deck} deck={deck} />
+                    ))}
                 </div>
             </div>
         </div>

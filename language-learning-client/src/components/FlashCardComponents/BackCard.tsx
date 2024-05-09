@@ -3,7 +3,11 @@ import { ToolTip } from "../ToolTip"
 import { Volume1 } from "lucide-react"
 import { Star } from "lucide-react"
 
-export const BackCard = () => {
+interface Props {
+    word: String
+}
+
+export const BackCard = ({ word }: Props) => {
     return (
         <div className="h-[350px] shadow-md">
             <header className="mt-2 ml-2 flex justify-between items-center">
@@ -14,7 +18,7 @@ export const BackCard = () => {
                 </div>
             </header>
             <div className="flex items-center justify-center h-[250px]">
-                <h1 className="text-6xl">The word in Finnish</h1>
+                <h1 className="text-6xl">{word}</h1>
             </div>
         </div>
     )

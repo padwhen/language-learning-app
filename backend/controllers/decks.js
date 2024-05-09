@@ -18,6 +18,20 @@ deckRouter.get('/api/decks', async (request, response) => {
     }
 })
 
+deckRouter.get('/api/decks/:id', async (request, response) => {
+    const { id } = request.params
+    try {
+        const deck = await Deck.findById(id)
+        if (!deck) {
+            return response.status(404).json({ message: 'Deck not found' })
+        }
+        response.json(deck)
+    } catch (error) {
+        console.error('Error fetching deck', error)
+        response.status(500).json({ message: 'Internal Server Error' })
+    }
+})
+
 deckRouter.post('/api/decks', async (request, response) => {
     try {
         const { token } = request.cookies

@@ -15,7 +15,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
 
   const saveWordToDeck = async (deckId: string) => {
     try {
-      const wordResponse = await axios.post('/cards', { engCard: en, userLangCard: fi })
+      const wordResponse = await axios.post('/cards', { engCard: en, userLangCard: original_word })
       console.log(wordResponse)
       await axios.put(`/decks/${deckId}`, { 
         cards: [{ 
