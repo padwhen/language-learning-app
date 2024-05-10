@@ -47,7 +47,7 @@ export const User = () => {
             alert('Login succesful')
             window.location.reload()
         } catch (exception) {
-            console.log(exception)
+            console.error(exception)
         }
     }
 

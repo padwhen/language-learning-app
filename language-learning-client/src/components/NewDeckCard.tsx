@@ -35,7 +35,6 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
         deckName: name,
         deckTags: tags
       })
-      console.log(response.data)
       setOpenNewDeck(false)
     } catch (error) {
       console.error('Error creating deck: ', error)

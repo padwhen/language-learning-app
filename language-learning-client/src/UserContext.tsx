@@ -19,7 +19,6 @@ export const UserContext = createContext<UserContextType>({
 
 export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    console.log(user)
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {

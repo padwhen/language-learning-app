@@ -21,7 +21,6 @@ export const DeckContext = createContext<DeckContextType>({
 
 export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [decks, setDecks] = useState<Deck[]>([])
-    console.log(decks)
     useEffect(() => {
         const fetchDecks = async () => {
             try {
@@ -32,7 +31,7 @@ export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
             }
         }
         fetchDecks()
-    }, [])
+    }, [decks])
     return (
         <DeckContext.Provider value={{ decks, setDecks }}>
             {children}

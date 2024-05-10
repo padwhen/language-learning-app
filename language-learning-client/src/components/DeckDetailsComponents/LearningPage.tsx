@@ -24,9 +24,7 @@ interface QuizItem {
 
 const LearningPage: React.FC = () => {
     const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 800 }
-
     const { id } = useParams()
-
     const [question, setQuestion] = useState<number>(1);
     const [answers, setAnswers] = useState<{ question: number; answer: string }[]>([]);
     const [quizdone, setQuizdone] = useState<boolean>(false);
@@ -65,25 +63,21 @@ const LearningPage: React.FC = () => {
         });
         setAnswers(newAnswers);
         const isCorrect = e
-
         setCards(prevCards => {
             const updatedCards = [...prevCards];
             const cardIndex = question - 1;
             const updatedCard = { ...updatedCards[cardIndex] };
             updatedCard.cardScore = Math.min(Math.max(updatedCard.cardScore + (isCorrect ? 1 : -1), 0), 5);
             updatedCards[cardIndex] = updatedCard;
-            return updatedCards;
-        });
-        console.log(cards)
-        const updatedCard = cards[q-1]
-        console.log(updatedCard)
-        axios.put(`/cards/${cards[question - 1]._id}`, { cardScore: updatedCard.cardScore })
+            axios.put(`/decks/update-card/${id}`, { cards: updatedCards })
             .then(response => {
-                console.log("Card updated successfully:", response.data);
+                console.log("Deck updated successfully:", response.data);
             })
             .catch(error => {
-                console.error("Error updating card:", error);
+                console.error("Error updating deck:", error);
             });
+            return updatedCards; 
+        });
         if (isCorrect) {
             setScore(score + 1);
         }
@@ -117,7 +111,7 @@ const LearningPage: React.FC = () => {
                             <Separator className="my-2" />
                             <ConfettiExplosion {...confettiOptions} />
                             <span className='text-2xl'>{score}/{quiz.length} Questions are correct !</span>
-                            <Link to='/'><Button className='mt-5'>Back to Home</Button></Link>
+                            <Link to={`/view-decks/${id}`}><Button className='mt-5'>Back to Home</Button></Link>
                         </div>}
                     </div>
                 </CardContent>

@@ -72,4 +72,27 @@ deckRouter.put('/api/decks/:id', async (request, response) => {
     }
 })
 
+deckRouter.put('/api/decks/update-card/:id', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { id } = request.params
+        const { cards } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: id, owner: userData.id },
+            { cards }, 
+            { new: true}
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck not found' })
+        }
+        response.json(updatedDeck)
+    } catch (error) {
+        response.status(500).json({ error: 'Internal Server Error'})
+    }
+})
+
 module.exports = deckRouter

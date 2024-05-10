@@ -12,7 +12,6 @@ export const AllDecks = () => {
         const response = await axios.get('/decks')
         setDecks(response.data)
     }
-    console.log(decks)
     useEffect(() => {
         fetchData()
     }, [])
@@ -36,12 +35,12 @@ export const AllDecks = () => {
                     </Button>
                 </div>
                 <div className="flex flex-row gap-5 flex-row-3 justify-center items-center mt-5">
-                    {decks.length > 0 && decks.map((deck) => (
-                        <DockCardLarge key={deck} deck={deck} />
+                    {decks.length > 0 && decks.map((deck: any) => (
+                        <Link to={`/view-decks/${deck._id}`}><DockCardLarge key={deck} deck={deck} /></Link>
                     ))}
                 </div>
             </div>
-            <div className="pt-[50px]">
+            {/* <div className="pt-[50px]">
                 <div className="flex gap-1 items-center">
                     <Button size="lg" variant="secondary" className="text-2xl hover:scale-110 hover:ring ring-gray-500 ring-opacity-50">
                         Popular decks in Finnish
@@ -52,7 +51,7 @@ export const AllDecks = () => {
                         <DockCardLarge key={deck} deck={deck} />
                     ))}
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }

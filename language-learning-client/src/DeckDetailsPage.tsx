@@ -17,7 +17,7 @@ export const DeckDetailsPage = () => {
     const [deck, setDeck] = useState<any>({ cards: [] }); 
     const [autoPlay, setAutoPlay] = useState<boolean>(false)
 
-    const { deckName, deckPercentage, deckTags, owner, cards } = deck;
+    const { deckName, deckTags, owner, cards } = deck;
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards)
     const { id } = useParams();
 
@@ -149,7 +149,7 @@ export const DeckDetailsPage = () => {
                         </div>
                     </div>) : (
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-xl font-bold text-pink-500 pt-3">Still learning ({completed.length})</h2>
+                        <h2 className="text-xl font-bold text-pink-500 pt-3">Completed ({completed.length})</h2>
                         <h3 className="text-gray-500 text-md">There are no cards in "Completed".</h3>
                 </div>)}
             </div>

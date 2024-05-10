@@ -14,11 +14,10 @@ export const IndexPage = () => {
     const [inputText, setInputText] = useState<string>('');
     const [ready, setReady] = useState<boolean>(true)
     const exampleResponse = jsonData
-    const [response, setResponse] = useState<any>(exampleResponse)
+    const [response, setResponse] = useState<any>('')
     const handleTranslation = async () => {
         setReady(false);
         const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
-        console.log(response_json)
         if (response_json !== null) {
             const parsedResponse = JSON.parse(response_json);
             const { sentence, words } = parsedResponse

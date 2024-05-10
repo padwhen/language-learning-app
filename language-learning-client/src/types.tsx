@@ -9,6 +9,7 @@ export interface Word {
 }
 
 export interface DockCardData {
+    [x: string]: any;
     _id: string;
     deckName: string;
     deckPercentage: number;
@@ -20,4 +21,14 @@ export interface FormData {
     name?: string;
     username: string;
     pin: string;
+}
+
+export function simplifyFraction(numerator: number, denominator: number): string {
+    const gcd = (a: number, b: number): number => {
+        return b === 0 ? a : gcd(b, a % b);
+    };
+    const commonDivisor: number = gcd(numerator, denominator);
+    const simplifiedNumerator: number = numerator / commonDivisor;
+    const simplifiedDenominator: number = denominator / commonDivisor;
+    return `${simplifiedNumerator}/${simplifiedDenominator}`;
 }
