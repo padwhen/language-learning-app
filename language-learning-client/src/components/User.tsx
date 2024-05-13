@@ -122,7 +122,8 @@ export const User = () => {
                     </DialogContent>
                 </Dialog>
                 </div>  
-            </div>               
+            </div>   
+                        
             )} 
 
         </div>

@@ -37,7 +37,7 @@ usersRouter.post('/api/login', async (request, response) => {
 
 usersRouter.get('/api/profile', async (request, response) => {
     try {
-        const { token } = request.cookies
+        const { token } = request.cookies; 
         if (!token) {
             return response.status(500).json({ error: 'Token not found' })
         }
