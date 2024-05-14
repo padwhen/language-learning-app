@@ -8,7 +8,7 @@ import { UserContextProvider } from './UserContext'
 import { DeckContextProvider } from './DeckContext'
 import LearningPage from './components/DeckDetailsComponents/LearningPage'
 
-axios.defaults.baseURL = 'https://padwhen-learningapp.fly.dev/api'
+axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
 
 function App() {

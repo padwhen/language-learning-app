@@ -30,5 +30,8 @@ export function LoginPage({ formData, setFormData, handleChange }: Props) {
                         </InputOTP>
                     </div>
                 </div>
+                <div className="mt-2 flex justify-center italic">
+                    Haven't had a user yet? Register here
+                </div>
             </div>
     )}

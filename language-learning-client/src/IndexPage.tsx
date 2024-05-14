@@ -1,5 +1,4 @@
-import { useState } from "react";
-import jsonData from '../words.json'
+import { useEffect, useMemo, useState } from "react";
 import { chatCompletion } from "./ChatCompletion";
 import { TranslationBar } from "./components/TranslationBar";
 import { InputBar } from "./components/InputBar";
@@ -13,8 +12,11 @@ export const IndexPage = () => {
     const [fromLanguage, setFromLanguage] = useState<string>('Finnish');
     const [inputText, setInputText] = useState<string>('');
     const [ready, setReady] = useState<boolean>(true)
-    const exampleResponse = jsonData
-    const [response, setResponse] = useState<any>('')
+    const [response, setResponse] = useState<any>(() => {
+        const storedResponse = localStorage.getItem("response");
+        return storedResponse ? JSON.parse(storedResponse) : null;
+    });
+    
     const handleTranslation = async () => {
         setReady(false);
         const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
@@ -35,18 +37,25 @@ export const IndexPage = () => {
                     ...prevResponse, words: wordsWithUUID
                 }));
             }
+            localStorage.setItem("response", JSON.stringify(parsedResponse));
         }
         setReady(true);
-    };    
+    };
+
+    useEffect(() => {
+        // Cleanup localStorage on component unmount
+        return () => localStorage.removeItem("response");
+    }, []);
+
     return (
         <div className="h-96 flex">
             <div className="mt-8 w-3/4 pt-1 flex flex-col items-center">
                 <TranslationBar fromLanguage={fromLanguage} setFromLanguage={setFromLanguage} />
                 <InputBar inputText={inputText} setInputText={setInputText} handleTranslation={handleTranslation} ready={ready} />
-                {response.sentence && response.sentence && (
+                {response?.sentence && (
                     <Translation text={response.sentence} />    
                 )}
-                {response.words && response.words && (
+                {response?.words && (
                     <WordDetails words={response.words} />    
                 )}
             </div>
