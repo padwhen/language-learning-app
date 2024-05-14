@@ -38,12 +38,16 @@ export const IndexPage = () => {
                 }));
             }
             localStorage.setItem("response", JSON.stringify(parsedResponse));
+            localStorage.setItem("fromLanguage", fromLanguage)
         }
         setReady(true);
     };
 
     useEffect(() => {
-        return () => localStorage.removeItem("response");
+        return () => {
+            localStorage.removeItem("response")
+            localStorage.removeItem("fromLanguage")
+        };
     }, []);
 
     return (
