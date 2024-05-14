@@ -1,6 +1,5 @@
 import { useDeckContext } from "@/DeckContext";
 import { simplifyFraction } from "@/types";
-import { useContext } from "react";
 import { Link } from "react-router-dom";
 
 export const DeckInfo = () => {

@@ -3,15 +3,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Word } from "@/types"
 import { DialogClose } from "@radix-ui/react-dialog"
 import { CurrentDecks } from "./CurrentDecks"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { NewDeckCard } from "./NewDeckCard"
 import axios from "axios"
+import { UserContext } from "@/UserContext"
+import { LoginPage } from "./UsersComponents/LoginPage"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
+  const { user } = useContext(UserContext)
   const [deckNames, setDecksNames] = useState<{id: string; name: string}[]>([]);
   const [displayCurrentDecks, setDisplayCurrentDecks] = useState<boolean>(true);
   const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
-  const { fi, en, pronunciation, original_word, comment, id } = word;
+  const { fi, en, pronunciation, original_word, comment } = word;
 
   const saveWordToDeck = async (deckId: string) => {
     try {
@@ -68,17 +71,20 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
               )}
             </DialogTrigger>
             {displayCurrentDecks && (
-              <DialogContent className="p-0 flex gap-4 flex-grow-1">
-                <CurrentDecks deckNames={deckNames} 
-                              setDecksName={setDecksNames} 
-                              setDisplayCurrentDecks={setDisplayCurrentDecks}
-                              setOpenNewDeck={setOpenNewDeck}
-                              openNewDeck={openNewDeck}
-                              onSelectDeck={saveWordToDeck}
-                              />
-                {openNewDeck && (<NewDeckCard setOpenNewDeck={setOpenNewDeck} />)}
-              </DialogContent>  
-            )}
+              <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : "max-w-[455px] h-[350px]"}>
+                {user ? (
+                  <CurrentDecks
+                    deckNames={deckNames} 
+                    setDecksName={setDecksNames} 
+                    setDisplayCurrentDecks={setDisplayCurrentDecks}
+                    setOpenNewDeck={setOpenNewDeck}
+                    openNewDeck={openNewDeck}
+                    onSelectDeck={saveWordToDeck}
+                  />) : (<>
+                <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                <LoginPage /></>)}
+                {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}
+              </DialogContent>)}
           </Dialog>
           <DialogClose>
             <Button type="submit" className="bg-gray-500">Close</Button>

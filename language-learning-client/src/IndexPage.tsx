@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { chatCompletion } from "./ChatCompletion";
 import { TranslationBar } from "./components/TranslationBar";
 import { InputBar } from "./components/InputBar";
@@ -43,7 +43,6 @@ export const IndexPage = () => {
     };
 
     useEffect(() => {
-        // Cleanup localStorage on component unmount
         return () => localStorage.removeItem("response");
     }, []);
 

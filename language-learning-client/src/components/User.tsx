@@ -1,56 +1,14 @@
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { RegisterPage } from "./UsersComponents/RegisterPage";
 import { Link } from "react-router-dom";
-import { ChangeEvent, useContext, useState } from "react";
-import { FormData } from "@/types";
+import { useContext } from "react";
 import axios from "axios";
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { UserContext } from "@/UserContext";
 
 export const User = () => {
-    const [formData, setFormData] = useState<FormData>({name: 'Your name', username: '@yourusername', pin: ''})
     const { user, setUser } = useContext(UserContext);
     
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    const clearFormData = () => {
-        setFormData({ name: '', username: '', pin: ''})
-    }
-
-    const handleRegister = async () => {
-        if (!formData.name || !formData.username || !formData.pin) {
-            console.error('Please fill out all required fields')
-            return;
-        }
-        try {
-            await axios.post('/register', formData)
-            alert('Registeration succesful. Now you can login!')
-            clearFormData()
-            window.location.reload()
-        } catch (error) {
-            console.error('Error registering: ', error)
-        }
-    }
-
-    const handleLogin = async () => {
-        if (!formData.username || !formData.pin) {
-            console.error('Please fill out all required fields')
-            return;
-        }
-        try {
-            await axios.post('/login', formData)
-            clearFormData()
-            alert('Login succesful')
-            window.location.reload()
-        } catch (exception) {
-            console.error(exception)
-        }
-    }
-
     const handleLogout = async () => {
         try {
             await axios.post('/logout');
@@ -99,9 +57,8 @@ export const User = () => {
                             <DialogHeader>
                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
                             </DialogHeader>
-                            <RegisterPage formData={formData} setFormData={setFormData} handleChange={handleChange} />
+                            <RegisterPage />
                         <DialogFooter>
-                            <Button type="submit" onClick={handleRegister}>Register</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -115,17 +72,12 @@ export const User = () => {
                             <DialogHeader>
                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                             </DialogHeader>
-                                <LoginPage formData={formData} setFormData={setFormData} handleChange={handleChange} />
-                        <DialogFooter>
-                            <Button type="submit" onClick={handleLogin}>Log In</Button>
-                        </DialogFooter>
+                                <LoginPage />
                     </DialogContent>
                 </Dialog>
                 </div>  
-            </div>   
-                        
+            </div>                
             )} 
-
         </div>
     )
 }
