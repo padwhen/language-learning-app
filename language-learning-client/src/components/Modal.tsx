@@ -76,10 +76,12 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
                   <CurrentDecks
                     deckNames={deckNames} 
                     setDecksName={setDecksNames} 
+                    displayCurrentDecks = {displayCurrentDecks}
                     setDisplayCurrentDecks={setDisplayCurrentDecks}
                     setOpenNewDeck={setOpenNewDeck}
                     openNewDeck={openNewDeck}
                     onSelectDeck={saveWordToDeck}
+                    word={fi}
                   />) : (<>
                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                 <LoginPage /></>)}

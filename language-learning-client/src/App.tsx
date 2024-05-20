@@ -7,6 +7,8 @@ import axios from 'axios'
 import { UserContextProvider } from './UserContext'
 import { DeckContextProvider } from './DeckContext'
 import LearningPage from './components/DeckDetailsComponents/LearningPage'
+import { Toaster } from "@/components/ui/toaster"
+
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -21,6 +23,7 @@ function App() {
           <Route path="/view-decks/:id" element={<DeckDetailsPage />} />
           <Route path="/learn-decks/:id" element={<LearningPage />} />
         </Routes>              
+        <Toaster />
       </DeckContextProvider>
     </UserContextProvider>
   )

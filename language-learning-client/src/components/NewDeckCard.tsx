@@ -5,12 +5,15 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChangeEvent, useState } from "react"
 import { BadgeComponent } from "../composables/Badge"
+import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
 
 export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = ({setOpenNewDeck}) => {
   const [name, setName] = useState<string>('');
   const [tags, setTags] = useState<string[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+
+  const { toast } = useToast()
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value)
@@ -36,6 +39,12 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
         deckTags: tags
       })
       setOpenNewDeck(false)
+      toast({
+        title: `${name} just added to your account!`,
+        description: `Now you can add flashcards into it.`
+      })
+      setName('')
+      setTags([])
     } catch (error) {
       console.error('Error creating deck: ', error)
     }

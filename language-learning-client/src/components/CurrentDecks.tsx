@@ -3,19 +3,23 @@ import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { DockCard } from "./DockCardSmall"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { useToast } from "@/components/ui/use-toast"
+
  
 export const CurrentDecks:React.FC<{
     deckNames: { id: string; name: string; }[];  
     setDecksName: (deckNames: { id: string; name: string; }[]) => void; 
     setDisplayCurrentDecks: (arg: boolean) => void;
     setOpenNewDeck: (arg: boolean) => void;
+    displayCurrentDecks: boolean;
     openNewDeck: boolean;
     onSelectDeck: (deckId: string) => void;
-}> = ({deckNames, setDecksName, setDisplayCurrentDecks, setOpenNewDeck, openNewDeck, onSelectDeck}) => {
-
+    word: string
+}> = ({deckNames, setDecksName, setDisplayCurrentDecks, displayCurrentDecks ,setOpenNewDeck, openNewDeck, onSelectDeck, word}) => {
     const [decks, setDecks] = useState([])
     const language = localStorage.getItem("fromLanguage")
 
+    
     const handleDeckSelect = (deck: { _id: string, deckName: string}) => {
         onSelectDeck(deck._id)
         setDecksName([...deckNames, { id: deck._id, name: deck.deckName }]);
@@ -29,6 +33,10 @@ export const CurrentDecks:React.FC<{
         } catch (error) {
             console.error('Error fetching decks data')
         }
+    }
+
+    const handleChooseDeck = () => {
+        setDisplayCurrentDecks(!displayCurrentDecks)
     }
 
     useEffect(() => {
@@ -55,7 +63,7 @@ export const CurrentDecks:React.FC<{
                         </div>
                         <CardFooter className="flex justify-between">
                             <Button onClick={() => setOpenNewDeck(true)} variant="outline">Add a new deck</Button>
-                            <Button onClick={() => setDisplayCurrentDecks(false)}>Choose this deck</Button>
+                            <Button onClick={handleChooseDeck}>Choose this deck</Button>
                         </CardFooter>
                     </>
                 )}
