@@ -28,10 +28,10 @@ usersRouter.post('/api/login', async (request, response) => {
                 response.cookie('token', token).json(userDoc)
             })
         } else {
-            response.status(422).json('Password not ok')
+            response.status(422).json('Password incorrect. Please try again.')
         }
     } else {
-        response.status(422).json('Username not found')
+        response.status(422).json('Username not found. Please try again.')
     }
 })
 

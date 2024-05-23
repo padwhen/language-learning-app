@@ -13,6 +13,7 @@ export const User = () => {
         try {
             await axios.post('/logout');
             setUser(null)
+            localStorage.clear()
             window.location.reload()
         } catch (error) {
             console.error('Error logging out: ', error)
@@ -53,9 +54,9 @@ export const User = () => {
                             Register
                         </a>
                     </DialogTrigger>
-                    <DialogContent className="max-w-[555px] h-[370px]">
+                    <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                             <DialogHeader>
-                                <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
+                                <DialogTitle className="text-4xl flex items-center justify-center mt-2">Register</DialogTitle>
                             </DialogHeader>
                             <RegisterPage />
                         <DialogFooter>
@@ -68,7 +69,7 @@ export const User = () => {
                             Log In
                         </a>
                     </DialogTrigger>
-                    <DialogContent className="max-w-[555px] h-[370px]">
+                    <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                             </DialogHeader>
