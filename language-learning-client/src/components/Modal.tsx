@@ -8,27 +8,52 @@ import axios from "axios"
 import { UserContext } from "@/UserContext"
 import { LoginPage } from "./UsersComponents/LoginPage"
 import { DisplayCurrentDecks } from "./DisplayCurrentDecks"
+import { useToast } from "@/components/ui/use-toast"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
   const { user } = useContext(UserContext)
-  const [deckNames, setDecksNames] = useState<{id: string; name: string}[]>([]);
-  const [displayCurrentDecks, setDisplayCurrentDecks] = useState<boolean>(true);
   const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
   const { fi, en, pronunciation, original_word, comment } = word;
 
+  const { toast } = useToast()
+
   const saveWordToDeck = async (deckId: string) => {
     try {
-      const wordResponse = await axios.post('/cards', { engCard: en, userLangCard: original_word })
+      const wordResponse = await axios.post('/cards', { engCard: en, userLangCard: original_word });
       await axios.put(`/decks/${deckId}`, { 
         cards: [{ 
           _id: wordResponse.data._id,
           engCard: en, userLangCard: original_word, cardScore: 0
         }]
+      });
+      const localStorageKey = "response";
+      const storedResponse = localStorage.getItem(localStorageKey);
+      const response = storedResponse ? JSON.parse(storedResponse) : {};
+      if (response.words) {
+        const updatedWords = response.words.filter((w: Word) => w.original_word !== word.original_word);
+        localStorage.setItem(localStorageKey, JSON.stringify({ ...response, words: updatedWords }));
+      }
+      const deckName = await fetchDeckName(deckId);
+      toast({
+        title: `${word.original_word} just added!`,
+        description: `Added to deck ${deckName}: ${word.original_word} - Translated as ${word.en}`
       })
+      setTimeout(() => { window.location.reload() }, 1500)
     } catch (error) {
-      console.error('Error saving word: ', error)
+      console.error('Error saving word: ', error);
+    }
+  };
+
+  const fetchDeckName = async (deckId: string): Promise<string> => {
+    try {
+      const response = await axios.get(`/decks/${deckId}`)
+      return response.data.deckName;
+    } catch (error) {
+      console.error('Error fetching deck name: ', error)
+      return ''
     }
   }
+  
 
   return (
     <Dialog>
@@ -62,22 +87,15 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
         <DialogFooter>
           <Dialog>
             <DialogTrigger>
-            {deckNames.length === 0 ? (
                 <Button type="submit">Save this to a deck</Button>
-              ) : (
-                <Button type="submit">
-                  {deckNames.map(deck => deck.name).join(" / ")}
-                </Button>
-              )}
             </DialogTrigger>
-            {displayCurrentDecks && (
               <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : "max-w-[455px] h-[350px]"}>
                 {user ? (
                   <DisplayCurrentDecks onSelectDeck={saveWordToDeck} />) : (<>
                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                 <LoginPage /></>)}
                 {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}
-              </DialogContent>)}
+              </DialogContent>
           </Dialog>
           <DialogClose>
             <Button type="submit" className="bg-gray-500">Close</Button>

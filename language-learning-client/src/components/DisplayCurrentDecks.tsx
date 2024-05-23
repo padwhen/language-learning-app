@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { NewDeckCard } from "./NewDeckCard";
 import { Deck } from "@/types";
 
-export const DisplayCurrentDecks: React.FC<{onSelectDeck: (deckId: string) => void;}> = ({onSelectDeck}) => {
+export const DisplayCurrentDecks: React.FC<{onSelectDeck: (deckId: string) => void }> = ({onSelectDeck }) => {
     const [decks, setDecks] = useState<Deck[]>([])
     const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
     const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
@@ -33,6 +33,7 @@ export const DisplayCurrentDecks: React.FC<{onSelectDeck: (deckId: string) => vo
     const handleChooseDeck = () => {
         if (selectedDeck) {
             onSelectDeck(selectedDeck)
+            setSelectedDeck(null)
         }
     }
 

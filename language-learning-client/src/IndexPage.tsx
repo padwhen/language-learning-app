@@ -14,18 +14,12 @@ export const IndexPage = () => {
     const [inputText, setInputText] = useState<string>('');
     const [ready, setReady] = useState<boolean>(true)
     const exampleResponse = jsonData
-    // const [response, setResponse] = useState<any>(() => {
-    //     const storedResponse = localStorage.getItem("response");
-    //     return storedResponse ? JSON.parse(storedResponse) : null;
-    // });
-    const [response, setResponse] = useState<any>(exampleResponse)
+    const [response, setResponse] = useState<any>(() => {
+        const storedResponse = localStorage.getItem("response");
+        return storedResponse ? JSON.parse(storedResponse) : null;
+    });
+    // const [response, setResponse] = useState<any>(exampleResponse)
 
-    useEffect(() => {
-        if (!localStorage.getItem("fromLanguage")) {
-            localStorage.setItem("fromLanguage", "Finnish");
-        }
-    }, []);
-    
     const handleTranslation = async () => {
         setReady(false);
         const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
@@ -51,13 +45,6 @@ export const IndexPage = () => {
         }
         setReady(true);
     };
-
-    useEffect(() => {
-        return () => {
-            localStorage.removeItem("response")
-            localStorage.removeItem("fromLanguage")
-        };
-    }, []);
 
     return (
         <div className="h-96 flex">
