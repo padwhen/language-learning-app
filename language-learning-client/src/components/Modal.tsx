@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Word } from "@/types"
 import { DialogClose } from "@radix-ui/react-dialog"
-import { CurrentDecks } from "./CurrentDecks"
 import { useContext, useState } from "react"
 import { NewDeckCard } from "./NewDeckCard"
 import axios from "axios"
 import { UserContext } from "@/UserContext"
 import { LoginPage } from "./UsersComponents/LoginPage"
+import { DisplayCurrentDecks } from "./DisplayCurrentDecks"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
   const { user } = useContext(UserContext)
@@ -73,16 +73,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
             {displayCurrentDecks && (
               <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : "max-w-[455px] h-[350px]"}>
                 {user ? (
-                  <CurrentDecks
-                    deckNames={deckNames} 
-                    setDecksName={setDecksNames} 
-                    displayCurrentDecks = {displayCurrentDecks}
-                    setDisplayCurrentDecks={setDisplayCurrentDecks}
-                    setOpenNewDeck={setOpenNewDeck}
-                    openNewDeck={openNewDeck}
-                    onSelectDeck={saveWordToDeck}
-                    word={fi}
-                  />) : (<>
+                  <DisplayCurrentDecks onSelectDeck={saveWordToDeck} />) : (<>
                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                 <LoginPage /></>)}
                 {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}

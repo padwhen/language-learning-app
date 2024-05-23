@@ -32,3 +32,19 @@ export function simplifyFraction(numerator: number, denominator: number): string
     const simplifiedDenominator: number = denominator / commonDivisor;
     return `${simplifiedNumerator}/${simplifiedDenominator}`;
 }
+
+export interface Deck {
+    _id: string;
+    owner: string;
+    deckName: string;
+    deckPercentage: string;
+    deckTags: string[];
+    cards: Card[]
+}
+
+export interface Card {
+    _id: string;
+    engCard: string;
+    userLangCard: string;
+    cardScore: number;
+}

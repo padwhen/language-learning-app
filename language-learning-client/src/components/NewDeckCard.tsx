@@ -51,7 +51,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-[350px] ml-5">
       <Card>
         <CardHeader>
           <CardTitle>New Deck</CardTitle>

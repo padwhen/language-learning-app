@@ -20,6 +20,11 @@ export const IndexPage = () => {
     // });
     const [response, setResponse] = useState<any>(exampleResponse)
 
+    useEffect(() => {
+        if (!localStorage.getItem("fromLanguage")) {
+            localStorage.setItem("fromLanguage", "Finnish");
+        }
+    }, []);
     
     const handleTranslation = async () => {
         setReady(false);

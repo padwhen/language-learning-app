@@ -1,95 +1,101 @@
 {
-    "sentence": "The suspect in the Viertola school shooting planned to shoot several people - this is how the events unfolded.",
+    "sentence": "An exceptional solution in grading the long mathematics high school exam: full points were not given for the correct answer.",
     "words": [
         {
-            "fi": "Viertolan",
-            "en": "Viertola",
-            "type": "noun",
-            "original_word": "Viertolan",
-            "pronunciation": "Vi-er-to-lan",
-            "comment": "Proper noun.",
-            "id": "9fb0d67d-ae6b-4707-a47b-d0720258018f"
-        },
-        {
-            "fi": "kouluampumisesta",
-            "en": "school shooting",
-            "type": "noun",
-            "original_word": "kouluampumisesta",
-            "pronunciation": "kou-lu-am-pu-mi-se-sta",
-            "comment": "Compound noun.",
-            "id": "62e8a1c7-0e74-476e-b562-5693baf4f7fb"
-        },
-        {
-            "fi": "epäilty",
-            "en": "suspect",
-            "type": "noun",
-            "original_word": "epäilty",
-            "pronunciation": "epäil-ty",
-            "comment": "Noun form of the word 'epäilty' (suspected).",
-            "id": "673d3ff9-662f-419f-9737-3634234ef445"
-        },
-        {
-            "fi": "suunnitteli",
-            "en": "planned",
-            "type": "verb",
-            "original_word": "suunnitella",
-            "pronunciation": "suun-ni-tel-la",
-            "comment": "Infinitive form of the verb 'suunnitella' (to plan).",
-            "id": "46e3a352-8752-4017-b30a-11b3bcff80c3"
-        },
-        {
-            "fi": "ampuvansa",
-            "en": "to shoot",
-            "type": "verb",
-            "original_word": "ampua",
-            "pronunciation": "am-pu-van-sa",
-            "comment": "Infinitive form of the verb 'ampua' (to shoot).",
-            "id": "da6c5334-2a67-42f8-9d26-fe839e145cab"
-        },
-        {
-            "fi": "useita",
-            "en": "several",
+            "fi": "Poikkeuksellinen",
+            "en": "exceptional",
             "type": "adjective",
-            "original_word": "usea",
-            "pronunciation": "u-sei-ta",
-            "comment": "Partitive plural form of the adjective 'usea' (several).",
-            "id": "1f881fd6-97a0-49ce-ad44-c180305722f6"
+            "original_word": "poikkeuksellinen",
+            "pronunciation": "poy-keh-ook-seh-lih-nen",
+            "comment": "Adjective describing an extraordinary or uncommon circumstance."
         },
         {
-            "fi": "ihmisiä",
-            "en": "people",
+            "fi": "ratkaisu",
+            "en": "solution",
             "type": "noun",
-            "original_word": "ihminen",
-            "pronunciation": "ih-mi-si-ä",
-            "comment": "Partitive plural form of the noun 'ihminen' (people).",
-            "id": "11ae7ddb-47e7-49d1-8b0b-f25dbf751646"
+            "original_word": "ratkaisu",
+            "pronunciation": "ra-tkai-su",
+            "comment": "Noun denoting a means to resolve a problem."
         },
         {
-            "fi": "näin",
-            "en": "this way",
+            "fi": "pitkän",
+            "en": "long",
+            "type": "adjective",
+            "original_word": "pitkä",
+            "pronunciation": "pit-kahn",
+            "comment": "Adjective indicating a considerable length."
+        },
+        {
+            "fi": "matematiikan",
+            "en": "mathematics",
+            "type": "noun",
+            "original_word": "matematiikka",
+            "pronunciation": "ma-te-maa-tee-kka",
+            "comment": "Noun referring to the field of mathematics."
+        },
+        {
+            "fi": "yo-kokeen",
+            "en": "high school exam",
+            "type": "noun",
+            "original_word": "yo-koe",
+            "pronunciation": "yoh-koh-eh",
+            "comment": "Compound noun for matriculation exam."
+        },
+        {
+            "fi": "arvostelussa",
+            "en": "grading",
+            "type": "noun",
+            "original_word": "arvostelu",
+            "pronunciation": "ar-vos-te-lu",
+            "comment": "Noun describing the process of evaluation and scoring."
+        },
+        {
+            "fi": "oikeasta",
+            "en": "correct",
+            "type": "adjective",
+            "original_word": "oikea",
+            "pronunciation": "oy-keh-ah",
+            "comment": "Adjective signifying accuracy or conformity."
+        },
+        {
+            "fi": "vastauksesta",
+            "en": "answer",
+            "type": "noun",
+            "original_word": "vastaus",
+            "pronunciation": "vas-taus",
+            "comment": "Noun indicating a response to a question or statement."
+        },
+        {
+            "fi": "ei",
+            "en": "not",
             "type": "adverb",
-            "original_word": "näin",
-            "pronunciation": "näin",
-            "comment": "Adverb meaning 'this way'.",
-            "id": "98e39919-1b3d-46a3-bfde-784a60936aa5"
+            "original_word": "ei",
+            "pronunciation": "ay",
+            "comment": "Negative adverb indicating denial or absence."
         },
         {
-            "fi": "tapahtumat",
-            "en": "events",
-            "type": "noun",
-            "original_word": "tapahtuma",
-            "pronunciation": "ta-pah-tu-mat",
-            "comment": "Noun form of the word 'tapahtumat' (events).",
-            "id": "25b813d7-342b-40fa-88b3-a2aead04f45b"
-        },
-        {
-            "fi": "etenivät",
-            "en": "unfolded",
+            "fi": "saanut",
+            "en": "given",
             "type": "verb",
-            "original_word": "edetä",
-            "pronunciation": "e-de-tä",
-            "comment": "3rd person plural past tense form of the verb 'edetä' (to unfold).",
-            "id": "faa57d30-75c3-4145-91f1-17b88b43189b"
+            "original_word": "saada",
+            "pronunciation": "sa-ah-da",
+            "comment": "Past tense verb meaning to receive or obtain."
+        },
+        {
+            "fi": "täysiä",
+            "en": "full",
+            "type": "adjective",
+            "original_word": "täysi",
+            "pronunciation": "tay-sih-a",
+            "comment": "Adjective representing completeness or entirety."
+        },
+        {
+            "fi": "pisteitä",
+            "en": "points",
+            "type": "noun",
+            "original_word": "piste",
+            "pronunciation": "pis-tei-ta",
+            "comment": "Noun referring to numerical marks or scores."
         }
     ]
 }
