@@ -38,6 +38,7 @@ export const DeckDetailsPage = () => {
                     setTimeout(() => { // Wait for 1 second
                         setIsFlipped(!isFlipped); // Flip back the card
                         setCurrentCardIndex(currentCardIndex + 1); // Move to the next card
+                        setIsFlipped(!isFlipped)
                     }, 2000);
                 } else {
                     setAutoPlay(false); // Stop autoplay if at the last card
@@ -116,7 +117,7 @@ export const DeckDetailsPage = () => {
                         <h3 className="text-gray-500 text-lg">You've begun learning these terms. Keep up the good work!</h3>
                         <div className="flex flex-col gap-3 mt-2">
                             {stillLearning.map((card: any) => (
-                                <Word key={card._id} engCard={card.engCard} userLangCard={card.userLangCard} />
+                                <Word cardId={card._id} deckId={id} key={card._id} engCard={card.engCard} userLangCard={card.userLangCard} />
                             ))}
                         </div>
                     </div>) : (
@@ -130,7 +131,7 @@ export const DeckDetailsPage = () => {
                     <h3 className="text-gray-500 text-lg">You haven't studied these terms yet.</h3>
                     <div className="flex flex-col gap-3 mt-2">
                         {notStudied.map((card: any) => (
-                            <Word key={card._id} engCard={card.engCard} userLangCard={card.userLangCard} />
+                            <Word cardId={card._id} key={card._id} deckId={id} engCard={card.engCard} userLangCard={card.userLangCard} />
                         ))}
                     </div>
                 </div>) : (
@@ -144,7 +145,7 @@ export const DeckDetailsPage = () => {
                         <h3 className="text-gray-500 text-lg">Congratulations!</h3>
                         <div className="flex flex-col gap-3 mt-2">
                             {completed.map((card: any) => (
-                                <Word key={card._id} engCard={card.engCard} userLangCard={card.userLangCard} />
+                                <Word cardId={card._id} key={card._id} deckId={id} engCard={card.engCard} userLangCard={card.userLangCard} />
                             ))}
                         </div>
                     </div>) : (

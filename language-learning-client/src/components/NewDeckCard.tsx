@@ -34,7 +34,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
 
   const handleAddDeck = async () => {
     try {
-      const response = await axios.post('/decks', {
+      await axios.post('/decks', {
         deckName: name,
         deckTags: tags
       })

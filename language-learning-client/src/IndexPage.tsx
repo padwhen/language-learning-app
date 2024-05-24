@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { chatCompletion } from "./ChatCompletion";
 import { TranslationBar } from "./components/TranslationBar";
 import { InputBar } from "./components/InputBar";
@@ -7,13 +7,11 @@ import { WordDetails } from "./components/Details";
 import { User } from "./components/User";
 import { DeckInfo } from "./components/DeckInfo";
 import { v4 as uuidv4 } from 'uuid';
-import jsonData from '../words.json'
 
 export const IndexPage = () => {
     const [fromLanguage, setFromLanguage] = useState<string>('Finnish');
     const [inputText, setInputText] = useState<string>('');
     const [ready, setReady] = useState<boolean>(true)
-    const exampleResponse = jsonData
     const [response, setResponse] = useState<any>(() => {
         const storedResponse = localStorage.getItem("response");
         return storedResponse ? JSON.parse(storedResponse) : null;

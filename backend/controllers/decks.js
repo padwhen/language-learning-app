@@ -95,4 +95,31 @@ deckRouter.put('/api/decks/update-card/:id', async (request, response) => {
     }
 })
 
+deckRouter.put('/api/decks/update-card/:deckId/:cardId', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { deckId, cardId } = request.params
+        const { engCard, userLangCard } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const deck = await Deck.findOne({ _id: deckId, owner: userData.id })
+        if (!deck) {
+            return response.status(404).json({error: 'Deck not found'})
+        }
+        const cardToUpdate = deck.cards.id(cardId)
+        if (!cardToUpdate) {
+            return response.status(404).json({ error: 'Card not found' });
+        }
+        cardToUpdate.engCard = engCard;
+        cardToUpdate.userLangCard = userLangCard;
+        await deck.save()
+        response.json(deck)
+    } catch (error) {
+        console.error('Error updating card: ', error)
+        response.status(500).json({ error: 'Internal Server Error '})
+    }
+})
+
 module.exports = deckRouter
