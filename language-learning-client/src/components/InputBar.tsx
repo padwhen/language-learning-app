@@ -32,6 +32,7 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
                             value={inputText}
                             onChange={handleInputChange}
                             placeholder={ready ? "Type in your sentence here. Note: A sentence is better for us to handle." :  "Approximately wait time is 60 seconds. Please be patient. It's gonna worth the wait. So basically the words will appear below, when the 'Loading' button is not 'Loading' anymore. Pss: I'm making this long so that you have something to do while waiting. Enjoyyyy"}
+                            disabled={!ready}
                 />
             </div>
             <div className="flex justify-between w-full">

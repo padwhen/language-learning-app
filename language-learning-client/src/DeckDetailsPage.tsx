@@ -65,7 +65,7 @@ export const DeckDetailsPage = () => {
 
 
     return (
-        <div className="pt-[50px] ml-16">
+        <div className="pt-[20px] ml-16">
             <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
             <div className="pt-5 flex flex-row gap-[25px]">
                 <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Flashcards</a>
