@@ -18,7 +18,7 @@ export const BackCard = ({ word }: Props) => {
                 </div>
             </header>
             <div className="flex items-center justify-center h-[250px]">
-                <h1 className="text-6xl">{word}</h1>
+                <h1 className="text-7xl">{word}</h1>
             </div>
         </div>
     )

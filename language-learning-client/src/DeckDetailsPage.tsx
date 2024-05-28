@@ -10,6 +10,7 @@ import { Word } from "./components/DeckDetailsComponents/Word";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { organizeCardsByScore } from "./composables/SortCard";
+import { NoCard } from "./components/FlashCardComponents/NoCard";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -17,7 +18,7 @@ export const DeckDetailsPage = () => {
     const [deck, setDeck] = useState<any>({ cards: [] }); 
     const [autoPlay, setAutoPlay] = useState<boolean>(false)
 
-    const { deckName, deckTags, owner, cards } = deck;
+    const { deckName, cards } = deck;
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards)
     const { id } = useParams();
 
@@ -63,53 +64,56 @@ export const DeckDetailsPage = () => {
         }
     };
 
+    const hasCards = cards.length > 0;
+
+    const aStyle = "text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center"
+
 
     return (
         <div className="pt-[20px] ml-16">
             <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
             <div className="pt-5 flex flex-row gap-[25px]">
-                <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Flashcards</a>
-                <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">
+                <a className={aStyle}>Flashcards</a>
+                <a className={aStyle}>
                     <Link to={`/learn-decks/${id}`}>Learn</Link>
                 </a>
-                <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Match</a>
-                <a className="text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center">Test</a>
+                <a className={aStyle}>Match</a>
+                <a className={aStyle}>Test</a>
             </div>
-            <div className="w-[875px] border mt-5">
-                <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
-                    <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
-                        <FrontCard word={cards[currentCardIndex]?.userLangCard} />
+                {hasCards ? (
+                    <>
+                    <div className="w-[875px] border mt-5">
+                    <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
+                        <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
+                            <FrontCard word={cards[currentCardIndex]?.userLangCard} />
+                        </div>
+                        <div key="back" onClick={() => setIsFlipped(!isFlipped)}>
+                            <BackCard word={cards[currentCardIndex]?.engCard} />
+                        </div>
+                    </ReactCardFlip>  
+                    </div>    
+                    <div className="pt-4 flex justify-between max-w-[875px]">
+                        <div className="flex gap-4 items-center justify-center">
+                            <ToolTip trigger={<Play />} content="Play" onClick={() => setAutoPlay(!autoPlay)} />
+                            <ToolTip trigger={<Shuffle />} content="Shuffle" />
+                        </div>
+                    <div className="flex items-center justify-center gap-5">
+                        <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1" onClick={moveLeft}>
+                            <MoveLeft size={45} />
+                        </div>
+                        <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
+                        <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1" onClick={moveRight}>
+                            <MoveRight size={45} />
+                        </div>
                     </div>
-                    <div key="back" onClick={() => setIsFlipped(!isFlipped)}>
-                        <BackCard word={cards[currentCardIndex]?.engCard} />
+                    <div className="flex items-center justify-center">
+                        <ToolTip trigger={<Settings />} content="Settings" />
                     </div>
-                </ReactCardFlip>
-            </div>
-            <div className="pt-4 flex justify-between max-w-[875px]">
-                <div className="flex gap-4 items-center justify-center">
-                    <ToolTip trigger={<Play />} content="Play" onClick={() => setAutoPlay(!autoPlay)} />
-                    <ToolTip trigger={<Shuffle />} content="Shuffle" />
-                </div>
-                <div className="flex items-center justify-center gap-5">
-                    <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1" onClick={moveLeft}>
-                        <MoveLeft size={45} />
                     </div>
-                    <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
-                    <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1" onClick={moveRight}>
-                        <MoveRight size={45} />
+                    <div className="pt-2">
+                        <Progress value={29} className="max-w-[875px] max-h-1"  />
                     </div>
-                </div>
-                <div className="flex items-center justify-center">
-                    <ToolTip trigger={<Settings />} content="Settings" />
-                </div>
-            </div>
-            <div className="pt-2">
-                <Progress value={29} className="max-w-[875px] max-h-1"  />
-            </div>
-            <div className="pt-[50px]">
-                <CreatorBar />
-            </div>
-            <div className="pt-6">
+                    <div className="pt-6">
                 <h1 className="text-3xl font-bold">Terms in this set ({cards.length})</h1>
                 {stillLearning.length > 0 ? (
                     <div className="flex flex-col gap-1">
@@ -153,6 +157,13 @@ export const DeckDetailsPage = () => {
                         <h2 className="text-xl font-bold text-pink-500 pt-3">Completed ({completed.length})</h2>
                         <h3 className="text-gray-500 text-md">There are no cards in "Completed".</h3>
                 </div>)}
+            </div>
+                    </>              
+                ) : (
+                    <NoCard />
+                )}
+            <div className="pt-[50px]">
+                <CreatorBar />
             </div>
         </div>
     );

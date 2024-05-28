@@ -1,5 +1,5 @@
 import { Word } from "@/types"
-import { Modal } from "./Modal"
+import { Modal } from "./WordModal"
 
 export const WordDetails: React.FC<{words: Word[]}> = ({ words }) => {
     const verbs = words.filter(word => word.type === 'verb')

@@ -20,13 +20,13 @@ export const AllDecks = () => {
             <div className="flex items-center justify-center pr-[50px]">
                     <h1 className="text-4xl font-bold text-gray-900">@{user?.username} all decks</h1>
             </div>
-            <div className="pt-[50px]">
+            <div className="px-[50px]">
                 <div className="flex gap-1 items-center">
                     <Button size="lg" variant="secondary" className="text-2xl hover:scale-110 hover:ring ring-gray-500 ring-opacity-50">
                         Recent
                     </Button>
                 </div>
-                <div className="flex flex-row gap-5 flex-row-3 justify-center items-center mt-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 justify-center items-center mt-5">
                     {decks.length > 0 && decks.map((deck: any) => (
                         <Link to={`/view-decks/${deck._id}`}><DockCardLarge key={deck} deck={deck} /></Link>
                     ))}
