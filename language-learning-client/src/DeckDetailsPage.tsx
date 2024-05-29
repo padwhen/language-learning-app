@@ -1,16 +1,18 @@
-import  { useEffect, useState } from "react";
+import axios from "axios";
 import ReactCardFlip from "react-card-flip";
+import { useEffect, useState } from "react";
 import { FrontCard } from "./components/FlashCardComponents/FrontCard";
 import { BackCard } from "./components/FlashCardComponents/BackCard";
 import { MoveLeft, MoveRight, Play, Settings, Shuffle } from "lucide-react";
-import { ToolTip } from "./components/ToolTip";
+import { ToolTip } from "./composables/ToolTip";
 import { Progress } from "@/components/ui/progress";
 import { CreatorBar } from "./components/DeckDetailsComponents/Creator";
-import { Word } from "./components/DeckDetailsComponents/Word";
 import { Link, useParams } from "react-router-dom";
-import axios from "axios";
 import { organizeCardsByScore } from "./composables/SortCard";
 import { NoCard } from "./components/FlashCardComponents/NoCard";
+import { CardCategory } from "./components/DeckDetailsComponents/CardCategory";
+import { moveLeft, moveRight } from "./utils/cardNavigation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -45,28 +47,17 @@ export const DeckDetailsPage = () => {
                 }
             }, 1000); // Adjust the delay based on your preference
         }
-    
-        return () => {
-            if (interval) clearInterval(interval);
-        };
+        return () => { if (interval) clearInterval(interval); };
     }, [autoPlay, currentCardIndex, cards.length]);
 
-    const moveLeft = () => {
-        if (currentCardIndex > 0) {
-            setCurrentCardIndex(currentCardIndex - 1);
-        }
-    };
-
-    const moveRight = () => {
-        if (currentCardIndex < cards.length - 1) {
-            setCurrentCardIndex(currentCardIndex + 1);
-        }
-    };
+    const handleMoveLeft = () => { moveLeft(currentCardIndex, setCurrentCardIndex)}
+    const handleMoveRight = () => { moveRight(currentCardIndex, deck.cards.length, setCurrentCardIndex)}
 
     const hasCards = cards.length > 0;
     const hasMultipleCards = cards.length > 1;
 
     const aStyle = "text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center";
+    const moveLeftRightStyle = "border rounded-full hover:bg-gray-200 transition duration-300"
 
     return (
         <div className="pt-[20px] ml-16">
@@ -74,7 +65,14 @@ export const DeckDetailsPage = () => {
             <div className="pt-5 flex flex-row gap-[25px]">
                 <a className={aStyle}>Flashcards</a>
                 <a className={aStyle}>
-                    <Link to={`/learn-decks/${id}`}>Learn</Link>
+                    {cards.length >= 4 ? (
+                        <Link to={`/learn-decks/${id}`}>Learn</Link>
+                    ) : (
+                        <TooltipProvider><Tooltip>
+                            <TooltipTrigger><span className="opacity-50 cursor-not-allowed">Learn</span></TooltipTrigger>
+                            <TooltipContent>Since "Learn" will create quizzes with options based on your flashcards, you need to have more than 4 flashcards</TooltipContent>
+                        </Tooltip></TooltipProvider>
+                    )}
                 </a>
                 <a className={aStyle}>Match</a>
                 <a className={aStyle}>Test</a>
@@ -97,11 +95,11 @@ export const DeckDetailsPage = () => {
                             <ToolTip trigger={<Shuffle />} content="Shuffle" />
                         </div>
                         <div className="flex items-center justify-center gap-5">
-                            <div className={`border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={moveLeft}>
+                            <div className={`${moveLeftRightStyle} transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={handleMoveLeft}>
                                 <MoveLeft size={45} />
                             </div>
                             <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
-                            <div className={`border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={moveRight}>
+                            <div className={`${moveLeftRightStyle} transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={handleMoveRight}>
                                 <MoveRight size={45} />
                             </div>
                         </div>
@@ -112,64 +110,23 @@ export const DeckDetailsPage = () => {
                     <div className="pt-2">
                         <Progress value={(currentCardIndex + 1) / cards.length * 100} className="max-w-[875px] max-h-1"  />
                     </div>
+                    <div className="pt-[50px]">
+                        <CreatorBar />
+                    </div>
                     <div className="pt-6">
                         <h1 className="text-3xl font-bold">Terms in this set ({cards.length})</h1>
-                        {stillLearning.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-2xl font-bold text-pink-500 pt-3">Still learning ({stillLearning.length})</h2>
-                                <h3 className="text-gray-500 text-lg">You've begun learning these terms. Keep up the good work!</h3>
-                                <div className="flex flex-col gap-3 mt-2">
-                                    {stillLearning.map((card: any) => (
-                                        <Word cardId={card._id} deckId={id} key={card._id} engCard={card.engCard} userLangCard={card.userLangCard} />
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-xl font-bold text-pink-500 pt-3">Still learning ({stillLearning.length})</h2>
-                                <h3 className="text-gray-500 text-md">There are no cards in "Still learning".</h3>
-                            </div>
-                        )}
-                        {notStudied.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-2xl font-bold text-pink-500 pt-3">Not studied ({notStudied.length})</h2>
-                                <h3 className="text-gray-500 text-lg">You haven't studied these terms yet.</h3>
-                                <div className="flex flex-col gap-3 mt-2">
-                                    {notStudied.map((card: any) => (
-                                        <Word cardId={card._id} key={card._id} deckId={id} engCard={card.engCard} userLangCard={card.userLangCard} />
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-xl font-bold text-pink-500 pt-3">Not studied ({stillLearning.length})</h2>
-                                <h3 className="text-gray-500 text-md">There are no cards in "Not studied".</h3>
-                            </div>
-                        )}
-                        {completed.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-2xl font-bold text-pink-500 pt-3">Completed ({completed.length})</h2>
-                                <h3 className="text-gray-500 text-lg">Congratulations!</h3>
-                                <div className="flex flex-col gap-3 mt-2">
-                                    {completed.map((card: any) => (
-                                        <Word cardId={card._id} key={card._id} deckId={id} engCard={card.engCard} userLangCard={card.userLangCard} />
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-xl font-bold text-pink-500 pt-3">Completed ({completed.length})</h2>
-                                <h3 className="text-gray-500 text-md">There are no cards in "Completed".</h3>
-                            </div>
-                        )}
+                        <CardCategory categoryName="Still learning" cards={stillLearning} id={id} />
+                        <CardCategory categoryName="Not studied" cards={notStudied} id={id} />
+                        <CardCategory categoryName="Completed" cards={completed} id={id} />
                     </div>
                 </>
             ) : (
+                <>
                 <NoCard />
+                <div className="pt-[50px]">
+                    <CreatorBar />
+                </div></>
             )}
-            <div className="pt-[50px]">
-                <CreatorBar />
-            </div>
         </div>
     );
 };

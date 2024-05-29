@@ -1,5 +1,5 @@
 import { Pencil, Speaker, Star } from "lucide-react"
-import { ToolTip } from "../ToolTip"
+import { ToolTip } from "../../composables/ToolTip"
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { EditCard } from "./EditCard";
 

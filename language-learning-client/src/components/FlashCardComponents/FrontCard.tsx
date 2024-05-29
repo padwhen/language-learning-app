@@ -1,5 +1,5 @@
 import { Pencil } from "lucide-react"
-import { ToolTip } from "../ToolTip"
+import { ToolTip } from "../../composables/ToolTip"
 import { Volume1 } from "lucide-react"
 import { Star } from "lucide-react"
 
