@@ -1,20 +1,13 @@
 import { Link } from "react-router-dom"
 import { DockCardLarge } from "./components/DockCardLarge"
 import { Button } from "./components/ui/button"
-import { useContext, useEffect, useState } from "react";
+import { useContext} from "react";
 import { UserContext } from "./UserContext";
-import axios from "axios";
+import { DeckContext } from "./DeckContext";
 
 export const AllDecks = () => {
     const { user } = useContext(UserContext);
-    const [decks, setDecks] = useState([])
-    const fetchData = async () => {
-        const response = await axios.get('/decks')
-        setDecks(response.data)
-    }
-    useEffect(() => {
-        fetchData()
-    }, [])
+    const { decks } = useContext(DeckContext)
     return (
         <div className="pt-[30px] ml-5">
             <div className="flex items-center justify-center pr-[50px]">

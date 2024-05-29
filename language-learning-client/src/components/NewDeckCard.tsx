@@ -7,11 +7,14 @@ import { ChangeEvent, useState } from "react"
 import { BadgeComponent } from "../composables/Badge"
 import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
+import { useDeckContext } from "@/DeckContext"
 
 export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = ({setOpenNewDeck}) => {
   const [name, setName] = useState<string>('');
   const [tags, setTags] = useState<string[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+
+  const { refreshDecks } = useDeckContext()
 
   const { toast } = useToast()
 
@@ -38,6 +41,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
         deckName: name,
         deckTags: tags
       })
+      refreshDecks()
       setOpenNewDeck(false)
       toast({
         title: `${name} just added to your account!`,

@@ -13,16 +13,20 @@ interface Deck {
 interface DeckContextType {
     decks: Deck[]
     setDecks: React.Dispatch<React.SetStateAction<Deck[]>>;
+    refreshDecks: () => void;
 }
 
 export const DeckContext = createContext<DeckContextType>({
     decks: [],
-    setDecks: () => {}
+    setDecks: () => {},
+    refreshDecks: () => {}
 })
 
 export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [decks, setDecks] = useState<Deck[]>([])
-    const { isAuthenticated } = useContext(UserContext)
+    const { isAuthenticated } = useContext(UserContext);
+    const [refreshKey, setRefreshKey] = useState<number>(0)
+
     useEffect(() => {
         const fetchDecks = async () => {
             try {
@@ -35,9 +39,14 @@ export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (isAuthenticated) {
             fetchDecks()
         }
-    }, [decks])
+    }, [isAuthenticated, refreshKey])
+
+    const refreshDecks = () => {
+        setRefreshKey(prevKey => prevKey + 1)
+    }
+
     return (
-        <DeckContext.Provider value={{ decks, setDecks }}>
+        <DeckContext.Provider value={{ decks, setDecks, refreshDecks }}>
             {children}
         </DeckContext.Provider>
     )
