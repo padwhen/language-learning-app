@@ -1,5 +1,6 @@
 import React from "react";
 import { Progress } from "./ui/progress";
+import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 
 export const DockCardLarge: React.FC<{
     deck: {
@@ -12,14 +13,7 @@ export const DockCardLarge: React.FC<{
 }> = ({ deck }) => {
     const { deckName, deckTags, cards } = deck;
 
-    const calculateCompletePercentage = () => {
-        const completeCards = cards.filter((card) => card.cardScore === 5);
-        const percentage = ((completeCards.length / cards.length) * 100).toFixed(0);
-        if (isNaN(Number(percentage))) {
-            return '0';
-        }
-        return percentage;
-    };
+    const percentage = calculateCompletePercentage(cards)
 
     const tagsStyle = "px-4 py-1 bg-blue-500 text-white rounded-full inline-block min-w-[100px] flex items-center justify-center"
 
@@ -28,8 +22,8 @@ export const DockCardLarge: React.FC<{
             <div className="ml-4 pt-2">
                 <h1 className="text-2xl font-semibold mt-2">{deckName}</h1>
                 <div className="flex items-center gap-5 mt-2">
-                    <h3 className="text-lg">{calculateCompletePercentage()} % completed</h3>
-                    <Progress value={Number(calculateCompletePercentage())} className="w-[200px] h-3" />
+                    <h3 className="text-lg">{percentage} % completed</h3>
+                    <Progress value={Number(percentage)} className="w-[200px] h-3" />
                 </div>
                 <div className="mb-5 mt-3 flex flex-wrap gap-2">
                     <div className={tagsStyle}>{cards.length} terms</div>

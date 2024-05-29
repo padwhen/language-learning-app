@@ -51,7 +51,7 @@ export const DisplayCurrentDecks: React.FC<{ onSelectDeck: (deckId: string) => v
                         </div>
                     ) : (
                         <div className="flex flex-col gap-y-3 justify-center items-center mb-5">
-                            {decks.map((deck, index) => (
+                            {decks.map((deck) => (
                                 <DockCard 
                                     key={deck._id} 
                                     info={deck}

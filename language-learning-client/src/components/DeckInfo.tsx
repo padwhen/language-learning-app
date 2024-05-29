@@ -1,10 +1,14 @@
 import { useDeckContext } from "@/DeckContext";
+import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 export const DeckInfo = () => {
     const { decks } = useDeckContext();
+    const sortedDecks = [...decks].sort((a, b) => b.cards.length - a.cards.length);
+    const displayedDecks = sortedDecks.slice(0, 2)
     return (<>
-    {decks.map(deck => {
+    {displayedDecks.map(deck => {
         return (
             <div key={deck._id} className="flex items-center justify-start mt-5"> 
                 <div className="w-64 flex flex-col bg-white border border-t-4 border-t-blue-600 shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
@@ -28,7 +32,7 @@ export const DeckInfo = () => {
                             <div className="mb-1 flex justify-between items-center">
                                 <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Progress</h3>
                                 <span className="text-sm text-gray-800 dark:text-white">
-                                    {(deck.cards.filter(card => card.cardScore === 5).length / deck.cards.length * 100).toFixed(0)}%
+                                    {calculateCompletePercentage(deck.cards)}%
                                 </span>
                             </div>
                         </div>
@@ -40,5 +44,8 @@ export const DeckInfo = () => {
             </div>                 
         );
     })}
-    </>);
+        <div className="mt-4 flex justify-center mr-12">
+            <Button><Link to={'/view-all-decks'}>View All Your Decks</Link></Button>
+        </div>    
+</>);
 };

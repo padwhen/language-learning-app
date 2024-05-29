@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";

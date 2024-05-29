@@ -28,6 +28,15 @@ export const DeckDetailsPage = () => {
         await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
     };
 
+    if (deck?._id) {
+        const timestamp = parseInt(deck._id.toString().slice(0, 8), 16) * 1000;
+        const date = new Date(timestamp);
+        console.log(date);
+    } else {
+        console.log("Deck or _id is undefined or null");
+    }
+
+
     useEffect(() => {
         fetchDeck();
     }, []);
@@ -111,7 +120,7 @@ export const DeckDetailsPage = () => {
                         <Progress value={(currentCardIndex + 1) / cards.length * 100} className="max-w-[875px] max-h-1"  />
                     </div>
                     <div className="pt-[50px]">
-                        <CreatorBar />
+                        <CreatorBar id={id as string} />
                     </div>
                     <div className="pt-6">
                         <h1 className="text-3xl font-bold">Terms in this set ({cards.length})</h1>
@@ -124,7 +133,7 @@ export const DeckDetailsPage = () => {
                 <>
                 <NoCard />
                 <div className="pt-[50px]">
-                    <CreatorBar />
+                    <CreatorBar id={id as string} />
                 </div></>
             )}
         </div>
