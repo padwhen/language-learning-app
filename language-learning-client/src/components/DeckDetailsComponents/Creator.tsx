@@ -4,11 +4,10 @@ import { Delete, Download, Pencil } from "lucide-react"
 import { useContext } from "react"
 import { UserContext } from "@/UserContext"
 import { formatDistance } from "date-fns";
+import { getTimeStamp } from "@/utils/getTimestamp"
 
 export const CreatorBar = ({id}: {id: string}) => {
     const { user } = useContext(UserContext)
-    const timestamp = parseInt(id.toString().slice(0, 8), 16) * 1000;
-    const date = new Date(timestamp)
     
     return (
         <div className="flex gap-2 justify-between max-w-[875px]">
@@ -19,7 +18,7 @@ export const CreatorBar = ({id}: {id: string}) => {
                 </Avatar>
                 <div>
                     <h1 className="text-xl font-semibold">{user?.username}</h1>
-                    <h3 className="text-md text-gray-500">Created {formatDistance(date, new Date(), { addSuffix: true })}</h3>
+                    <h3 className="text-md text-gray-500">Created {formatDistance(getTimeStamp(id), new Date(), { addSuffix: true })}</h3>
                 </div>    
             </div>
             <div className="flex gap-2 items-center justify-center">

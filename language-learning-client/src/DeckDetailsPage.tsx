@@ -13,6 +13,7 @@ import { NoCard } from "./components/FlashCardComponents/NoCard";
 import { CardCategory } from "./components/DeckDetailsComponents/CardCategory";
 import { moveLeft, moveRight } from "./utils/cardNavigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
+import { useKeyboardNavigation } from "./utils/useKeyboardNavigation";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -27,15 +28,6 @@ export const DeckDetailsPage = () => {
     const fetchDeck = async () => {
         await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
     };
-
-    if (deck?._id) {
-        const timestamp = parseInt(deck._id.toString().slice(0, 8), 16) * 1000;
-        const date = new Date(timestamp);
-        console.log(date);
-    } else {
-        console.log("Deck or _id is undefined or null");
-    }
-
 
     useEffect(() => {
         fetchDeck();
@@ -67,6 +59,8 @@ export const DeckDetailsPage = () => {
 
     const aStyle = "text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center";
     const moveLeftRightStyle = "border rounded-full hover:bg-gray-200 transition duration-300"
+
+    useKeyboardNavigation(handleMoveLeft, handleMoveRight, currentCardIndex, cards.length)
 
     return (
         <div className="pt-[20px] ml-16">
