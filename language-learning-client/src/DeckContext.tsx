@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { UserContext } from "./UserContext";
 
 interface Deck {
     _id: string;
@@ -21,6 +22,7 @@ export const DeckContext = createContext<DeckContextType>({
 
 export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [decks, setDecks] = useState<Deck[]>([])
+    const { isAuthenticated } = useContext(UserContext)
     useEffect(() => {
         const fetchDecks = async () => {
             try {
@@ -30,7 +32,9 @@ export const DeckContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 console.error('Error fetching decks: ', error)
             }
         }
-        fetchDecks()
+        if (isAuthenticated) {
+            fetchDecks()
+        }
     }, [decks])
     return (
         <DeckContext.Provider value={{ decks, setDecks }}>
