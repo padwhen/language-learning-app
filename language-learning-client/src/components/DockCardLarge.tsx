@@ -10,7 +10,7 @@ export const DockCardLarge: React.FC<{
         cards: any[];
     };
 }> = ({ deck }) => {
-    const { deckName, deckPercentage, deckTags, cards } = deck;
+    const { deckName, deckTags, cards } = deck;
 
     const calculateCompletePercentage = () => {
         const completeCards = cards.filter((card) => card.cardScore === 5);

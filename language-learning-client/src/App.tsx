@@ -25,7 +25,6 @@ function App() {
           <Route path="/view-all-decks" element={<AllDecks />} />
           <Route path="/view-decks/:id" element={<DeckDetailsPage />} />
           <Route path="/learn-decks/:id" element={<LearningPage />} />
-          <Route path="/view-decks/:id" element={<DeckDetailsPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

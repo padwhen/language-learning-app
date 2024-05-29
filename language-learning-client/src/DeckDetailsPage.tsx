@@ -64,6 +64,7 @@ export const DeckDetailsPage = () => {
     };
 
     const hasCards = cards.length > 0;
+    const hasMultipleCards = cards.length > 1;
 
     const aStyle = "text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center";
 
@@ -96,11 +97,11 @@ export const DeckDetailsPage = () => {
                             <ToolTip trigger={<Shuffle />} content="Shuffle" />
                         </div>
                         <div className="flex items-center justify-center gap-5">
-                            <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1" onClick={moveLeft}>
+                            <div className={`border rounded-full hover:bg-gray-200 transition duration-300 transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={moveLeft}>
                                 <MoveLeft size={45} />
                             </div>
                             <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
-                            <div className="border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1" onClick={moveRight}>
+                            <div className={`border rounded-full hover:bg-gray-200 transition duration-300 transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={moveRight}>
                                 <MoveRight size={45} />
                             </div>
                         </div>
@@ -109,7 +110,7 @@ export const DeckDetailsPage = () => {
                         </div>
                     </div>
                     <div className="pt-2">
-                        <Progress value={29} className="max-w-[875px] max-h-1"  />
+                        <Progress value={(currentCardIndex + 1) / cards.length * 100} className="max-w-[875px] max-h-1"  />
                     </div>
                     <div className="pt-6">
                         <h1 className="text-3xl font-bold">Terms in this set ({cards.length})</h1>
