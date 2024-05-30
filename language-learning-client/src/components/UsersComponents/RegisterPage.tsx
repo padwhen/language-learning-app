@@ -75,7 +75,7 @@ export function RegisterPage() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4 w-full max-w-xs">
                 <Label htmlFor="password" className="text-right text-lg w-4">PIN</Label>
-                <div className="mt-2 col-span-3 ml-4">
+                <div className="mt-2 col-span-3 ml-4" data-testid="pin-input">
                     <InputOTP maxLength={4} type="password" onChange={handlePinChange} value={formData.pin}>
                         <InputOTPGroup>
                             <InputOTPSlot index={0} className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
