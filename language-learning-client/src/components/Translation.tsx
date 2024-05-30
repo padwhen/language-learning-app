@@ -4,7 +4,7 @@ export const Translation: React.FC<{text: string}> = ({ text }) => {
             <blockquote className="relative">
                 <div className="relative z-10">
                     <p className="text-gray-800">
-                        <em className="text-2xl">{text}</em>
+                        <em className="text-2xl" data-testid="translation-result">{text}</em>
                     </p>
                 </div>
             </blockquote>

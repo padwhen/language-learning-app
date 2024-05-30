@@ -10,7 +10,6 @@ import LearningPage from './components/DeckDetailsComponents/LearningPage'
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 
-
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
 

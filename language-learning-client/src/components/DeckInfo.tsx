@@ -42,10 +42,10 @@ export const DeckInfo = () => {
     <div className="flex justify-between w-64">
         <h1 className="text-2xl font-bold text-blue-500 ">Your decks</h1>
         <Select onValueChange={value => setSortBy(value)}>
-            <SelectTrigger className="text-lg mt-1 border rounded-md bg-gray-200 text-gray-700 px-4">
+            <SelectTrigger className="text-lg mt-1 border rounded-md bg-gray-200 text-gray-700 px-4" data-testid="sort-select-trigger">
                 <SelectValue placeholder="Most cards" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent data-testid="sort-select-content">
                 <SelectGroup>
                     <SelectItem value="Most cards">Most cards</SelectItem>
                     <SelectItem value="Most recent">Most recent</SelectItem>
@@ -99,7 +99,7 @@ export const DeckInfo = () => {
                             </div>
                         </div>
                         <div className={`mt-3 justify-center flex items-center gap-x-1 text-md font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400`}>
-                            <Link to={`/view-decks/${deck._id}`}>View Details</Link>
+                            <Link to={`/view-decks/${deck._id}`} datatest-id={`view-details-link-${deck._id}`}>View Details</Link>
                         </div>
                     </div>  
                 </div>

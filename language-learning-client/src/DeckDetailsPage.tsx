@@ -69,10 +69,10 @@ export const DeckDetailsPage = () => {
                 <a className={aStyle}>Flashcards</a>
                 <a className={aStyle}>
                     {cards.length >= 4 ? (
-                        <Link to={`/learn-decks/${id}`}>Learn</Link>
+                        <Link to={`/learn-decks/${id}`} data-testid="learn-link">Learn</Link>
                     ) : (
                         <TooltipProvider><Tooltip>
-                            <TooltipTrigger><span className="opacity-50 cursor-not-allowed">Learn</span></TooltipTrigger>
+                            <TooltipTrigger><span data-testid="cannot-learn-link" className="opacity-50 cursor-not-allowed">Learn</span></TooltipTrigger>
                             <TooltipContent>Since "Learn" will create quizzes with options based on your flashcards, you need to have more than 4 flashcards</TooltipContent>
                         </Tooltip></TooltipProvider>
                     )}
@@ -82,7 +82,7 @@ export const DeckDetailsPage = () => {
             </div>
             {hasCards ? (
                 <>
-                    <div className="w-[875px] border mt-5">
+                    <div className="w-[875px] border mt-5" data-testid="card-flip-container">
                         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
                             <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
                                 <FrontCard word={cards[currentCardIndex]?.userLangCard} />
@@ -98,11 +98,15 @@ export const DeckDetailsPage = () => {
                             <ToolTip trigger={<Shuffle />} content="Shuffle" />
                         </div>
                         <div className="flex items-center justify-center gap-5">
-                            <div className={`${moveLeftRightStyle} transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={handleMoveLeft}>
+                            <div data-testid="move-left"
+                                className={`${moveLeftRightStyle} transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
+                                onClick={currentCardIndex !== 0 && hasMultipleCards ? handleMoveLeft : undefined}>
                                 <MoveLeft size={45} />
                             </div>
-                            <div className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
-                            <div className={`${moveLeftRightStyle} transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none' : ''}`} onClick={handleMoveRight}>
+                            <div data-testid="current-card-number" className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
+                            <div data-testid="move-right"
+                                 className={`${moveLeftRightStyle} transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
+                                 onClick={currentCardIndex !== cards.length - 1 && hasMultipleCards ? handleMoveRight : undefined}>
                                 <MoveRight size={45} />
                             </div>
                         </div>
@@ -110,7 +114,7 @@ export const DeckDetailsPage = () => {
                             <ToolTip trigger={<Settings />} content="Settings" />
                         </div>
                     </div>
-                    <div className="pt-2">
+                    <div data-testid="progress-bar" className="pt-2">
                         <Progress value={(currentCardIndex + 1) / cards.length * 100} className="max-w-[875px] max-h-1"  />
                     </div>
                     <div className="pt-[50px]">

@@ -7,6 +7,8 @@ import { WordDetails } from "./components/Details";
 import { User } from "./components/User";
 import { DeckInfo } from "./components/DeckInfo";
 import { v4 as uuidv4 } from 'uuid';
+import jsonData from '../words.json'
+
 
 export const IndexPage = () => {
     const [fromLanguage, setFromLanguage] = useState<string>('Finnish');
@@ -20,16 +22,17 @@ export const IndexPage = () => {
 
     const handleTranslation = async () => {
         setReady(false);
-        const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
-        if (response_json !== null) {
-            const parsedResponse = JSON.parse(response_json);
-            const { sentence, words } = parsedResponse
+        if (inputText.trim().toLowerCase() === 'test') {
+            const parsedResponse = jsonData;
+            const { sentence, words } = parsedResponse;
+            
             if (sentence) {
                 setResponse((prevResponse: any) => ({
                     ...prevResponse,
                     sentence: sentence
-                }))
+                }));
             }
+            
             if (words) {
                 const wordsWithUUID = words.map((word: any) => ({
                     ...word, id: uuidv4()
@@ -38,11 +41,40 @@ export const IndexPage = () => {
                     ...prevResponse, words: wordsWithUUID
                 }));
             }
+            
             localStorage.setItem("response", JSON.stringify(parsedResponse));
-            localStorage.setItem("fromLanguage", fromLanguage)
+            localStorage.setItem("fromLanguage", fromLanguage);
+            setReady(true);
+        } else {
+            const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
+            if (response_json !== null) {
+                const parsedResponse = JSON.parse(response_json);
+                const { sentence, words } = parsedResponse;
+                
+                if (sentence) {
+                    setResponse((prevResponse: any) => ({
+                        ...prevResponse,
+                        sentence: sentence
+                    }));
+                }
+                
+                if (words) {
+                    const wordsWithUUID = words.map((word: any) => ({
+                        ...word, id: uuidv4()
+                    }));
+                    setResponse((prevResponse: any) => ({
+                        ...prevResponse, words: wordsWithUUID
+                    }));
+                }
+                
+                localStorage.setItem("response", JSON.stringify(parsedResponse));
+                localStorage.setItem("fromLanguage", fromLanguage);
+            }
+            
+            setReady(true);
         }
-        setReady(true);
     };
+    
 
     return (
         <div className="h-96 flex">

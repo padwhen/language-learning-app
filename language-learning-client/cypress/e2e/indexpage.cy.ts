@@ -1,14 +1,3 @@
-const login = () => {
-  cy.contains('Log In').click()
-  cy.get('#username').type('1111')
-  cy.get('[data-testid="pin-input"]') 
-  .find('input')
-  .each(($el) => {
-    cy.wrap($el).type('{selectall}') .type('1111') 
-  });
-  cy.contains('Login').click();
-}
-
 describe('Index page', () => {
   beforeEach(function() {
     cy.visit('http://localhost:5173')
@@ -90,7 +79,7 @@ describe('register', () => {
   })
   it('should register successfully with valid inputs', function() {
     cy.contains('Register').click()
-    
+
   })
 
 })

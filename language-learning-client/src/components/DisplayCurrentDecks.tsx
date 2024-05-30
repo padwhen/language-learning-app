@@ -43,7 +43,7 @@ export const DisplayCurrentDecks: React.FC<{ onSelectDeck: (deckId: string) => v
                 <CardHeader>
                     <CardTitle className="text-3xl">Current decks in {language}</CardTitle>
                 </CardHeader>
-                <div className="overflow-y-auto max-h-[450px]">
+                <div className="overflow-y-auto max-h-[450px]" data-testid="current-decks">
                     {decks.length === 0 ? (
                         <div className="flex flex-col gap-5 items-center justify-center text-lg">
                             🙅‍♀️ No deck yet. Create one below 🙅‍♂️
