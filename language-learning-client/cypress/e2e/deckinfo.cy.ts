@@ -42,4 +42,11 @@ describe('Deck details test', function() {
         cy.contains('View All Your Decks').click()
         cy.url().should('include', '/view-all-decks')
     })
+    it('allows users to select different sorting options in view-all-decks', function() {
+        cy.contains('View All Your Decks').click()
+        cy.url().should('include', '/view-all-decks')    
+        selectOptions.forEach(option => {
+            testSelectDropdown(option);
+        });
+    })
 })

@@ -5,7 +5,7 @@ const usersRouter = express.Router()
 const User = require('../models/User')
 const { JWT_SECRET, BCRYPT_SALT } = require('../utils/config')
 
-usersRouter.post('/api/register', async (request, response) => {
+usersRouter.post('/register', async (request, response) => {
     const { name, username, pin } = request.body
     try {
         const userDoc = await User.create({
@@ -17,7 +17,7 @@ usersRouter.post('/api/register', async (request, response) => {
     }
 })
 
-usersRouter.post('/api/login', async (request, response) => {
+usersRouter.post('/login', async (request, response) => {
     const { username, pin } = request.body
     const userDoc = await User.findOne({username})
     if (userDoc) {
@@ -35,7 +35,7 @@ usersRouter.post('/api/login', async (request, response) => {
     }
 })
 
-usersRouter.get('/api/profile', async (request, response) => {
+usersRouter.get('/profile', async (request, response) => {
     try {
         const { token } = request.cookies; 
         if (!token) {
@@ -56,12 +56,12 @@ usersRouter.get('/api/profile', async (request, response) => {
             response.json({ username, name, _id })
         })
     } catch (error) {
-        console.error('Error in /api/profile: ', error)
+        console.error('Error in /profile: ', error)
         response.status(500).json({ error: 'Internal Server Error '})
     }
 })
 
-usersRouter.post('/api/logout', (request, response) => {
+usersRouter.post('/logout', (request, response) => {
     response.cookie('token', '').json(true)
 })
 

@@ -2,7 +2,7 @@ const express = require('express')
 const cardRouter = express.Router()
 const Card = require('../models/Card')
 
-cardRouter.get('/api/cards/:cardId', async (request, response) => {
+cardRouter.get('/cards/:cardId', async (request, response) => {
     const { cardId } = request.params
     try {
         const card = await Card.findById(cardId)
@@ -16,7 +16,7 @@ cardRouter.get('/api/cards/:cardId', async (request, response) => {
     }
 })
 
-cardRouter.post('/api/cards', async (request, response) => {
+cardRouter.post('/cards', async (request, response) => {
     try {
         const { engCard, userLangCard, cardScore } = request.body;
         const newCard = await Card.create({
@@ -29,7 +29,7 @@ cardRouter.post('/api/cards', async (request, response) => {
     }
 })
 
-cardRouter.put('/api/cards/:cardId', async (request, response) => {
+cardRouter.put('/cards/:cardId', async (request, response) => {
     const { cardId } = request.params
     const { cardScore } = request.body;
     try {

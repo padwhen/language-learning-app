@@ -1,46 +1,58 @@
-const config = require('./utils/config')
-const express = require('express')
-const app = express()
-const cors = require('cors')
-const middleware = require('./utils/middleware')
-const cookieParser = require('cookie-parser')
-const logger = require('./utils/logger')
-const mongoose = require('mongoose')
-const usersRouter = require('./controllers/users')
-const cardRouter = require('./controllers/cards')
-const deckRouter = require('./controllers/decks')
+const config = require('./utils/config');
+const express = require('express');
+const path = require('path');
+const app = express();
+const cors = require('cors');
+const middleware = require('./utils/middleware');
+const cookieParser = require('cookie-parser');
+const logger = require('./utils/logger');
+const mongoose = require('mongoose');
+const usersRouter = require('./controllers/users');
+const cardRouter = require('./controllers/cards');
+const deckRouter = require('./controllers/decks');
 
-logger.info('connecting to', config.MONGODB_URI)
+logger.info('connecting to', config.MONGODB_URI);
 
 mongoose.connect(config.MONGODB_URI)
     .then(() => {
-        logger.info('Connected to MongoDB')
+        logger.info('Connected to MongoDB');
     })
     .catch((error) => {
-        logger.error('Error connecting to MongoDB: ', error.message)
-    })
+        logger.error('Error connecting to MongoDB: ', error.message);
+    });
 
 app.use(cors({
     credentials: true,
     origin: 'http://localhost:5173'
-}))
+}));
 
-app.use(cookieParser()) 
-app.use(express.json())
+app.use(cookieParser());
+app.use(express.json());
 
-app.use(express.static('dist'))
+// Serve static files from the 'dist' directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
-app.use(middleware.requestLogger)
+app.use(middleware.requestLogger);
 
-app.use('/', usersRouter)
-app.use('/', cardRouter)
-app.use('/', deckRouter)
+// API routes should be prefixed with '/api'
+app.use('/api', usersRouter);
+app.use('/api', cardRouter);
+app.use('/api', deckRouter);
 
+// Test route to check if API is working
 app.get('/api/test', (request, response) => {
-    response.json('test ok')
-})
+    response.json('test ok');
+});
 
-app.use(middleware.unknownEndpoint)
-app.use(middleware.errorHandler)
+// Handle unknown endpoints for API routes
+app.use('/api', middleware.unknownEndpoint);
 
-module.exports = app
+// Error handler middleware
+app.use(middleware.errorHandler);
+
+// Serve the React app for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+module.exports = app;

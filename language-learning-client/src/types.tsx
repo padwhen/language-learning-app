@@ -35,7 +35,7 @@ export function simplifyFraction(numerator: number, denominator: number): string
 
 export interface Deck {
     _id: string;
-    owner: string;
+    owner?: string;
     deckName: string;
     deckPercentage: string;
     deckTags: string[];

@@ -4,7 +4,7 @@ const Deck = require('../models/Deck')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../utils/config')
 
-deckRouter.get('/api/decks', async (request, response) => {
+deckRouter.get('/decks', async (request, response) => {
     try {
         const { token } = request.cookies
         if (!token) {
@@ -18,7 +18,7 @@ deckRouter.get('/api/decks', async (request, response) => {
     }
 })
 
-deckRouter.get('/api/decks/:id', async (request, response) => {
+deckRouter.get('/decks/:id', async (request, response) => {
     const { id } = request.params
     try {
         const deck = await Deck.findById(id)
@@ -32,7 +32,7 @@ deckRouter.get('/api/decks/:id', async (request, response) => {
     }
 })
 
-deckRouter.post('/api/decks', async (request, response) => {
+deckRouter.post('/decks', async (request, response) => {
     try {
         const { token } = request.cookies
         if (!token) {
@@ -49,7 +49,7 @@ deckRouter.post('/api/decks', async (request, response) => {
     }
 })
 
-deckRouter.put('/api/decks/:id', async (request, response) => {
+deckRouter.put('/decks/:id', async (request, response) => {
     try {
         const { token } = request.cookies
         if (!token) {
@@ -72,7 +72,7 @@ deckRouter.put('/api/decks/:id', async (request, response) => {
     }
 })
 
-deckRouter.put('/api/decks/update-card/:id', async (request, response) => {
+deckRouter.put('/decks/update-card/:id', async (request, response) => {
     try {
         const { token } = request.cookies
         if (!token) {
@@ -95,7 +95,7 @@ deckRouter.put('/api/decks/update-card/:id', async (request, response) => {
     }
 })
 
-deckRouter.put('/api/decks/update-card/:deckId/:cardId', async (request, response) => {
+deckRouter.put('/decks/update-card/:deckId/:cardId', async (request, response) => {
     try {
         const { token } = request.cookies
         if (!token) {

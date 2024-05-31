@@ -2,38 +2,18 @@ import { useDeckContext } from "@/DeckContext";
 import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
 import { useState } from "react";
 import { getTimeStamp } from "@/utils/getTimestamp";
 import { formatDistance } from "date-fns";
+import { sortAndFilterDecks } from "@/utils/sortAndFilterDecks";
+import { Deck } from "@/types";
+import SortableSelect from "./SortableSelect";
 
 export const DeckInfo = () => {
     const { decks } = useDeckContext();
     const [sortBy, setSortBy] = useState("Most cards");
 
-    const allLanguages = Array.from(new Set(decks.map(deck => deck.deckTags[0])));
-
-    const sortedDecks = [...decks].sort((a, b) => {
-        switch (sortBy.toLowerCase()) {
-            case "most recent":
-                return getTimeStamp(b._id).getTime() - getTimeStamp(a._id).getTime();
-            case "top progress":
-                return calculateCompletePercentage(b.cards) - calculateCompletePercentage(a.cards);
-            case "least progress":
-                return calculateCompletePercentage(a.cards) - calculateCompletePercentage(b.cards);
-            case "most cards":
-                return b.cards.length - a.cards.length;
-            case "most old":
-            default:
-                return getTimeStamp(a._id).getTime() - getTimeStamp(b._id).getTime(); // Assuming this sorts oldest to newest
-        }
-    });
-
-    const filterLanguageDecks = allLanguages.includes(sortBy)
-    
-    const displayedDecks = filterLanguageDecks
-    ? decks.filter(deck => deck.deckTags[0].toLowerCase() === sortBy.toLowerCase()).slice(0, 2)
-    : sortedDecks.slice(0, 2);
+    const { allLanguages, displayedDecks } = sortAndFilterDecks(decks, sortBy, true)
 
     if (!decks || decks.length === 0) {
         return null;
@@ -41,28 +21,9 @@ export const DeckInfo = () => {
     return (<>
     <div className="flex justify-between w-64">
         <h1 className="text-2xl font-bold text-blue-500 ">Your decks</h1>
-        <Select onValueChange={value => setSortBy(value)}>
-            <SelectTrigger className="text-lg mt-1 border rounded-md bg-gray-200 text-gray-700 px-4" data-testid="sort-select-trigger">
-                <SelectValue placeholder="Most cards" />
-            </SelectTrigger>
-            <SelectContent data-testid="sort-select-content">
-                <SelectGroup>
-                    <SelectItem value="Most cards">Most cards</SelectItem>
-                    <SelectItem value="Most recent">Most recent</SelectItem>
-                    <SelectItem value="Most old">Most old</SelectItem>
-                    <SelectItem value="Top Progress">Top Progress</SelectItem>
-                    <SelectItem value="Least Progress">Least Progress</SelectItem>
-                </SelectGroup>
-                <SelectGroup>
-                    <SelectLabel>Language</SelectLabel>
-                    {allLanguages.map(language => (
-                        <SelectItem key={language} value={language}>{language.charAt(0).toUpperCase() + language.slice(1)}</SelectItem>
-                    ))}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
+        <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />
     </div>
-    {displayedDecks.map(deck => {
+    {displayedDecks.map((deck: Deck) => {
         return (
             <div key={deck._id} className="flex items-center justify-start mt-5"> 
                 <div className="w-64 flex flex-col bg-white border border-t-4 border-t-blue-600 shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
