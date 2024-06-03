@@ -63,7 +63,8 @@ export const DeckDetailsPage = () => {
     useKeyboardNavigation(handleMoveLeft, handleMoveRight, currentCardIndex, cards.length)
 
     return (
-        <div className="pt-[20px] ml-16">
+        <div className="pt-[20px] ml-16 flex gap-8">
+            <div>
             <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
             <div className="pt-5 flex flex-row gap-[25px]">
                 <a className={aStyle}>Flashcards</a>
@@ -134,6 +135,7 @@ export const DeckDetailsPage = () => {
                     <CreatorBar id={id as string} />
                 </div></>
             )}
+            </div>
         </div>
     );
 };

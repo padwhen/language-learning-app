@@ -1,7 +1,7 @@
 import { Pencil, Speaker, Star } from "lucide-react"
 import { ToolTip } from "../../composables/ToolTip"
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { EditCard } from "./EditCard";
+import { EditCard } from "./EditCardModal";
 
 interface Props {
     engCard: string;
