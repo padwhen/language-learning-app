@@ -49,6 +49,7 @@ deckRouter.post('/decks', async (request, response) => {
     }
 })
 
+// PUT update a specified deck by ID
 deckRouter.put('/decks/:id', async (request, response) => {
     try {
         const { token } = request.cookies
@@ -72,6 +73,7 @@ deckRouter.put('/decks/:id', async (request, response) => {
     }
 })
 
+// Add new card to a deck
 deckRouter.put('/decks/update-card/:id', async (request, response) => {
     try {
         const { token } = request.cookies
@@ -95,6 +97,7 @@ deckRouter.put('/decks/update-card/:id', async (request, response) => {
     }
 })
 
+// PUT update a specific card in a deck
 deckRouter.put('/decks/update-card/:deckId/:cardId', async (request, response) => {
     try {
         const { token } = request.cookies
@@ -119,6 +122,31 @@ deckRouter.put('/decks/update-card/:deckId/:cardId', async (request, response) =
     } catch (error) {
         console.error('Error updating card: ', error)
         response.status(500).json({ error: 'Internal Server Error '})
+    }
+})
+
+// PUT the entire deck
+deckRouter.put('/decks/update/:id', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) { 
+            return response.status(401).json({ erorr: 'Unauthorized' })
+        }
+        const { id } = request.params
+        const { deckName, deckTags, deckPercentage, cards } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: id, owner: userData.id },
+            { deckName, deckTags, deckPercentage, cards },
+            { new: true }
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck not found' })
+        }
+        response.json(updatedDeck)
+    } catch (error) {
+        console.error('Error updating deck', error)
+        response.status(500).json({ error: 'Internal Server Error' })
     }
 })
 

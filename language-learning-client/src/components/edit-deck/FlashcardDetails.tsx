@@ -3,7 +3,6 @@ import { FaTrash } from "react-icons/fa"
 import { MdDragHandle } from "react-icons/md"
 import { Input } from "../ui/input"
 import { Card } from "@/types";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 
 interface EditCardDetailsProps {
     cards: Card[];
@@ -38,7 +37,6 @@ export const EditCardDetails = ({ cards, userLang, onChange }: EditCardDetailsPr
 
     return (
         <div>
-            <SortableContext items={cards.map(card => card._id)} strategy={verticalListSortingStrategy}>
             {cards.map((card, index) => (
                 <div key={card._id} className="w-full rounded-xl h-34 flex flex-col">
                     <div className="flex justify-between border-b-2">
@@ -68,7 +66,6 @@ export const EditCardDetails = ({ cards, userLang, onChange }: EditCardDetailsPr
                     </div>
                 </div>
             ))}
-            </SortableContext>
         </div>
     )
 }

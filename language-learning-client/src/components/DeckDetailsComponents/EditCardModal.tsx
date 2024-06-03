@@ -15,7 +15,7 @@ interface Props {
 export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
     const [term, setTerm] = useState(userLangCard)
     const [definition, setDefinition] = useState(engCard)
-    const [error, setError] = useState('')
+    const [_error, setError] = useState('')
     
     const { toast } = useToast()
 

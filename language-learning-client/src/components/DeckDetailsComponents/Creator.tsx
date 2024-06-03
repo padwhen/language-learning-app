@@ -5,6 +5,7 @@ import { useContext } from "react"
 import { UserContext } from "@/UserContext"
 import { formatDistance } from "date-fns";
 import { getTimeStamp } from "@/utils/getTimestamp"
+import { Link } from "react-router-dom"
 
 export const CreatorBar = ({id}: {id: string}) => {
     const { user } = useContext(UserContext)
@@ -24,7 +25,7 @@ export const CreatorBar = ({id}: {id: string}) => {
             <div className="flex gap-2 items-center justify-center">
                 <ToolTip trigger={<Download />} content="Export this deck" />
                 <ToolTip trigger={<Delete />} content="Delete this deck" />
-                <ToolTip trigger={<Pencil />} content="Modify this deck" />
+                <Link to={`/edit-deck/${id}`}><ToolTip trigger={<Pencil />} content="Modify this deck" /></Link>
             </div>
         </div>
     )

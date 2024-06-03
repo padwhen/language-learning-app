@@ -6,6 +6,7 @@ export const Header = () => {
 
     const isViewDecksPage = location.pathname.startsWith('/view-decks');
     const isLearnPage = location.pathname.startsWith('/learn-decks');
+    const isEditPage = location.pathname.startsWith('/edit-deck');
     const deckId = location.pathname.split('/')[2];
 
     return (
@@ -26,7 +27,7 @@ export const Header = () => {
                                         <h2 className={`text-lg text-black ${location.pathname === '/view-all-decks' ? 'border-b-2 border-blue-500' : ''}`}>Your decks</h2>
                                     </Link>                             
                                 </BreadcrumbItem>
-                                {(isViewDecksPage || isLearnPage) && (
+                                {(isViewDecksPage || isLearnPage || isEditPage) && (
                                     <>
                                         <BreadcrumbSeparator />
                                         <BreadcrumbItem>
@@ -42,6 +43,16 @@ export const Header = () => {
                                         <BreadcrumbItem>
                                             <Link to={`${location.pathname}`} className="ml-1">
                                                 <h2 className={`text-lg ${isLearnPage ? 'border-b-2 border-blue-500' : ''}`}>Deck Learning</h2>
+                                            </Link>
+                                        </BreadcrumbItem>
+                                    </>
+                                )}
+                                {isEditPage && (
+                                    <>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            <Link to={`${location.pathname}`} className="ml-1">
+                                                <h2 className={`text-lg ${isEditPage ? 'border-b-2 border-blue-500' : ''}`}>Edit deck</h2>
                                             </Link>
                                         </BreadcrumbItem>
                                     </>
