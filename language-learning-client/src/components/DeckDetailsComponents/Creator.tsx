@@ -25,7 +25,7 @@ export const CreatorBar = ({id}: {id: string}) => {
             <div className="flex gap-2 items-center justify-center">
                 <ToolTip trigger={<Download />} content="Export this deck" />
                 <ToolTip trigger={<Delete />} content="Delete this deck" />
-                <Link to={`/edit-deck/${id}`}><ToolTip trigger={<Pencil />} content="Modify this deck" /></Link>
+                <Link to={`/edit-deck/${id}`} data-testid="modify-deck"><ToolTip trigger={<Pencil />} content="Modify this deck" /></Link>
             </div>
         </div>
     )

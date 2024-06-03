@@ -38,7 +38,7 @@ const LearningPage: React.FC = () => {
     const quiz: QuizItem[] = cards.map((card, index) => {
         // Shuffle all cards' engCard properties except the current one
         const shuffledEngCards = cards
-            .filter((c, i) => i !== index)
+            .filter((_c, i) => i !== index)
             .map(c => c.engCard)
             .sort(() => Math.random() - 0.5);
     
