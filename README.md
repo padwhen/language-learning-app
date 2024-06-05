@@ -9,23 +9,63 @@ Created from scratch by @padwhen.
 ## Usage & Video demo
 > Quick demo of how my app works:
 
-https://github.com/padwhen/language-learning-app/assets/123895854/6d90a342-3bab-4d90-be6f-bbc60dbc59c0
+# **Translate**:
+  
+https://github.com/padwhen/language-learning-app/assets/123895854/ac95bd75-979c-4d17-aff4-45998d86d849
 
-* **Log In / Register**: Users can create an account with only a username and a 4-digit PIN. Passwords will **be encrypted** in the database. In this video, I have already created and logged into an account.
-* Users will enter their queries in the search bar. They can choose the languages they want; the default is Finnish. It's better for the app to handle sentences individually, as processing a whole paragraph will take much longer. **The translation and word extraction process will take a maximum of around 60 seconds** (in this video, 20 seconds).
-* The extracted words will be **divided** into four tables **based on their type**. Users can click on a word, and a modal will pop up displaying **pronunciation, English translation, the original word, and the word itself**. Users can choose to add the word to a deck or close the modal.
-* In the video, I will add a few words to my deck. However, since I don't have any decks yet, I can create one. A deck **requires a name, its language** (mixing cards in different languages is not available yet), and **tags.**
-* After adding a few words to my deck, you can see a new deck card appear on the right side of the screen. **By clicking 'View Details,' users can see all the flashcards**. Currently, all flashcards are in the 'Not learning' section.
-* Users can learn their flashcards by **answering quizzes based on the flashcards.** Quiz answers will consist of **a mix of all the English translations of the flashcards.** With each correct answer, each flashcard will receive a score.
-* Based on the score, flashcards will be divided. After reaching a certain point, flashcards will be moved to 'Completed.' **'Completed' flashcards will not appear in the quiz unless the user chooses to.**
+# **View Card**:
+* In each card will display the English translation, the original word, the pronunciation, and the explanation.
 
+https://github.com/padwhen/language-learning-app/assets/123895854/33bc0af2-d8ba-4455-a026-953fdc4b58e0
+
+# **Add card to deck**:
+* User can add card to their own decks. Decks here will be filtered based on the language user initially chose. Card will be removed out of the page once it is added to a deck.
+
+https://github.com/padwhen/language-learning-app/assets/123895854/80ca5928-e4c6-4961-b8e4-88d178ab11a0
+
+# **Create a new deck**:
+* Create a new deck requires deck's name, deck's language, deck's tags
+
+https://github.com/padwhen/language-learning-app/assets/123895854/cf8db9a3-c5b7-4219-899d-570029c97c49
+
+# **View Deck Details**:
+* User can view deck details, flipping flashcards, seeing words that are being learned/will be learned/learned.
+* Flipping flashcards here will not modify with the card's score and the learning algorithm.
+
+https://github.com/padwhen/language-learning-app/assets/123895854/1bcc115f-b662-4c5a-82ca-24f4e2e56207
+
+# **Modify Card**:
+* User can modify card directly in deck's details page, or in the edit page itself
+* Modify a card will reset its score, meaning user has to learn it again.
+* In the edit page, user can add their own cards, modifying the deck's information.
+
+https://github.com/padwhen/language-learning-app/assets/123895854/caba4cc5-40eb-4a3f-8413-4a6d7f559b0e
+
+# **Users' Settings**:
+* User can modify their avatar, name, and username
+* Notifications/Errors will be displayed accordingly.
+
+https://github.com/padwhen/language-learning-app/assets/123895854/67de68d3-7071-450a-9bd4-fc87b8a80f90
+
+## Testing
+> With every features added, I always write extremely careful and clear tests to it. As right now, all of my tests passed even if a new feature just added.
+
+<img width="889" alt="TestScreenshot" src="https://github.com/padwhen/language-learning-app/assets/123895854/cce8262e-b344-409b-bf66-b08b2a8171b8">
+
+## New Update
+* Edit profile (adding avatars, modifying username, name): 05.06.2024
+* Edit decks' details, adding cards by inputting term/definition: 03.06.2024
+* Filtering decks based on criterias: 31.05.2024
 
 ## Technologies
 * Programming Languages: TypeScript, JavaScript
 * Front-End: React.JS, TailwindCSS, ShadcnUI, React-Router-Dom.
 * Back-end: Express.JS, Node.JS.
 * Database: MongoDB
+* Testing: Vitest, Cypress
 * Cloud Services: Google Cloud Platform
+* Containers: Docker (for easier deployment)
+* Kanban's board on GitHub for project mangagement: bugs to fix, features (from user stories) to add.
 
 
 ## Challenges: 
@@ -33,10 +73,12 @@ https://github.com/padwhen/language-learning-app/assets/123895854/6d90a342-3bab-
 * In the beginning, for the UI, I drew in my notebook about how my app will look like, what features will it have. I note down the pros and cons of any new features that come up into my head, and asking myself if this feature exist, could it implement or undermine another features? I then created the UI first, with mock datas.
 * With mock datas, I know how my back-end structure will look like, then I create my own diagrams for tables to see how it connected. 
 * Of course, in all process, a lot of problems arose and not everything works as I planned. I managed them by break down a problem into smaller tasks, and handle those smaller one first. Then I compare it to the previous version, if it helps the application in any aspect, I will keep it. If not, I will rollback and do it again.
+  
 **Features I want to implement in the future**: 
 * As right now, the only features with flashcards are study it by answering quizzes. In the future, I want to add features like matching, doing a test with flashcards. Moreover, user can play games like hang man, wordle with the current flashcards. 
 * Implement a feature in which user can write characters with their mouses, using this feature for language that is non-Latin words such as Korean, Chinese, Greek, ...
 * Testing for both frontend & backend.
+* Some machine learning features.
 
 
 ## Installation
