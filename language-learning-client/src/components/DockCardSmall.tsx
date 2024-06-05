@@ -9,7 +9,7 @@ interface DockCardProps {
 }
 
 export const DockCard: React.FC<DockCardProps> = ({info, onSelect}) => {
-    const {deckName, deckPercentage, deckQuantity, deckTags, _id} = info
+    const {deckName, deckTags, _id} = info
     const [isClicked, setIsClicked] = useState(false);
     const handleClick = () => {
         onSelect({_id, deckName})

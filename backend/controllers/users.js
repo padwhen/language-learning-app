@@ -69,6 +69,10 @@ usersRouter.put('/update', async (request, response) => {
         const { id } = userData
         const { name, username, avatarUrl } = request.body
         try {
+            const existingUser = await User.findOne({ username })
+            if (existingUser && existingUser._id.toString() !== id) {
+                return response.status(422).json({ error: 'Username already exists. Please choose another one'})
+            }
             const updatedUser = await User.findByIdAndUpdate(id, { name, username, avatarUrl }, { new: true, runValidators: true })
             if (!updatedUser) return response.status(404).json({ error: 'User not found '})
             const { name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl } = updatedUser

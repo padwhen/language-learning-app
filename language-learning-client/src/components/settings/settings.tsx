@@ -6,24 +6,34 @@ import { Button } from "../ui/button";
 import { ChangeEvent } from "@/types";
 import { Input } from "../ui/input";
 import { UserContext } from "@/UserContext";
-import axios from "axios";
+import { useError } from "@/state/hooks/useError";
+import axios, { AxiosError } from "axios";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 
 export const SettingPage = () => {
     const { user, setUser } = useContext(UserContext);
-    useEffect(() => {
-        if (user) {
-            setUserData({ name: user.name, username: user.username });
-        }
-    }, [user]);    
+    const initialUser = user;
+    const { error, handleError } = useError();
+    
     const defaultAvatarUrl = "https://github.com/shadcn.png";
-    const [selectedAvatar, setSelectedAvatar] = useState(user?.avatarUrl ?? defaultAvatarUrl);
+    const initialAvatarUrl = user?.avatarUrl ?? defaultAvatarUrl;
+
+    const [selectedAvatar, setSelectedAvatar] = useState<string>(initialAvatarUrl);
     const [isEditing, setIsEditing] = useState(false)
     const [hasChanges, setHasChanges] = useState(false)
     const [userData, setUserData] = useState({
         name: user?.name, username: user?.username
     })
     const [focusField, setFocusField] = useState<"name" | "username" | "">("")
+
+    useEffect(() => {
+        if (user) {
+            setUserData({ name: user.name, username: user.username });
+            setSelectedAvatar(user.avatarUrl ?? defaultAvatarUrl); 
+        }
+    }, [user]);
 
     const handleClick = (newAvatarUrl: string) => {
         setSelectedAvatar(newAvatarUrl);
@@ -50,8 +60,15 @@ export const SettingPage = () => {
             const updatedUser = {...userData, avatarUrl: selectedAvatar}
             const { data } = await axios.put('/update', updatedUser)
             setUser(data)
+            setHasChanges(false)
         } catch (error) {
-            console.error("Error updating user: ", error)
+            const axiosError = error as AxiosError;
+            if (axiosError.response && axiosError.response.data && (axiosError.response.data as any).error) {
+                handleError('Username already exists. Try another username.')
+            } else {
+                handleError('Error updating to the server. Try again later!')
+            }
+            setHasChanges(false)
         }
     }
 
@@ -113,10 +130,21 @@ export const SettingPage = () => {
                     </span>
                 </div>
             </div>
-                <div className="mt-4 flex justify-end"> 
-                    {hasChanges && (
-                        <Button size="lg" className="text-lg" onClick={handleUpdate}>Update</Button>
+                <div className="mt-4 flex justify-between items-center gap-6">
+                    {error && (
+                        <Alert variant="destructive" className="">
+                            <FaExclamationTriangle className="h-4 w-4" />
+                            <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>
+                                {error}
+                            </AlertDescription>
+                        </Alert>                        
                     )}
+                    <div className="ml-auto">
+                        {hasChanges && (
+                            <Button size="lg" className="text-lg" onClick={handleUpdate}>Update</Button>
+                        )}                        
+                    </div> 
                 </div>                
             </div>
         </div>
