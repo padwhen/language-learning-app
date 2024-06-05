@@ -52,13 +52,31 @@ usersRouter.get('/profile', async (request, response) => {
             if (!user) {
                 return response.status(500).json({ error: 'User not found' })
             }
-            const { username, name, _id } = user
-            response.json({ username, name, _id })
+            const { username, name, _id, avatarUrl } = user
+            response.json({ username, name, _id, avatarUrl })
         })
     } catch (error) {
         console.error('Error in /profile: ', error)
         response.status(500).json({ error: 'Internal Server Error '})
     }
+})
+
+usersRouter.put('/update', async (request, response) => {
+    const { token } = request.cookies;
+    if (!token) return response.status(401).json({ error: 'Authentication required' })
+    jwt.verify(token, JWT_SECRET, {}, async (error, userData) => {
+        if (error) return response.status(401).json({ error: 'Invalid token' })
+        const { id } = userData
+        const { name, username, avatarUrl } = request.body
+        try {
+            const updatedUser = await User.findByIdAndUpdate(id, { name, username, avatarUrl }, { new: true, runValidators: true })
+            if (!updatedUser) return response.status(404).json({ error: 'User not found '})
+            const { name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl } = updatedUser
+            response.json({ name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl });
+        } catch (error) {
+            console.error('Error in /update: ', error)
+        }
+    })
 })
 
 usersRouter.post('/logout', (request, response) => {

@@ -8,6 +8,7 @@ export const Header = () => {
     const isLearnPage = location.pathname.startsWith('/learn-decks');
     const isEditPage = location.pathname.startsWith('/edit-deck');
     const deckId = location.pathname.split('/')[2];
+    const isSettingPage = location.pathname.startsWith('/settings');
 
     return (
         <div className="pt-6">
@@ -23,9 +24,16 @@ export const Header = () => {
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
-                                    <Link to={'/view-all-decks'}>
-                                        <h2 className={`text-lg text-black ${location.pathname === '/view-all-decks' ? 'border-b-2 border-blue-500' : ''}`}>Your decks</h2>
-                                    </Link>                             
+                                    {isSettingPage ? (
+                                        <Link to={'/settings'}>
+                                            <h2 className={`text-lg text-black ${location.pathname === '/settings' ? 'border-b-2 border-blue-500' : ''}`}>Settings</h2>
+                                        </Link>  
+                                    ) : (
+                                        <Link to={'/view-all-decks'}>
+                                            <h2 className={`text-lg text-black ${location.pathname === '/view-all-decks' ? 'border-b-2 border-blue-500' : ''}`}>Your decks</h2>
+                                        </Link>   
+                                    )}
+                          
                                 </BreadcrumbItem>
                                 {(isViewDecksPage || isLearnPage || isEditPage) && (
                                     <>

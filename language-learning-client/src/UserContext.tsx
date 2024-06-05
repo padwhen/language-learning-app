@@ -6,6 +6,7 @@ interface User {
     _id: string;
     username: string;
     name: string;
+    avatarUrl?: string
 }
 
 interface UserContextType {
@@ -31,6 +32,10 @@ export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 if (tokenExists) {
                     setIsAuthenticated(true)
                     const { data } = await axios.get<User>('/profile');
+                    const defaultAvatarUrl = "https://github.com/shadcn.png";
+                    if (!data.avatarUrl) {
+                        data.avatarUrl = defaultAvatarUrl;
+                    }
                     setUser(data);                    
                 } else {
                     setIsAuthenticated(false);

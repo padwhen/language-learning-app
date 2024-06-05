@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { Deck, Card } from '@/types';
+import { Deck, Card, ChangeEvent } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { IoIosDoneAll, IoMdSwap } from 'react-icons/io';
 import { Button } from '../ui/button';
@@ -46,11 +46,11 @@ export const EditPage = () => {
         } catch (error) { console.error('Error updating deck: ', error)}
     };
 
-    const handleDeckNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDeckNameChange = (event: ChangeEvent) => {
         setDeckName(event.target.value);
     };
 
-    const handleTagsInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTagsInputChange = (event: ChangeEvent) => {
         setTagsInput(event.target.value);
     };
 
@@ -66,7 +66,7 @@ export const EditPage = () => {
         setDeckTags(updatedTags);
     };
 
-    const handleUserLangChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUserLangChange = (event: ChangeEvent) => {
         const newLang = event.target.value.trim();
         setUserLang(newLang);
         const updatedTags = [...deckTags];

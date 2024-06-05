@@ -1,8 +1,7 @@
-import React from 'react';
 import { FaTrash } from "react-icons/fa"
 import { MdDragHandle } from "react-icons/md"
 import { Input } from "../ui/input"
-import { Card } from "@/types";
+import { Card, ChangeEvent } from "@/types";
 
 interface EditCardDetailsProps {
     cards: Card[];
@@ -19,7 +18,7 @@ export const EditCardDetails = ({ cards, userLang, onChange }: EditCardDetailsPr
         onChange(updatedCards);
     }
 
-    const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (index: number, event: ChangeEvent) => {
         const { name, value } = event.target;
         const updatedCard = {
             ...cards[index],

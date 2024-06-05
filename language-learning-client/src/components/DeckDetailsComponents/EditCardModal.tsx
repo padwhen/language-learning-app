@@ -41,6 +41,7 @@ export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
     return (
         <div>
             <h1 className="text-2xl font-bold">Edit "{userLangCard}" 🔗</h1>
+            <p className="my-1 text-red-500 font-bold text-sm">Note: Edit the card will reset your progress, meaning that you have to learn it again!</p>
             <form className="mt-2" onSubmit={handleSubmit}>
                 <div className="grid w-full items-center gap-4">
                     <div className="flex flex-col space-y-1.5">

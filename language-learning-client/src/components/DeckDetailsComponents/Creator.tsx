@@ -14,7 +14,7 @@ export const CreatorBar = ({id}: {id: string}) => {
         <div className="flex gap-2 justify-between max-w-[875px]">
             <div className="flex gap-4 items-center justify-center">
                 <Avatar className="w-12 h-12">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                    <AvatarImage src={user?.avatarUrl} alt="@shadcn" />
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>
@@ -25,7 +25,10 @@ export const CreatorBar = ({id}: {id: string}) => {
             <div className="flex gap-2 items-center justify-center">
                 <ToolTip trigger={<Download />} content="Export this deck" />
                 <ToolTip trigger={<Delete />} content="Delete this deck" />
-                <Link to={`/edit-deck/${id}`} data-testid="modify-deck"><ToolTip trigger={<Pencil />} content="Modify this deck" /></Link>
+                <Link to={`/edit-deck/${id}`} data-testid="modify-deck" className="flex rounded-lg hover:bg-gray-200">
+                    <ToolTip trigger={<Pencil />} content="Modify this deck" />
+                    <h1 className="text-lg items-center justify-center flex px-2">Edit</h1>
+                </Link>
             </div>
         </div>
     )

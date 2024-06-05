@@ -117,6 +117,7 @@ deckRouter.put('/decks/update-card/:deckId/:cardId', async (request, response) =
         }
         cardToUpdate.engCard = engCard;
         cardToUpdate.userLangCard = userLangCard;
+        cardToUpdate.cardScore = 0;
         await deck.save()
         response.json(deck)
     } catch (error) {
