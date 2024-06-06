@@ -10,11 +10,12 @@ import { useError } from "@/state/hooks/useError";
 import axios, { AxiosError } from "axios";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { FaExclamationTriangle } from "react-icons/fa";
-
+import { useToast } from "@/components/ui/use-toast"
+import { Link } from "react-router-dom";
+import { ToastAction } from "../ui/toast";
 
 export const SettingPage = () => {
     const { user, setUser } = useContext(UserContext);
-    const initialUser = user;
     const { error, handleError } = useError();
     
     const defaultAvatarUrl = "https://github.com/shadcn.png";
@@ -22,11 +23,12 @@ export const SettingPage = () => {
 
     const [selectedAvatar, setSelectedAvatar] = useState<string>(initialAvatarUrl);
     const [isEditing, setIsEditing] = useState(false)
-    const [hasChanges, setHasChanges] = useState(false)
     const [userData, setUserData] = useState({
         name: user?.name, username: user?.username
     })
     const [focusField, setFocusField] = useState<"name" | "username" | "">("")
+
+    const { toast } = useToast()
 
     useEffect(() => {
         if (user) {
@@ -37,7 +39,6 @@ export const SettingPage = () => {
 
     const handleClick = (newAvatarUrl: string) => {
         setSelectedAvatar(newAvatarUrl);
-        setHasChanges(true)
     };
 
     const getCharacterName = (avatarUrl: string) => {
@@ -47,7 +48,6 @@ export const SettingPage = () => {
 
     const handleInputChange = (event: ChangeEvent, field: string) => {
         setUserData((prevData) => ({...prevData, [field]: event.target.value}))
-        setHasChanges(true)
     }
 
     const handleEditClick = (field: "name" | "username") => {
@@ -60,7 +60,15 @@ export const SettingPage = () => {
             const updatedUser = {...userData, avatarUrl: selectedAvatar}
             const { data } = await axios.put('/update', updatedUser)
             setUser(data)
-            setHasChanges(false)
+            let countdown = 3;
+            toast({
+                title: 'Update succesfully!',
+                description: `Reload to the front page in ${countdown} seconds`,
+                action: <Link to={'/'}><ToastAction altText="Reload now" className="">Reload now</ToastAction></Link>
+            })
+            setTimeout(() => {
+                window.location.replace('/');
+            }, 3000);
         } catch (error) {
             const axiosError = error as AxiosError;
             if (axiosError.response && axiosError.response.data && (axiosError.response.data as any).error) {
@@ -68,7 +76,6 @@ export const SettingPage = () => {
             } else {
                 handleError('Error updating to the server. Try again later!')
             }
-            setHasChanges(false)
         }
     }
 
@@ -141,9 +148,9 @@ export const SettingPage = () => {
                         </Alert>                        
                     )}
                     <div className="ml-auto">
-                        {hasChanges && (
+                        {(user?.name !== userData.name || user?.username !== userData.username || user?.avatarUrl !== selectedAvatar) && (
                             <Button size="lg" className="text-lg" onClick={handleUpdate}>Update</Button>
-                        )}                        
+                        )}                      
                     </div> 
                 </div>                
             </div>
