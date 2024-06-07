@@ -1,91 +1,106 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import useFetchDeck from '@/state/hooks/useFetchDeck';
-import { Card as CardType } from '@/types';
-// import { vocabulariesTailor } from '@/ChatCompletion';
-import jsonData from './mockData.json';
+import SuggestionItem from './CardContentCarousel';
+import useModifiedCards from '@/state/hooks/useModifiedCards';
 
-interface ExtendedCard extends CardType {
-  chosen?: boolean;
-  aiEngCard?: string;
-}
+const handleButtonClick = (items: any, setItems: any, setChosenOptions: any, index: number, chosenOption: string) => {
+  setItems(items.map((item: any, idx: number) =>
+    idx === index ? { ...item, chosen: true } : item
+  ));
+
+  setChosenOptions((prevOptions: any) => [
+    ...prevOptions.filter((option: any) => option._id !== items[index]._id), // Remove previous choice if exists
+    {
+      _id: items[index]._id,
+      userLangCard: items[index].userLangCard,
+      chosenOption,
+    },
+  ]);
+};
+
+const handleSuggestionClick = (selectedSuggestion: string, setSelectedSuggestion: any, suggestionType: string, index: number) => {
+  const suggestionId = suggestionType === 'original' ? 'original' : `${index}-${suggestionType}`;
+  setSelectedSuggestion(suggestionId === selectedSuggestion ? '' : suggestionId); // Toggle off if selected again
+};
 
 export function CarouselDemo() {
-  const id = '663dc3de7d1e5facfbba41c6';
-  const { cards } = useFetchDeck(id);
-  const [items, setItems] = useState<ExtendedCard[]>([]);
+    const id = '663dc3de7d1e5facfbba41c6';
+    const { items, setItems } = useModifiedCards(id);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<string>(''); // Default to empty string
+    const [chosenOptions, setChosenOptions] = useState<any[]>([]); // New state to store chosen options
+    const allChosen = items.every(item => item.chosen);
 
-  useEffect(() => {
-    if (cards && cards.length > 0) {
-      const modifiedCards = cards.filter(card =>
-        jsonData.some(modifiedCard => modifiedCard._id === card._id)
-      ).map(card => {
-        const modifiedCard = jsonData.find(modifiedCard => modifiedCard._id === card._id);
-        return {
-          ...card,
-          aiEngCard: modifiedCard ? modifiedCard.engCard : card.engCard,
-          chosen: false,
-        };
-      });
+    console.log(chosenOptions)
 
-      setItems(modifiedCards);
-    }
-  }, [cards]);
-
-  const handleButtonClick = (index: number) => {
-    setItems(items.map((item, idx) =>
-      idx === index ? { ...item, chosen: true } : { ...item, chosen: false }
-    ));
-  };
-
-  const allChosen = items.every(item => item.chosen);
-
-  return (
-    <div>
-      {!allChosen ? (
-        <Carousel className="w-full max-w-xs ml-32">
-          <CarouselContent>
-            {items.map((item, index) => (
-              <CarouselItem key={item._id}>
-                <div className="p-1">
-                  <Card>
-                    <CardContent className="flex flex-col aspect-square items-center justify-center p-6">
-                      <span className="text-4xl font-semibold">{item.userLangCard}</span>
-                      <div className="mt-4">
-                        <p>Original: {item.userLangCard} -&gt; {item.engCard}</p>
-                        <p>AI suggestion: {item.userLangCard} -&gt; {item.aiEngCard}</p>
-                      </div>
-                      <div className="flex space-x-4 mt-4">
-                        {!item.chosen && (
-                          <>
-                            <button
-                              className="bg-green-500 text-white px-4 py-2 rounded"
-                              onClick={() => handleButtonClick(index)} // Pass index to handleButtonClick
-                            >
-                              Yes
-                            </button>
-                            <button
-                              className="bg-red-500 text-white px-4 py-2 rounded"
-                              onClick={() => handleButtonClick(index)} // Pass index to handleButtonClick
-                            >
-                              No
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      ) : (
-        <div>All options are chosen</div>
-      )}
-    </div>
-  );
+    return (
+        <div>
+        {!allChosen ? (
+            <Carousel className="w-[450px] ml-32 text-lg">
+            <CarouselContent>
+                {items.map((item, index) => (
+                <CarouselItem key={item._id}>
+                    <div className="p-1">
+                    <Card>
+                        <CardContent className="flex flex-col aspect-square items-center justify-center p-6">
+                        <span className="text-4xl font-semibold">{item.userLangCard}</span>
+                        <div className="mt-4 flex flex-col space-y-2">
+                            <SuggestionItem
+                            type="original"
+                            item={item}
+                            index={index}
+                            selectedSuggestion={selectedSuggestion}
+                            handleSuggestionClick={() => handleSuggestionClick(selectedSuggestion, setSelectedSuggestion, 'original', index)}
+                            />
+                            <SuggestionItem
+                            type="ai"
+                            item={item}
+                            index={index}
+                            selectedSuggestion={selectedSuggestion}
+                            handleSuggestionClick={() => handleSuggestionClick(selectedSuggestion, setSelectedSuggestion, 'ai', index)}
+                            />
+                            <SuggestionItem
+                            type="dictionary"
+                            item={item}
+                            index={index}
+                            selectedSuggestion={selectedSuggestion}
+                            handleSuggestionClick={() => handleSuggestionClick(selectedSuggestion, setSelectedSuggestion, 'dictionary', index)}
+                            />
+                        </div>
+                        <div className="flex space-x-4 mt-4">
+                            {!item.chosen && (
+                            <>
+                                <button
+                                className="bg-green-500 text-white px-4 py-2 rounded"
+                                onClick={() => handleButtonClick(
+                                    items,
+                                    setItems,
+                                    setChosenOptions,
+                                    index,
+                                    selectedSuggestion === 'original'
+                                    ? item.engCard || '' 
+                                    : selectedSuggestion === `${index}-ai`
+                                    ? item.aiEngCard || ''
+                                    : item.dictionarySuggestion || ''
+                                )}
+                                >
+                                Choose this suggestion
+                                </button>
+                            </>
+                            )}
+                        </div>
+                        </CardContent>
+                    </Card>
+                    </div>
+                </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+            </Carousel>
+        ) : (
+            <div>All options are chosen</div>
+        )}
+        </div>
+    );
 }

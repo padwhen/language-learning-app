@@ -1,26 +1,4 @@
 [
-    {
-        "_id": "663dc4077d1e5facfbbad77d",
-        "engCard": "to foster"
-    },
-    {
-        "_id": "663dc4917d1e5facfbbdb8df",
-        "engCard": "urgently"
-    },
-    {
-        "_id": "663dc4cb7d1e5facfbbf6407",
-        "engCard": "near"
-    },
-    {
-        "_id": "664b69c17cff81e9bdcf7046",
-        "engCard": "tying the knot"
-    },
-    {
-        "_id": "66558474f67e8b1399d2bf7c",
-        "engCard": "border"
-    },
-    {
-        "_id": "66558488f67e8b1399d34748",
-        "engCard": "exceed"
-    }
+    { "_id": "663dc40e7d1e5facfbbaf407", "engCard": "service", "explanation": "In Finnish, 'messu' refers specifically to a Lutheran church service, while 'service' has a broader meaning encompassing any kind of service (e.g. customer service, public service). https://evl.fi/tervetuloa-kirkkoon/messu-eli-jumalanpalvelus/" } ,
+    { "_id": "663dc4877d1e5facfbbd7bf1", "engCard": "border crossing", "explanation": "'Rajanylityspaikka' is more specific to a designated location for crossing borders, whereas 'border crossing' can also refer to the act of crossing a border. https://raja.fi/en/guidelines-for-transport-providers" }
 ]
