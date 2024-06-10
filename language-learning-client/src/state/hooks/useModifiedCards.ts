@@ -1,45 +1,60 @@
 import { useState, useEffect } from "react";
 import useFetchDeck from "./useFetchDeck";
 import { Card as CardType } from "@/types";
-import jsonData from '../../components/DeckDetailsComponents/mockData.json'
 import { extractExplanation } from "@/utils/extractExplanation";
 import { getDictionarySuggestion } from "@/utils/getDictionarySuggestion";
+import { vocabulariesTailor } from "@/ChatCompletion";
 
 interface ExtendedCard extends CardType {
-    chosen?: boolean;
-    aiEngCard?: string;
-    explanation?: {
-      text: string;
-      link: string;
-    };
-    dictionarySuggestion?: string;
-  }
-  
-  const useModifiedCards = (id: string) => {
+  chosen?: boolean;
+  aiEngCard?: string;
+  explanation?: {
+    text: string,
+    link: string
+  };
+  dictionarySuggestion?: string;
+  explanation_string?: string;
+}
+
+const useModifiedCards = (id: string) => {
     const { cards } = useFetchDeck(id);
     const [items, setItems] = useState<ExtendedCard[]>([]);
+    const length = cards.length;
   
-    useEffect(() => {
+  useEffect(() => {
+    const fetchModifiedCards = async () => {
       if (cards && cards.length > 0) {
-        const modifiedCards = cards.filter(card =>
-          jsonData.some(modifiedCard => modifiedCard._id === card._id)
-        ).map(async (card) => {
-          const modifiedCard = jsonData.find(modifiedCard => modifiedCard._id === card._id);
-          const explanation = extractExplanation(modifiedCard?.explanation || '');
-          const dictionarySuggestion = await getDictionarySuggestion(card.userLangCard);
-          return {
-            ...card,
-            aiEngCard: modifiedCard ? modifiedCard.engCard : card.engCard,
-            explanation: explanation,
-            chosen: false,
-            dictionarySuggestion,
-          };
-        });
-        Promise.all(modifiedCards).then(resolvedCards => setItems(resolvedCards));
+        try {
+          const cardsString = JSON.stringify(cards);
+          const modifiedCardsData = await vocabulariesTailor(cardsString);
+          const modifiedCards = JSON.parse(modifiedCardsData);
+          const modifiedCardsPromises = modifiedCards.filter((card: ExtendedCard) =>
+            cards.some(originalCard => originalCard._id === card._id)
+          ).map(async (card: ExtendedCard) => {
+            const originalCard = cards.find(originalCard => originalCard._id === card._id);
+            const explanation = extractExplanation(card.explanation_string|| '');
+            const dictionarySuggestion = await getDictionarySuggestion(originalCard ? originalCard.userLangCard : '');
+            return {
+              ...originalCard,
+              aiEngCard: card.engCard,
+              explanation: explanation,
+              chosen: false,
+              dictionarySuggestion,
+            };
+          });
+
+          const resolvedCards = await Promise.all(modifiedCardsPromises);
+          setItems(resolvedCards);
+        } catch (error) {
+          console.error("Error fetching modified cards:", error);
+        }
       }
-    }, [cards]);
-  
-    return {items, setItems};
-  };
-  
-  export default useModifiedCards;
+    };
+
+    fetchModifiedCards();
+  }, []);
+
+  return { items, setItems, length };
+};
+
+export default useModifiedCards;

@@ -1,47 +1,61 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import SuggestionItem from './CardContentCarousel';
 import useModifiedCards from '@/state/hooks/useModifiedCards';
+import loadingSvg from '../../assets/3-dots-bounce.svg'
+import Countdown from 'react-countdown';
+import { useLoading } from '@/state/hooks/useLoading';
+import { useHandleButtonClick } from '@/state/hooks/useHandleButtonClick';
 
-const handleButtonClick = (items: any, setItems: any, setChosenOptions: any, index: number, chosenOption: string) => {
-  setItems(items.map((item: any, idx: number) =>
-    idx === index ? { ...item, chosen: true } : item
-  ));
+interface CarouselDemoProps {
+    id: string;
+    setChosenOptions: React.Dispatch<React.SetStateAction<any[]>>
+}
 
-  setChosenOptions((prevOptions: any) => [
-    ...prevOptions.filter((option: any) => option._id !== items[index]._id), // Remove previous choice if exists
-    {
-      _id: items[index]._id,
-      userLangCard: items[index].userLangCard,
-      chosenOption,
-    },
-  ]);
-};
+export function TailoredCarousel({ id, setChosenOptions }: CarouselDemoProps) {
+    const { items, setItems, length } = useModifiedCards(id);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<string>('');
+    const loading = useLoading()
+    const { chosenOptions, handleButtonClick } = useHandleButtonClick()
 
-const handleSuggestionClick = (selectedSuggestion: string, setSelectedSuggestion: any, suggestionType: string, index: number) => {
-  const suggestionId = suggestionType === 'original' ? 'original' : `${index}-${suggestionType}`;
-  setSelectedSuggestion(suggestionId === selectedSuggestion ? '' : suggestionId); // Toggle off if selected again
-};
+    useEffect(() => {
+        setChosenOptions(chosenOptions)
+    }, [chosenOptions, setChosenOptions])
 
-export function CarouselDemo() {
-    const id = '663dc3de7d1e5facfbba41c6';
-    const { items, setItems } = useModifiedCards(id);
-    const [selectedSuggestion, setSelectedSuggestion] = useState<string>(''); // Default to empty string
-    const [chosenOptions, setChosenOptions] = useState<any[]>([]); // New state to store chosen options
-    const allChosen = items.every(item => item.chosen);
 
-    console.log(chosenOptions)
+    const handleSuggestionClick = (selectedSuggestion: string, setSelectedSuggestion: any, suggestionType: string, index: number) => {
+        const suggestionId = suggestionType === 'original' ? 'original' : `${index}-${suggestionType}`;
+        setSelectedSuggestion(suggestionId === selectedSuggestion ? '' : suggestionId); 
+    };
+
+    if (loading && items.length == 0 || items.length == 0) {
+        return (
+            <Card className="w-[450px] text-lg py-32 border-none">
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                    <img src={loadingSvg} alt="Loading..." />
+                    Running through all of your flashcards... <br/>
+                    <span>Approximate waiting time: 
+                    <Countdown date={Date.now() + (length * 3000)} renderer={({seconds}) =>
+                        <span> {seconds} seconds</span>
+                    }/>
+                    </span>
+                </CardContent>
+            </Card>
+        ) 
+    }
+
+    const allChosen = items.every((item) => item.chosen);
 
     return (
         <div>
         {!allChosen ? (
-            <Carousel className="w-[450px] ml-32 text-lg">
+            <Carousel className="w-[450px] text-lg">
             <CarouselContent>
                 {items.map((item, index) => (
                 <CarouselItem key={item._id}>
                     <div className="p-1">
-                    <Card>
+                    <Card className='border-none'>
                         <CardContent className="flex flex-col aspect-square items-center justify-center p-6">
                         <span className="text-4xl font-semibold">{item.userLangCard}</span>
                         <div className="mt-4 flex flex-col space-y-2">
@@ -69,24 +83,22 @@ export function CarouselDemo() {
                         </div>
                         <div className="flex space-x-4 mt-4">
                             {!item.chosen && (
-                            <>
-                                <button
+                            <button
                                 className="bg-green-500 text-white px-4 py-2 rounded"
                                 onClick={() => handleButtonClick(
-                                    items,
-                                    setItems,
-                                    setChosenOptions,
-                                    index,
-                                    selectedSuggestion === 'original'
-                                    ? item.engCard || '' 
+                                items,
+                                setItems,
+                                index,
+                                selectedSuggestion === 'original'
+                                    ? item.engCard || ''
                                     : selectedSuggestion === `${index}-ai`
                                     ? item.aiEngCard || ''
-                                    : item.dictionarySuggestion || ''
+                                    : item.dictionarySuggestion || '',
+                                selectedSuggestion
                                 )}
-                                >
+                            >
                                 Choose this suggestion
-                                </button>
-                            </>
+                            </button>
                             )}
                         </div>
                         </CardContent>
@@ -99,7 +111,24 @@ export function CarouselDemo() {
             <CarouselNext />
             </Carousel>
         ) : (
-            <div>All options are chosen</div>
+            <div>
+            <Card className="w-[450px] text-lg py-32 border-none">
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                <h1 className="text-3xl font-semibold mb-4">Your Edit History</h1>
+                {chosenOptions.length > 0 ? (
+                    <ul className="list-disc pl-5">
+                    {chosenOptions.map(option => (
+                        <li key={option._id} className="mb-2">
+                        <span className="font-semibold">{option.userLangCard}:</span> {option.chosenOption}
+                        </li>
+                    ))}
+                    </ul>
+                ) : (
+                    <p>No edits made.</p>
+                )}
+                </CardContent>
+            </Card>
+            </div>
         )}
         </div>
     );

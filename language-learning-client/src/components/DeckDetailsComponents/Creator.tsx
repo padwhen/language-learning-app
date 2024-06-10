@@ -9,10 +9,26 @@ import { getTimeStamp } from "@/utils/getTimestamp"
 import { Link } from "react-router-dom"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
+import { TailoredCarousel } from "./TailoredCarousel";
+import useUpdateCard from "@/state/hooks/useUpdateCard";
 
 export const CreatorBar = ({id}: {id: string}) => {
     const { user } = useContext(UserContext)
     const [open, setOpen] = useState(false)
+    const [chosenOptions, setChosenOptions] = useState<any[]>([])   
+    const { updateCard, loading } = useUpdateCard()
+
+    const handleSave = async () => {
+        try {
+            for (const option of chosenOptions) {
+                await updateCard(id, option._id, option.chosenOption, option.userLangCard);
+            }
+            setOpen(false)
+            window.location.reload()
+        } catch (error) {
+            console.error(error)
+        }
+    }
     
     return (
         <div className="flex gap-2 justify-between max-w-[875px]">
@@ -28,17 +44,19 @@ export const CreatorBar = ({id}: {id: string}) => {
             </div>
             <div className="flex gap-2 items-center justify-center">
                 <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger><ToolTip trigger={<MdAutoFixHigh size="25" />} content="Tailor this deck with AI" /></DialogTrigger>
+                    <DialogTrigger className="flex rounded-lg hover:bg-gray-200 items-center justify-center">
+                        <ToolTip trigger={<MdAutoFixHigh size="25" />} content="Tailor this deck with AI" />
+                        <h1 className="text-lg items-center justify-center flex px-2">Tailor with AI</h1>    
+                    </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle className="text-lg">Tailor your deck with AI.</DialogTitle>
                             <DialogDescription>
-                                AI will check all the flashcards in your deck to see if the translation is correct or not.
-                                <br />
-                                <h2 className="text-red-500 font-bold">Alert: Modify a card will reset its progress!</h2>
+                                <h2 className="text-red-500 font-bold pb-2">Alert: Modify a card will reset its progress!</h2>
+                                <TailoredCarousel id={id} setChosenOptions={setChosenOptions} />
                             </DialogDescription>
                             <DialogFooter>
-                                <Button type="submit" onClick={() => setOpen(!open)}>Let's go</Button>
+                                <Button type="submit" onClick={handleSave} disabled={loading}>Save</Button>
                             </DialogFooter>
                         </DialogHeader>
                     </DialogContent>

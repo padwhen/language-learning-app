@@ -11,7 +11,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
 import { SettingPage } from './components/settings/settings'
-import { CarouselDemo } from './components/DeckDetailsComponents/TailoredCarousel'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -29,7 +28,6 @@ function App() {
           <Route path="/learn-decks/:id" element={<LearningPage />} />
           <Route path="/edit-deck/:id" element={<EditPage />} />
           <Route path="/settings" element={<SettingPage />} />
-          <Route path="/test" element={<CarouselDemo />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>
