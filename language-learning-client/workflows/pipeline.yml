@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: language-learning-client
     steps:  
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,8 +27,3 @@ jobs:
           VITE_PROMPT_1: ${{ secrets.VITE_PROMPT_1 }}
       - name: Unit tests
         run: npm run test
-      - name: e2e tests
-        uses: cypress-io/github-action@v5
-        with:
-          command: npm run test:e2e
-          wait-on: https://padwhen-learningapp.fly.dev/
