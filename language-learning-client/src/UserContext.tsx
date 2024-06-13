@@ -50,7 +50,7 @@ export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ chi
         if (!user) {
             fetchUserProfile();
         }
-    }, []);
+    }, [user]);
 
     return (
         <UserContext.Provider value={{ user, setUser, isAuthenticated }}>

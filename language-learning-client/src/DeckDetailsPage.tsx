@@ -25,22 +25,21 @@ export const DeckDetailsPage = () => {
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards);
     const { id } = useParams();
 
-    const fetchDeck = async () => {
-        await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
-    };
-
     useEffect(() => {
+        const fetchDeck = async () => {
+            await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
+        };
         fetchDeck();
-    }, []);
+    }, [id]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null;
         if (autoPlay) {
             interval = setInterval(() => {
                 if (currentCardIndex < cards.length - 1) {
-                    setIsFlipped(!isFlipped); // Flip the card
+                    setIsFlipped(true); // Flip the card
                     setTimeout(() => {
-                        setIsFlipped(!isFlipped); // Flip back the card
+                        setIsFlipped(false); // Flip back the card
                         setCurrentCardIndex(currentCardIndex + 1); // Move to the next card
                     }, 2000);
                 } else {
@@ -49,7 +48,7 @@ export const DeckDetailsPage = () => {
             }, 1000); // Adjust the delay based on your preference
         }
         return () => { if (interval) clearInterval(interval); };
-    }, [autoPlay, currentCardIndex, cards.length]);
+    }, [autoPlay, currentCardIndex, cards.length, isFlipped]);
 
     const handleMoveLeft = () => { moveLeft(currentCardIndex, setCurrentCardIndex)}
     const handleMoveRight = () => { moveRight(currentCardIndex, deck.cards.length, setCurrentCardIndex)}

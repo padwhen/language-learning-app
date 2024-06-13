@@ -42,6 +42,7 @@ export const SettingPage = () => {
     };
 
     const getCharacterName = (avatarUrl: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const characterName = Object.entries(jsonData).find(([_key, value]) => value === avatarUrl)?.[0];
         return characterName?.replace(/_/g, " ");
     };
@@ -60,7 +61,7 @@ export const SettingPage = () => {
             const updatedUser = {...userData, avatarUrl: selectedAvatar}
             const { data } = await axios.put('/update', updatedUser)
             setUser(data)
-            let countdown = 3;
+            const countdown = 3;
             toast({
                 title: 'Update succesfully!',
                 description: `Reload to the front page in ${countdown} seconds`,

@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true, "cypress/globals": true },
+  env: { browser: true, es2020: true, "cypress/globals": true, 'node': true },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -14,5 +14,8 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+    '@typescript-eslint/no-explicit-any': 'off',
+    'react-hooks/exhaustive-deps': 'off',
+    'react-refresh/only-export-components': 'off'
   },
 }

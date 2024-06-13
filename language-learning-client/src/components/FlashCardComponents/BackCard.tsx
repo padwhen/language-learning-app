@@ -4,7 +4,7 @@ import { Volume1 } from "lucide-react"
 import { Star } from "lucide-react"
 
 interface Props {
-    word: String
+    word: string
 }
 
 export const BackCard = ({ word }: Props) => {

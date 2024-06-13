@@ -15,7 +15,7 @@ interface Props {
 export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
     const [term, setTerm] = useState(userLangCard)
     const [definition, setDefinition] = useState(engCard)
-    const [_error, setError] = useState('')
+    const [error, setError] = useState('')
     
     const { toast } = useToast()
 
@@ -37,6 +37,8 @@ export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
             setError('Failed to update the card. Please try again later')
         }
     }
+
+    if (error) return <div>Error...</div>
 
     return (
         <div>
