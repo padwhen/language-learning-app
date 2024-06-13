@@ -6,7 +6,7 @@ on:
       - update-workflow-triggers
 
 jobs:
-  deployment_pipeline:
+  build:
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -20,3 +20,7 @@ jobs:
         run: npm install
       - name: Check style
         run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Copy built files to backend
+        run: cp -r dist ../backend
