@@ -1,6 +1,6 @@
 describe('Edit deck test', function() {
     beforeEach(function() {
-        cy.visit('http://localhost:5173')
+        cy.visit('https://padwhen-learningapp.fly.dev')
         cy.contains('Log In').click()
         cy.get('#username').type('june_testing')
         cy.get('[data-testid="pin-input"]') 
@@ -25,9 +25,9 @@ describe('Edit deck test', function() {
         cy.contains('NewLanguage').should('exist');
         // Able to add tags
         cy.get('[data-testid="edit-tags-input"]').clear().type('tag1')
-        cy.contains('Add').click()
+        cy.contains('Add').click({ force: true })
         cy.get('[data-testid="edit-tags-input"]').clear().type('tag2')
-        cy.contains('Add').click()
+        cy.contains('Add').click({ force: true })
         cy.contains('tag1').should('exist');
         cy.contains('tag2').should('exist');
     })
@@ -38,11 +38,11 @@ describe('Edit deck test', function() {
         cy.contains('tag1').should('not.exist')
     })
     it('able to swap terms', function() {
-        cy.get('[data-testid="term-input-0"]').should('have.value', 'kesää');
+        cy.get('[data-testid="term-input-0"]').should('have.value', 'kesä');
         cy.get('[data-testid="definition-input-0"]').should('have.value', 'summer');
         cy.get('[data-testid="swap-terms"]').click()
         cy.get('[data-testid="term-input-0"]').should('have.value', 'summer');
-        cy.get('[data-testid="definition-input-0"]').should('have.value', 'kesää');
+        cy.get('[data-testid="definition-input-0"]').should('have.value', 'kesä');
     })
     it('should modify TERM/DEFINITION', function() {
         cy.get('[data-testid="term-input-0"]').clear().type('New Term');

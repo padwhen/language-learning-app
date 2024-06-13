@@ -1,6 +1,6 @@
 describe('Index page', () => {
   beforeEach(function() {
-    cy.visit('http://localhost:5173')
+    cy.visit('https://padwhen-learningapp.fly.dev')
   })
   it('front page can be opened', function() {
     cy.contains("Translate")
@@ -10,7 +10,7 @@ describe('Index page', () => {
 
 describe('log in', () => {
   beforeEach(function() {
-    cy.visit('http://localhost:5173')
+    cy.visit('https://padwhen-learningapp.fly.dev')
   })
   it('should display username not found for incorrect username', () => {
     cy.contains('Log In').click()
@@ -72,7 +72,7 @@ describe('log in', () => {
 
 describe('register', () => {
   beforeEach(function() {
-    cy.visit('http://localhost:5173')
+    cy.visit('https://padwhen-learningapp.fly.dev')
   })
   it('can see the register button', function() {
     cy.contains('Register').click()

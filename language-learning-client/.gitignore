@@ -12,8 +12,7 @@ dist
 dist-ssr
 *.local
 
-src/ChatCompletion.tsx
-src/avatarurl.json
+.env
 
 
 # Editor directories and files
