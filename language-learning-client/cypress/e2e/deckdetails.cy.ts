@@ -51,6 +51,7 @@ describe('Deck details test', function() {
     })
     it('keyboard navigation works', () => {
         accessToDeckDetails('deck_example')
+        cy.wait(500)
         cy.get('body').type('{rightarrow}')
         cy.get('[role="progressbar"] > div').should('have.attr', 'style', 'transform: translateX(-96.2264%);'); 
         cy.get('[data-testid="current-card-number"]').should('contain.text', '2 /')
