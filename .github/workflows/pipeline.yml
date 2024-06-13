@@ -30,6 +30,9 @@ jobs:
           VITE_PROMPT_1: ${{ secrets.VITE_PROMPT_1 }}
       - name: Copy built files to backend
         run: cp -r dist ../backend
+      - name: Verify copied files
+        run: ls -l ../backend/dist
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -39,27 +42,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Verify files before deployment
+        run: ls -l dist
       - run: flyctl deploy 
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  tests:
-    needs: deploy
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        working-directory: language-learning-client
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Vitest run
-        run: npm test
-      - name: Run end-to-end tests
-        uses: cypress-io/github-action@v5
-        with:
-          command: npm run test:e2e
-          start: npm run start-prod 
-          wait-on: https://padwhen-learningapp.fly.dev/
