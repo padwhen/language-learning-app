@@ -27,3 +27,16 @@ jobs:
           VITE_PROMPT_1: ${{ secrets.VITE_PROMPT_1 }}
       - name: Unit tests
         run: npm run test
+  e2e_tests:
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies and run e2e tests
+        working-directory: language-learning-client
+        run: |
+          npm install
+          npm run test:e2e
