@@ -56,7 +56,7 @@ const LearningPage: React.FC = () => {
     });
     
     const saveAnswer = (e: string, q: number) => {
-        let newAnswers = [...answers];
+        const newAnswers = [...answers];
         newAnswers.push({
             question: q,
             answer: e
