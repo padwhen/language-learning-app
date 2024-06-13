@@ -22,5 +22,11 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+        env:
+          VITE_GPT_KEY: ${{ secrets.VITE_GPT_KEY }}
+          VITE_GOOGLE_KEY: ${{ secrets.VITE_GOOGLE_KEY }}
+          VITE_PROMPT_2: ${{ secrets.VITE_PROMPT_2 }}
+          VITE_PROMPT_3: ${{ secrets.VITE_PROMPT_3 }}
+          VITE_PROMPT_1: ${{ secrets.VITE_PROMPT_1 }}
       - name: Copy built files to backend
         run: cp -r dist ../backend
