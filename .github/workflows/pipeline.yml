@@ -32,18 +32,11 @@ jobs:
         run: cp -r dist ../backend
       - name: Verify copied files
         run: ls -l ../backend/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Verify files before deployment
-        run: ls -l dist
-      - run: flyctl deploy 
-        env:
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to Fly.io
+        run: |
+          cd ../backend
+          flyctl deploy
+        env: 
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
