@@ -28,15 +28,11 @@ jobs:
           VITE_PROMPT_2: ${{ secrets.VITE_PROMPT_2 }}
           VITE_PROMPT_3: ${{ secrets.VITE_PROMPT_3 }}
           VITE_PROMPT_1: ${{ secrets.VITE_PROMPT_1 }}
-      - name: Copy built files to backend
-        run: cp -r dist ../backend
-      - name: Verify copied files
-        run: ls -l ../backend/dist
-      - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Deploy to Fly.io
-        run: |
-          cd ../backend
-          flyctl deploy --remote-only
-        env: 
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Unit tests
+        run: npm run test
+      - name: e2e tests
+        uses: cypress-io/github-action/@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: https://padwhen-learningapp.fly.dev/
