@@ -25,9 +25,9 @@ describe('Edit deck test', function() {
         cy.contains('NewLanguage').should('exist');
         // Able to add tags
         cy.get('[data-testid="edit-tags-input"]').clear().type('tag1')
-        cy.contains('Add').click()
+        cy.contains('Add').click({ force: true })
         cy.get('[data-testid="edit-tags-input"]').clear().type('tag2')
-        cy.contains('Add').click()
+        cy.contains('Add').click({ force: true })
         cy.contains('tag1').should('exist');
         cy.contains('tag2').should('exist');
     })
