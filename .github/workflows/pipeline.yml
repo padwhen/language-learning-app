@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: language-learning-app/language-learning-client
+        working-directory: language-learning-client
     steps:  
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,5 +34,4 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e
-          start: npm run start-prod
           wait-on: https://padwhen-learningapp.fly.dev/
