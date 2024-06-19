@@ -47,6 +47,14 @@ https://github.com/padwhen/language-learning-app/assets/123895854/caba4cc5-40eb-
 
 https://github.com/padwhen/language-learning-app/assets/123895854/67de68d3-7071-450a-9bd4-fc87b8a80f90
 
+# **Tailor Decks**:
+* Since the vocabularies are translated based on a sentence, sometimes the meaning is vague and not correct. I add a feature in the Deck Details page to allow user to tailor the decks. It will run through all the vocabularies, choosing the one with incorrect translation and ask AI to change that.
+* I also do some web scrapping. Users will have 2 suggestions and they can choose which one they prefer
+  
+https://github.com/padwhen/language-learning-app/assets/123895854/8b6d2e9e-23f7-40df-b4f4-994a8254b118
+
+
+
 ## Testing
 > With every features added, I always write extremely careful and clear tests to it. As right now, all of my tests passed even if a new feature just added.
 
