@@ -32,11 +32,9 @@ export const vocabulariesTailor = async (cards: string) => {
     const genAI = new GoogleGenerativeAI(googleKey)
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
     const prompt = `${cards} <-- ${PROMPT_2}`
-    console.log(prompt)
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text();
-    console.log(text)
     const jsonArrayRegex = /\[.*\]/s;
     const match = text?.match(jsonArrayRegex);
     if (match) {

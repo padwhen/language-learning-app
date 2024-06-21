@@ -5,7 +5,7 @@ export const TranslationBar: React.FC<{
     fromLanguage: string;
     setFromLanguage: (language: string) => void;
 }> = ({ fromLanguage, setFromLanguage }) => {
-    const languages = ['Finnish', 'Korean', 'Chinese', 'Vietnamese'];
+    const languages = ['Finnish', 'Korean', 'Chinese', 'Vietnamese', 'Greek'];
     const handleLanguageChange = (language: string) => {
         setFromLanguage(language);
     }
