@@ -3,11 +3,11 @@ on:
   push: 
     branches:
       - main
-    pull_request: 
-      branches: [main]
-        types: [opened, synchronize]
-    schedule:
-      - cron: "30 12 * * *"
+  pull_request: 
+    branches: [main]
+      types: [opened, synchronize]
+  schedule:
+    - cron: "30 12 * * *"
 jobs:
   health-check:
     runs-on: ubuntu-20.04

@@ -1,80 +1,14 @@
-import { useState } from "react";
-import { chatCompletion } from "./ChatCompletion";
 import { TranslationBar } from "./components/TranslationBar";
 import { InputBar } from "./components/InputBar";
 import { Translation } from "./components/Translation";
 import { WordDetails } from "./components/Details";
 import { User } from "./components/User";
 import { DeckInfo } from "./components/DeckInfo";
-import { v4 as uuidv4 } from 'uuid';
-import jsonData from '../words.json'
+import useTranslation from "./state/hooks/useTranslation";
 
 
 export const IndexPage = () => {
-    const [fromLanguage, setFromLanguage] = useState<string>('Finnish');
-    const [inputText, setInputText] = useState<string>('');
-    const [ready, setReady] = useState<boolean>(true)
-    const [response, setResponse] = useState<any>(() => {
-        const storedResponse = localStorage.getItem("response");
-        return storedResponse ? JSON.parse(storedResponse) : null;
-    });
-    // const [response, setResponse] = useState<any>(exampleResponse)
-
-    const handleTranslation = async () => {
-        setReady(false);
-        if (inputText.trim().toLowerCase() === 'test') {
-            const parsedResponse = jsonData;
-            const { sentence, words } = parsedResponse;
-            
-            if (sentence) {
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse,
-                    sentence: sentence
-                }));
-            }
-            
-            if (words) {
-                const wordsWithUUID = words.map((word: any) => ({
-                    ...word, id: uuidv4()
-                }));
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, words: wordsWithUUID
-                }));
-            }
-            
-            localStorage.setItem("response", JSON.stringify(parsedResponse));
-            localStorage.setItem("fromLanguage", fromLanguage);
-            setReady(true);
-        } else {
-            const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
-            if (response_json !== null) {
-                const parsedResponse = JSON.parse(response_json);
-                const { sentence, words } = parsedResponse;
-                
-                if (sentence) {
-                    setResponse((prevResponse: any) => ({
-                        ...prevResponse,
-                        sentence: sentence
-                    }));
-                }
-                
-                if (words) {
-                    const wordsWithUUID = words.map((word: any) => ({
-                        ...word, id: uuidv4()
-                    }));
-                    setResponse((prevResponse: any) => ({
-                        ...prevResponse, words: wordsWithUUID
-                    }));
-                }
-                
-                localStorage.setItem("response", JSON.stringify(parsedResponse));
-                localStorage.setItem("fromLanguage", fromLanguage);
-            }
-            
-            setReady(true);
-        }
-    };
-    
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, response, handleTranslation } = useTranslation()
 
     return (
         <div className="h-96 flex">
