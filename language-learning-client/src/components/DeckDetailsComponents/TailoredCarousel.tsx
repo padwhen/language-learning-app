@@ -16,6 +16,8 @@ interface CarouselDemoProps {
 export function TailoredCarousel({ id, setChosenOptions }: CarouselDemoProps) {
     const { items, setItems, length } = useModifiedCards(id);
     const [selectedSuggestion, setSelectedSuggestion] = useState<string>('');
+    const [timeoutReached, setTimeoutReached] = useState(false)
+
     const loading = useLoading()
     const { chosenOptions, handleButtonClick } = useHandleButtonClick()
 
@@ -36,13 +38,25 @@ export function TailoredCarousel({ id, setChosenOptions }: CarouselDemoProps) {
                     <img src={loadingSvg} alt="Loading..." />
                     Running through all of your flashcards... <br/>
                     <span>Approximate waiting time: 
-                    <Countdown date={Date.now() + (length * 3000)} renderer={({seconds}) =>
-                        <span> {seconds} seconds</span>
+                    <Countdown date={Date.now() + (length * 3000)} renderer={({seconds, completed}) => {
+                        if (completed) { setTimeoutReached(true) }
+                        return <span> {seconds} seconds</span>
+                    }
                     }/>
                     </span>
                 </CardContent>
             </Card>
         ) 
+    }
+
+    if (timeoutReached && items.length === 0) {
+        return (
+            <Card className="w-[450px] text-lg py-32 border-none">
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                    <p>There's nothing wrong in your deck</p>
+                </CardContent>
+            </Card>
+        )
     }
 
     const allChosen = items.every((item) => item.chosen);

@@ -23,16 +23,6 @@ export interface FormData {
     pin: string;
 }
 
-export function simplifyFraction(numerator: number, denominator: number): string {
-    const gcd = (a: number, b: number): number => {
-        return b === 0 ? a : gcd(b, a % b);
-    };
-    const commonDivisor: number = gcd(numerator, denominator);
-    const simplifiedNumerator: number = numerator / commonDivisor;
-    const simplifiedDenominator: number = denominator / commonDivisor;
-    return `${simplifiedNumerator}/${simplifiedDenominator}`;
-}
-
 export interface Deck {
     _id: string;
     owner?: string;
@@ -48,6 +38,17 @@ export interface Card {
     userLangCard: string;
     cardScore: number;
 }
+
+export interface QuizItem {
+    text: string;
+    options: string[];
+    answer: string;
+}
+
+export interface Answer {
+    question: number;
+    answer: string;
+} 
 
 export type FormEvent = React.FormEvent<HTMLFormElement>
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>

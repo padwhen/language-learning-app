@@ -27,6 +27,7 @@ const useModifiedCards = (id: string) => {
         try {
           const cardsString = JSON.stringify(cards);
           const modifiedCardsData = await vocabulariesTailor(cardsString);
+          console.log(modifiedCardsData)
           const modifiedCards = JSON.parse(modifiedCardsData);
           const modifiedCardsPromises = modifiedCards.filter((card: ExtendedCard) =>
             cards.some(originalCard => originalCard._id === card._id)
@@ -42,7 +43,6 @@ const useModifiedCards = (id: string) => {
               dictionarySuggestion,
             };
           });
-
           const resolvedCards = await Promise.all(modifiedCardsPromises);
           setItems(resolvedCards);
         } catch (error) {
