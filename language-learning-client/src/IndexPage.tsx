@@ -1,9 +1,9 @@
-import { TranslationBar } from "./components/TranslationBar";
-import { InputBar } from "./components/InputBar";
-import { Translation } from "./components/Translation";
-import { WordDetails } from "./components/Details";
-import { User } from "./components/User";
-import { DeckInfo } from "./components/DeckInfo";
+import { TranslationBar } from "./components/IndexPage/TranslationBar";
+import { InputBar } from "./components/IndexPage/InputBar";
+import { Translation } from "./components/IndexPage/Translation";
+import { WordDetails } from "./components/IndexPage/Details";
+import { User } from "./components/IndexPage/User";
+import { DeckInfo } from "./components/IndexPage/DeckInfo";
 import useTranslation from "./state/hooks/useTranslation";
 
 

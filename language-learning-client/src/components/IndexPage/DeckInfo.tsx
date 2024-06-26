@@ -1,13 +1,13 @@
 import { useDeckContext } from "@/DeckContext";
 import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 import { Link } from "react-router-dom";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useState } from "react";
 import { getTimeStamp } from "@/utils/getTimestamp";
 import { formatDistance } from "date-fns";
 import { sortAndFilterDecks } from "@/utils/sortAndFilterDecks";
 import { Deck } from "@/types";
-import SortableSelect from "./SortableSelect";
+import SortableSelect from "../SortableSelect";
 
 export const DeckInfo = () => {
     const { decks } = useDeckContext();
@@ -18,7 +18,8 @@ export const DeckInfo = () => {
     if (!decks || decks.length === 0) {
         return null;
     }
-    return (<>
+    return (
+    <>
     <div className="flex justify-between w-64">
         <h1 className="text-2xl font-bold text-blue-500 ">Your decks</h1>
         <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />
