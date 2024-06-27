@@ -7,6 +7,7 @@ const DeckSchema = new Schema({
     deckPercentage: { type: String, default: '0%' },
     deckTags: [{ type: String, required: true }],
     cards: [{
+        _id: { type: String, required: false },
         engCard: { type: String, required: true },
         userLangCard: { type: String, required: true },
         cardScore: { type: Number, default: 0 }

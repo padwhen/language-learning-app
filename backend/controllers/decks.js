@@ -61,7 +61,7 @@ deckRouter.put('/decks/:id', async (request, response) => {
         const userData = jwt.verify(token, JWT_SECRET)
         const updatedDeck = await Deck.findOneAndUpdate(
             { _id: id, owner: userData.id },
-            { $push: { cards: { $each: cards } } }, 
+            { $set: { cards: cards } }, 
             { new: true}
         )
         if (!updatedDeck) {
