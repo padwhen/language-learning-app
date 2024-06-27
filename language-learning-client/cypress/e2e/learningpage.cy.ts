@@ -1,6 +1,6 @@
 describe('Deck details test', function() {
     beforeEach(function() {
-        cy.visit('http://localhost:5173/')
+        cy.visit('https://padwhen-learningapp.fly.dev')
         cy.contains('Log In').click()
         cy.get('#username').type('1111')
         cy.get('[data-testid="pin-input"]') 
