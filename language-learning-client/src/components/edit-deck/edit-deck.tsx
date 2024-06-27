@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { Deck, Card, ChangeEvent } from '@/types';
+import { Card, ChangeEvent } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { IoIosDoneAll, IoMdSwap } from 'react-icons/io';
 import { Button } from '../ui/button';
@@ -30,17 +30,11 @@ export const EditPage = () => {
 
     const handleDone = async () => {
         if (!deck) return; 
-        const updatedDeck: Deck = {
-            ...deck,
-            deckName: deckName,
-            deckTags: deckTags,
-            cards: cards.map(card => ({
-                ...card,
-                cardScore: card._id in modifiedCardIds ? 0 : card.cardScore
-            }))
-        };
+        const updatedCards = cards.map(card => ({
+            ...card, cardScore: card._id in modifiedCardIds ? 0 : card.cardScore
+        }))
         try {
-            const response = await axios.put(`/decks/update/${id}`, updatedDeck);
+            const response = await axios.put(`/decks/update/${id}`, { cards: updatedCards });
             console.log('Updated deck: ', response.data)
             window.history.back()
         } catch (error) { console.error('Error updating deck: ', error)}
