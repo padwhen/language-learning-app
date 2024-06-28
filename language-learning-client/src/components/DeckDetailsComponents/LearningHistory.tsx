@@ -1,42 +1,20 @@
-import axios from "axios";
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
-
-interface HistoryItem {
-    date: string;
-    cardsStudied: number;
-    quizType: 'learn' | 'review'
-}
+import { useFetchHistory, useFetchNextQuizDate } from "@/state/hooks/useLearningHistoryHooks";
 
 const LearningHistory = ({ deckId }: { deckId: any }) => {
     const userId = localStorage.getItem('userId')
-    const [history, setHistory] = useState<HistoryItem[]>([])
-    const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
-    console.log(nextQuizDate)
-
-    const fetchHistory = async () => {
-        try {
-            const response = await axios.get(`/learning-history/${userId}/${deckId}`)
-            setHistory(response.data.history)
-        } catch (error) {
-            console.error('Error fetching learning history: ', error)
-        }
-    }
-    const fetchNextQuizDate = async () => {
-        try {
-            const response = await axios.get(`/learning-history/next-quiz-date/${userId}/${deckId}`)
-            setNextQuizDate(new Date(response.data.nextQuizDate))
-        } catch (error) {
-            console.error('Error fetching next quiz date: ', error)
-        }
-    }
-
+    const { history, fetchHistory } = useFetchHistory(userId, deckId)
+    const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, deckId)
     useEffect(() => {
-        fetchHistory()
-        fetchNextQuizDate()
+        if (userId && deckId) {
+            fetchHistory()
+            fetchNextQuizDate()
+        }
     }, [])
+    
     return (
         <>
             <Card>
@@ -48,14 +26,13 @@ const LearningHistory = ({ deckId }: { deckId: any }) => {
                         <ul className="space-y-2">
                             {history.map((item, index) => (
                                 <li key={index}>
-                                    <span className="font-bold">{format(new Date(item.date), 'dd.MM.yyyy')}</span>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.cardsStudied} cards
+                                    <span className="font-bold">{format(new Date(item.date), 'dd.MM.yyyy')}</span>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.correctAnswers} out of {item.cardsStudied} cards. 
                                 </li>
                             ))}
                         </ul>
-                    : <div>
+                    : (<div>
                         There is no learning history for this deck yet.
-                    </div>
-                    }
+                    </div>)}
                 </CardContent>
             </Card>
             {nextQuizDate && (

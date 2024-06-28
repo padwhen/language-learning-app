@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card as CardUI, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Question } from './Question';
 import { Progress } from "@/components/ui/progress"
@@ -14,14 +14,13 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Checkbox } from '../ui/checkbox';
 import useQuizOptions from '@/state/hooks/useQuizOptions';
-import axios from 'axios';
+import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 800 }
 
 const LearningPage: React.FC = () => {
     const { id } = useParams<{ id: string }>()
     const { cards } = useFetchDeck(id)
-    const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
     const userId = localStorage.getItem('userId')
 
     const {
@@ -39,15 +38,9 @@ const LearningPage: React.FC = () => {
     const quiz = generateQuiz(filteredAndSortedCards)
     const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
 
+    const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
+
     useEffect(() => {
-        const fetchNextQuizDate = async () => {
-            try {
-                const response = await axios.get(`/learning-history/next-quiz-date/${userId}/${id}`)
-                setNextQuizDate(new Date(response.data.nextQuizDate))
-            } catch (error) {
-                console.error('Error fetching next quiz date: ', error)
-            }
-        }
         fetchNextQuizDate()
     }, [id])
     

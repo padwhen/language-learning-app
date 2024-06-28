@@ -44,6 +44,7 @@ router.get('/learning-history/next-quiz-date/:userId/:deckId', async (req, res) 
         const { userId, deckId } = req.params
         const latestHistory = await LearningHistory.findOne({ userId, deckId })
             .sort({ date: -1 })
+            .limit(10)
         if (latestHistory) {
             res.json({ nextQuizDate: latestHistory.nextQuizDate })
         } else {
