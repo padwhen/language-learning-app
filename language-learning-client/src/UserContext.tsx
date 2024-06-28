@@ -36,14 +36,17 @@ export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ chi
                     if (!data.avatarUrl) {
                         data.avatarUrl = defaultAvatarUrl;
                     }
-                    setUser(data);                    
+                    setUser(data);
+                    localStorage.setItem('userId', data._id)                   
                 } else {
                     setIsAuthenticated(false);
                     setUser(null)
+                    localStorage.removeItem('userId')
                 }
             } catch (error) {
                 console.error('Error fetching user profile:', error);
                 setIsAuthenticated(false)
+                localStorage.removeItem('userId')
             }
         };
 

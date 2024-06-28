@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const usersRouter = require('./controllers/users');
 const cardRouter = require('./controllers/cards');
 const deckRouter = require('./controllers/decks');
+const learningHistoryRouter = require('./controllers/learningHistory')
 
 logger.info('connecting to', config.MONGODB_URI);
 
@@ -38,6 +39,7 @@ app.use(middleware.requestLogger);
 app.use('/api', usersRouter);
 app.use('/api', cardRouter);
 app.use('/api', deckRouter);
+app.use('/api', learningHistoryRouter)
 
 // Test route to check if API is working
 app.get('/api/test', (request, response) => {
