@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "../ui/label";
-import { Separator } from "../ui/separator";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"
+import { Button } from "../ui/button";
 
 export const Question = (props: any) => {
     const [answer, setAnswer] = useState('')
@@ -46,19 +46,33 @@ export const Question = (props: any) => {
     }
 
     return (
-        <div className="flex flex-col">
-            <Label className="text-3xl mb-4">{props.data.text}</Label>
-            {props.data.options.map((x: any, i: any) => {
-                return (
-                <div key={i} 
-                     className={`${answer === x ? 'border-[#aaa]' : ''} border px-2 py-2 mt-1 mb-1 rounded flex justify-between items-center cursor-pointer`}
-                     onClick={() => submitted ? '' : submitAnswer(x)}>
-                    <span>{i + 1}. {x}</span>
-                    {submitted && checkAnswer(x) === true && <FaCheckCircle size={20} color="#0cde0c"></FaCheckCircle>}
-                    {submitted && checkAnswer(x) === false && <FaTimesCircle size={20} color="#de3c3c"></FaTimesCircle>}
-                </div>)
-            })}
-            <Separator className="my-2" />
+        <div className="flex flex-col space-y-4">
+            <div>
+                <Label className="text-3xl font-bold">{props.data.text}</Label>
+            </div>
+            <div>
+                <Label>Choose matching term</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    {props.data.options.map((option: string, index: number) => (
+                        <Button 
+                            key={index} 
+                            variant={answer === option ? "default" : "outline"}
+                            className="justify-between"
+                            onClick={() => !submitted && submitAnswer(option)}
+                            disabled={submitted}
+                        >
+                            <span>{index + 1}. {option}</span>
+                            {submitted && checkAnswer(option) === true && <FaCheckCircle size={20} color="#0cde0c" />}
+                            {submitted && checkAnswer(option) === false && <FaTimesCircle size={20} color="#de3c3c" />}
+                        </Button>
+                    ))}
+                </div>
+            </div>
+            {!submitted && (
+                <Button variant="link" className="w-full" onClick={() => submitAnswer('')}>
+                    Don't know?
+                </Button>
+            )}
             {submitted && <div className="mt-1">Moving to next question...</div>}
         </div>
     )
