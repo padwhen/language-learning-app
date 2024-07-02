@@ -9,21 +9,35 @@ interface UseQuizLogicReturn {
     score: number;
     saveAnswer: (answer: string, questionNumber: number) => void;
     cards: Card[]
+    nextQuizDate?: Date | null
 }
 
 const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
+    const userId = localStorage.getItem('userId')
+
     const [question, setQuestion] = useState<number>(1);
     const [answers, setAnswers] = useState<{ question: number; answer: string }[]>([]);
     const [quizdone, setQuizdone] = useState<boolean>(false);
     const [score, setScore] = useState<number>(0);
     const [cards, setCards] = useState<Card[]>([])
+    const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
 
     const fetchCards = async () => {
         await axios.get(`/decks/${deckId}`).then((response) => setCards(response.data.cards));
     };
-    useEffect(() => { fetchCards() }, [])
 
-    const saveAnswer = (e: string, q: number) => {
+    const fetchNextQuizDate = async () => {
+        try {
+            const response = await axios.get(`/learning-history/next-quiz-date/${userId}/${deckId}`)
+            setNextQuizDate(new Date(response.data.nextQuizDate))
+        } catch (error) {
+            console.error('Error fetching next quiz date: ', error)
+        }
+    }
+
+    useEffect(() => { fetchCards(); fetchNextQuizDate() }, [])
+
+    const saveAnswer = async (e: string, q: number) => {
         const newAnswers = [...answers];
         newAnswers.push({
             question: q,
@@ -53,10 +67,28 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
             setQuestion(question + 1);
         }
         if (question === quiz.length) {
+            console.log("Quiz completed, calling finishQuiz...")
+            await finishQuiz()
             setQuizdone(true);
         }
     }
-    return { question, answers, quizdone, score, saveAnswer, cards }
+
+    const finishQuiz = async () => {
+        try {
+            const response = await axios.post(`/learning-history/save-quiz-result`, {
+                userId,
+                deckId,
+                cardsStudied: quiz.length,
+                correctAnswers: score,
+                quizType: 'learn'
+            })
+            setNextQuizDate(new Date(response.data.nextQuizDate))
+        } catch (error) {
+            console.error('Error saving quiz result: ', error)
+        }
+    }
+
+    return { question, answers, quizdone, score, saveAnswer, cards, nextQuizDate }
 }
 
 export default useQuizLogic

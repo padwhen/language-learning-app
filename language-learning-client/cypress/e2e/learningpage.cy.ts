@@ -38,4 +38,18 @@ describe('Deck details test', function() {
         cy.get('[data-testid="card-type-select"]').click()
         cy.get('[data-testid="card-type-option-completed"]').click()
     })
+    it('can select answers using number keys 1, 2, 3, 4 and by clicking', () => {
+        const checkAnswerSelection = () => {
+            cy.get('.grid.grid-cols-2.gap-2.mt-2')
+                .find('button')
+            cy.get('.grid.grid-cols-2.gap-2.mt-2')
+                .find('[data-testid="answer-test"]')
+                .should('exist');
+            cy.wait(1500);
+        };
+        ['1','2','3','4'].forEach(key => {
+            cy.get('body').type(key)
+            checkAnswerSelection()
+        })
+    })
 })

@@ -14,6 +14,7 @@ import { CardCategory } from "./components/DeckDetailsComponents/CardCategory";
 import { moveLeft, moveRight } from "./utils/cardNavigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 import { useKeyboardNavigation } from "./utils/useKeyboardNavigation";
+import LearningHistory from "./components/DeckDetailsComponents/LearningHistory";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -62,8 +63,8 @@ export const DeckDetailsPage = () => {
     useKeyboardNavigation(handleMoveLeft, handleMoveRight, currentCardIndex, cards.length)
 
     return (
-        <div className="pt-[20px] ml-16 flex gap-8">
-            <div>
+        <div className="pt-[20px] mx-16 flex gap-4">
+            <div className="w-3/4">
             <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
             <div className="pt-5 flex flex-row gap-[25px]">
                 <a className={aStyle}>Flashcards</a>
@@ -134,6 +135,9 @@ export const DeckDetailsPage = () => {
                     <CreatorBar id={id as string} />
                 </div></>
             )}
+            </div>
+            <div className="w-1/4 pt-5 ml-6">
+                <LearningHistory deckId={id} />
             </div>
         </div>
     );

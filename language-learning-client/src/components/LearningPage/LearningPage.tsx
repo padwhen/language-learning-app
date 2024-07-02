@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card as CardUI, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Question } from '../DeckDetailsComponents/Question';
+import { Question } from './Question';
 import { Progress } from "@/components/ui/progress"
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator"
@@ -14,12 +14,14 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Checkbox } from '../ui/checkbox';
 import useQuizOptions from '@/state/hooks/useQuizOptions';
+import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 800 }
 
 const LearningPage: React.FC = () => {
     const { id } = useParams<{ id: string }>()
     const { cards } = useFetchDeck(id)
+    const userId = localStorage.getItem('userId')
 
     const {
         includeCompletedCards,
@@ -35,6 +37,12 @@ const LearningPage: React.FC = () => {
     const filteredAndSortedCards = filterCards()
     const quiz = generateQuiz(filteredAndSortedCards)
     const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
+
+    const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
+
+    useEffect(() => {
+        fetchNextQuizDate()
+    }, [id])
     
     return (
         <div className="flex justify-center items-center min-h-screen">
@@ -57,6 +65,9 @@ const LearningPage: React.FC = () => {
                     {quizdone ? (
                         <div className='flex flex-col items-center'>
                             <span className='text-2xl'>{score}/{quiz.length} Questions are correct!</span>
+                            {nextQuizDate && (
+                                <span className='mt-2'>Next quiz scheduled for: {nextQuizDate.toLocaleDateString()}</span>
+                            )}
                             <Link to={`/view-decks/${id}`}>
                                 <Button className='mt-5'>Back to Home</Button>
                             </Link>

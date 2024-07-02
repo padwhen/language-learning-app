@@ -10,6 +10,7 @@ import { Label } from '../ui/label';
 import { ToolTip } from '@/composables/ToolTip';
 import { EditCardDetails } from './FlashcardDetails';
 import useFetchDeck from '@/state/hooks/useFetchDeck';
+import { ImportCards } from './ImportCards';
 
 export const EditPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -121,7 +122,7 @@ export const EditPage = () => {
                     </span>
                 </div>
                 <div className="flex justify-between pt-4">
-                    <Button variant="outline" className="text-lg text-gray-500" size="lg">Import</Button>
+                    <ImportCards setCards={setCards} />
                     <div className="flex items-center" data-testid="swap-terms">
                         <div className="cursor-pointer" onClick={() => cards.forEach((_card, index) => handleSwapTerms(index))}>
                             <ToolTip trigger={<IoMdSwap />} content="Swap terms for all cards" />
