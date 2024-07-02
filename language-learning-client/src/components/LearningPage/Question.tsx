@@ -46,7 +46,7 @@ export const Question = (props: any) => {
     }
 
     return (
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-4" data-testid="question-box">
             <div>
                 <Label className="text-3xl font-bold">{props.data.text}</Label>
             </div>
@@ -60,6 +60,7 @@ export const Question = (props: any) => {
                             className="justify-between"
                             onClick={() => !submitted && submitAnswer(option)}
                             disabled={submitted}
+                            data-testid="answer-test"
                         >
                             <span>{index + 1}. {option}</span>
                             {submitted && checkAnswer(option) === true && <FaCheckCircle size={20} color="#0cde0c" />}

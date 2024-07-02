@@ -9,7 +9,7 @@ export const MainNav = () => {
     const getLinkClassName = (path: string): string => `text-base md:text-lg ${location.pathname === path ? 'border-b-2 border-blue-500' : ''}`
 
     return (
-        <div className="hidden md:flex flex-wrap items-center gap-6 md:gap-12">
+        <div data-testid="main-nav" className="hidden md:flex flex-wrap items-center gap-6 md:gap-12">
             <Link to={'/'}>
                 <h1 className="text-xl md:text-2xl text-blue-500">Frassitsanakirja</h1>
             </Link>
