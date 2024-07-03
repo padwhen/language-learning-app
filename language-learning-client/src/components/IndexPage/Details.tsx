@@ -8,10 +8,10 @@ interface WordCategoryProps {
 }
 
 const WordCategory: React.FC<WordCategoryProps> = ({ title, words }) => (
-    <div className="w-96 border rounded flex flex-col justify-center items-center ml-[28px]">
-        <div className="text-lg font-bold">{title}</div>
+    <div className="w-full border rounded flex flex-col justify-center items-center">
+        <div className="text-lg font-bold py-2">{title}</div>
         <div className="w-full border-b border-gray-300"></div>
-        <div className="flex flex-wrap justify-center">
+        <div className="flex flex-wrap justify-center p-2">
             {words.map((word, index) => (
                 <Modal key={index} word={word} />
             ))}
@@ -27,10 +27,12 @@ export const WordDetails: React.FC<{words: Word[]}> = ({ words }) => {
         { title: 'Others', words: words.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
     ]
     return (
-        <div className="ml-[110px] grid grid-cols-2 gap-4 mt-5 w-full">
-            {categories.map((category, index) => (
-                <WordCategory key={index} title={category.title} words={category.words} />
-            ))}
+        <div className="mt-5 w-full max-w-4xl px-4 mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {categories.map((category, index) => (
+                    <WordCategory key={index} title={category.title} words={category.words} />
+                ))}
+            </div>
         </div>
     )
 }
