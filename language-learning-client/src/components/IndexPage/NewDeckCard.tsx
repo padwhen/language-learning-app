@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChangeEvent, useState } from "react"
-import { BadgeComponent } from "../composables/Badge"
+import { BadgeComponent } from "../../composables/Badge"
 import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
 import { useDeckContext } from "@/DeckContext"
@@ -55,7 +55,7 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
   }
 
   return (
-    <div className="flex flex-col gap-4 w-[350px] ml-5">
+    <div className="flex flex-col gap-4 w-full md:w-[350px]">
       <Card>
         <CardHeader>
           <CardTitle>New Deck</CardTitle>

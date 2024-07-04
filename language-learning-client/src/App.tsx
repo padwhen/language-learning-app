@@ -12,7 +12,7 @@ import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
 import { SettingPage } from './components/settings/settings'
 
-axios.defaults.baseURL = 'http://localhost:2323/api/'
+axios.defaults.baseURL = 'https://padwhen-learningapp.fly.dev/api/'
 axios.defaults.withCredentials = true
 
 function App() {

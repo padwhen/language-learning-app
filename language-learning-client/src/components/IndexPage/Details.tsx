@@ -1,5 +1,5 @@
 import { Word } from "@/types"
-import { Modal } from "../WordModal"
+import { Modal } from "./WordModal"
 import React from "react";
 
 interface WordCategoryProps {
