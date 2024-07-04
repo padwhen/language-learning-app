@@ -1,8 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { DockCard } from "./DockCard";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { NewDeckCard } from "./NewDeckCard";
 import { Deck } from "@/types";
 
@@ -38,10 +38,10 @@ export const DisplayCurrentDecks: React.FC<{ onSelectDeck: (deckId: string) => v
     };
 
     return (
-        <div className="flex items-start">
-            <Card className="w-[510px] flex-1 overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start">
+            <Card className="w-full md:w-[510px] flex-1 overflow-hidden">
                 <CardHeader>
-                    <CardTitle className="text-3xl">Current decks in {language}</CardTitle>
+                    <CardTitle className="text-2xl md:text-3xl">Current decks in {language}</CardTitle>
                 </CardHeader>
                 <div className="overflow-y-auto max-h-[450px]" data-testid="current-decks">
                     {decks.length === 0 ? (
@@ -50,23 +50,29 @@ export const DisplayCurrentDecks: React.FC<{ onSelectDeck: (deckId: string) => v
                             <Button onClick={() => setOpenNewDeck(true)} variant="default">Add a new deck</Button>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-y-3 justify-center items-center mb-5">
-                            {decks.map((deck) => (
-                                <DockCard 
-                                    key={deck._id} 
-                                    info={deck}
-                                    isSelected={selectedDeck === deck._id}
-                                    onClick={() => handleDeckSelect(deck._id)} />
-                            ))}
+                        <div className="flex flex-col gap-3 p-4 max-h-[300px] md:max-h-[450px] overflow-y-auto">
+                        {decks.map((deck) => (
+                            <div key={deck._id} className="w-full">
+                            <DockCard 
+                                info={deck}
+                                isSelected={selectedDeck === deck._id}
+                                onClick={() => handleDeckSelect(deck._id)} 
+                            />
+                            </div>
+                        ))}
                         </div>
                     )}
                 </div>
-                <CardFooter className="flex justify-between mt-2">
-                    <Button onClick={() => setOpenNewDeck(true)} variant="outline">Add a new deck</Button>
-                    <Button onClick={handleChooseDeck} disabled={!selectedDeck}>Choose this deck</Button>
+                <CardFooter className="flex flex-col md:flex-row justify-between mt-2 gap-2 md:gap-0">
+                    <Button onClick={() => setOpenNewDeck(true)} variant="outline" className="w-full md:w-auto">Add a new deck</Button>
+                    <Button onClick={handleChooseDeck} disabled={!selectedDeck} className="w-full md:w-auto">Choose this deck</Button>
                 </CardFooter>
             </Card>
-            {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}
+            {openNewDeck && (
+                <div className="mt-4 md:mt-0 md:ml-4 w-full md:w-auto">
+                    <NewDeckCard setOpenNewDeck={setOpenNewDeck} /> 
+                </div>  
+            )}
         </div>
     );
 };

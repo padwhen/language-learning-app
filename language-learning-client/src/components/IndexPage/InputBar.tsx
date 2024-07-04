@@ -25,10 +25,10 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
     }
 
     return (
-        <div className="mt-5 w-[830px] gap-x-4">
+        <div className="mt-5 w-full max-w-3xl px-4">
             <div className="w-full">
-                <textarea   rows={5}
-                            className="placeholder:italic appearance-noneplaceholder:italic appearance-none block w-full text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                <textarea   rows={6}
+                            className="placeholder:italic appearance-none block w-full text-base sm:text-lg text-gray-700 border border-gray-200 rounded py-4 px-4 mb-3 leading-relaxed focus:outline-none focus:bg-white focus:border-gray-500"
                             value={inputText}
                             onChange={handleInputChange}
                             placeholder={ready ? "Type in your sentence here. Note: A sentence is better for us to handle." :  "Approximately wait time is 60 seconds. Please be patient. It's gonna worth the wait. So basically the words will appear below, when the 'Loading' button is not 'Loading' anymore. Pss: I'm making this long so that you have something to do while waiting. Enjoyyyy"}
@@ -36,18 +36,17 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
                             data-testid="input-bar"
                 />
             </div>
-            <div className="flex justify-between w-full">
-                <div className="md:flex md:items-center"></div>
+            <div className="flex flex-col sm:flex-row justify-between w-full items-center">
                 {ready ? (
-                    <button onClick={handleTranslation} className="shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded" type="submit">
+                    <button onClick={handleTranslation} className="w-full sm:w-auto shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded mt-2 sm:mt-0" type="submit">
                         Translate
                     </button>
                 ) : (
-                    <div className="flex justify-between w-full items-center">
-                        <span>
+                    <div className="flex flex-col sm:flex-row justify-between w-full items-center mt-2 sm:mt-0">
+                        <span className="mb-2 sm:mb-0 sm:mr-4 text-center sm:text-left">
                             It will take approximately {countdown} seconds for us to translate.
                         </span> 
-                        <button type="button" className="inline-flex items-center shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:pointer-events-none" disabled>
+                        <button type="button" className="w-full sm:w-auto inline-flex items-center shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:pointer-events-none" disabled>
                             <span className="mr-2 animate-spin inline-block size-4 border-[3px] border-current border-t-transparent text-white rounded-full" role="status" aria-label="loading"></span>
                             Loading
                         </button>                    

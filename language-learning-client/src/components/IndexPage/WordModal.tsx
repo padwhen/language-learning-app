@@ -6,7 +6,7 @@ import { useContext, useState } from "react"
 import { NewDeckCard } from "./NewDeckCard"
 import axios from "axios"
 import { UserContext } from "@/UserContext"
-import { LoginPage } from "./UsersComponents/LoginPage"
+import { LoginPage } from "../UsersComponents/LoginPage"
 import { DisplayCurrentDecks } from "./DisplayCurrentDecks"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -60,7 +60,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
       <DialogTrigger asChild>
         <Button variant="outline" className="m-1 py-1 px-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white text-md hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">{fi}</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[525px] h-[300px]">
+      <DialogContent className="max-w-[90vw] w-full sm:max-w-[525px] h-[40vh] sm:h-[300px] overflow-y-auto">
         <DialogHeader>
             <DialogTitle className="text-4xl mt-2">{fi}</DialogTitle>  
         </DialogHeader>
@@ -84,21 +84,21 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
             </div>
           </div>
         </DialogDescription>
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <Dialog>
             <DialogTrigger>
-                <Button type="submit">Save this to a deck</Button>
+                <Button type="submit" className="w-full sm:w-auto">Save this to a deck</Button>
             </DialogTrigger>
-              <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : "max-w-[455px] h-[350px]"}>
+              <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : ""}>
                 {user ? (
                   <DisplayCurrentDecks onSelectDeck={saveWordToDeck} />) : (<>
-                <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                <DialogTitle className="text-2xl sm:text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
                 <LoginPage /></>)}
                 {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}
               </DialogContent>
           </Dialog>
           <DialogClose>
-            <Button type="submit" className="bg-gray-500">Close</Button>
+            <Button type="submit" className="bg-gray-500 w-full sm:w-auto">Close</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

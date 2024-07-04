@@ -10,29 +10,22 @@ export const TranslationBar: React.FC<{
         setFromLanguage(language);
     }
     return (
-        <div className="flex items-center gap-x-4">
-            <div className="hs-dropdown relative inline-flex">
-                <div className="w-96 hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-60 bg-white shadow-md rounded-lg p-2 mt-2 dark:bg-neutral-800 dark:border dark:border-neutral-700 dark:divide-neutral-700 after:h-4 after:absolute after:-bottom-4 after:start-0 after:w-full before:h-4 before:absolute before:-top-4 before:start-0 before:w-full" aria-labelledby="hs-dropdown-default-from">
-                    {languages.map(language => (
-                        language !== fromLanguage && (
-                            <div key={language} onClick={() => handleLanguageChange(language)} className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700">
-                                <div className="text-xl">{language}</div>
-                            </div>
-                        )
-                    ))}
-                </div>
-                <div className="w-96">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 lg:gap-8 w-full md:w-auto mt-8 p-4 rounded-lg">
+            <div className="relative inline-flex w-full md:w-auto">
+                <div className="w-full md:w-64 lg:w-80">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button className="w-full py-3 px-4 border border-gray-200 rounded-lg bg-white text-gray-800 font-medium shadow-sm hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800">
-                                <div className="text-xl">{fromLanguage}</div>
+                            <button className="w-full py-2 px-3 lg:py-3 lg:px-4 border border-gray-300 rounded-lg bg-white text-gray-800 font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <div className="text-lg lg:text-xl">{fromLanguage}</div>
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-96">
+                        <DropdownMenuContent className="w-full md:w-64 lg:w-80">
                             <DropdownMenuRadioGroup>
                                 {languages.map(language => (
                                     language !== fromLanguage && (
-                                        <DropdownMenuRadioItem onClick={() => handleLanguageChange(language)} key={language} value={language}><div className="text-lg">{language}</div></DropdownMenuRadioItem>    
+                                        <DropdownMenuRadioItem onClick={() => handleLanguageChange(language)} key={language} value={language}>
+                                            <div className="text-base lg:text-lg">{language}</div>
+                                        </DropdownMenuRadioItem>
                                     )
                                 ))}
                             </DropdownMenuRadioGroup>
@@ -40,14 +33,14 @@ export const TranslationBar: React.FC<{
                     </DropdownMenu>
                 </div>
             </div>
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            <div className="flex justify-center md:justify-start w-full md:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 lg:w-8 lg:h-8 text-indigo-600">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
             </div>
-            <div className="relative inline-flex">
-                <button type="button" className="w-96 py-3 px-4 inline-flex items-center justify-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800">
-                    <div className="text-xl">English</div>
+            <div className="relative inline-flex w-full md:w-auto">
+                <button type="button" className="w-full md:w-64 lg:w-80 py-2 px-3 lg:py-3 lg:px-4 inline-flex items-center justify-center gap-x-2 text-base lg:text-lg font-medium rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div className="text-lg lg:text-xl">English</div>
                 </button>
             </div>
         </div>

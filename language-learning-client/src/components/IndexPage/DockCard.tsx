@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { BadgeComponent } from "../composables/Badge";
+import { BadgeComponent } from "@/composables/Badge";
 import { Deck } from '@/types';
 
 interface DockCardProps {
@@ -13,7 +13,7 @@ export const DockCard: React.FC<DockCardProps> = ({ info, isSelected, onClick })
 
     return (
         <Card
-            className={`w-[440px] h-[100px] ${isSelected ? 'ring-2 ring-blue-500 transition-all duration-300' : ''}`}
+            className={`p-4 rounded-lg border ${isSelected ? 'border-blue-500' : 'border-gray-200'} cursor-pointer h-[140px] md:h-[130px]`}
             onClick={onClick}
         >
             <div className="p-5">
