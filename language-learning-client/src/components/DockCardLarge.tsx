@@ -15,17 +15,17 @@ export const DockCardLarge: React.FC<{
 
     const percentage = calculateCompletePercentage(cards)
 
-    const tagsStyle = "px-4 py-1 bg-blue-500 text-white rounded-full inline-block min-w-[100px] flex items-center justify-center"
+    const tagsStyle = "px-2 py-1 bg-blue-500 text-white rounded-full inline-block min-w-[80px] text-sm flex items-center justify-center"
 
     return (
-        <div className="min-w-[400px] max-w-[600px] h-[190px] border-4 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300 hover:border-b-2 hover:border-blue-500">
-            <div className="ml-4 pt-2">
-                <h1 className="text-2xl font-semibold mt-2">{deckName}</h1>
-                <div className="flex items-center gap-5 mt-2">
-                    <h3 className="text-lg">{percentage} % completed</h3>
-                    <Progress value={Number(percentage)} className="w-[200px] h-3" />
+        <div className="w-full max-w-[600px] h-auto min-h-[150px] border-2 md:border-4 rounded-xl md:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300 hover:border-b-2 hover:border-blue-500">
+            <div className="p-3 md:p-4">
+                <h1 className="text-xl md:text-2xl font-semibold">{deckName}</h1>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5 mt-2">
+                    <h3 className="text-base md:text-lg">{percentage} % completed</h3>
+                    <Progress value={Number(percentage)} className="w-full sm:w-[200px] h-2 md:h-3" />
                 </div>
-                <div className="mb-5 mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                     <div className={tagsStyle}>{cards.length} terms</div>
                     {deckTags.map((tag, index) => (
                         <div key={index} className={tagsStyle}>
