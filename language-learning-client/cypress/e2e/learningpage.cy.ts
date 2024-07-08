@@ -1,6 +1,6 @@
 describe('Deck details test', function() {
     beforeEach(function() {
-        cy.visit('https://padwhen-learningapp.fly.dev/')
+        cy.visit('http://localhost:5173/')
         cy.contains('Log In').click()
         cy.get('#username').type('1111')
         cy.get('[data-testid="pin-input"]') 
@@ -20,15 +20,19 @@ describe('Deck details test', function() {
         })      
     })
     it('can press include completed', function() {
+        cy.get('[data-testid="options-dialog"]').click()
         cy.get('[data-testid="include-completed-checkbox"]').click()
     })
     it('can press shuffle', () => {
+        cy.get('[data-testid="options-dialog"]').click()
         cy.get('[data-testid="shuffle-cards-checkbox"]').click();
     })
     it('can modify the quantity of quizzes', () => {
+        cy.get('[data-testid="options-dialog"]').click()
         cy.get('[data-testid="cards-to-learn-input"]').clear().type('5')
     })
     it('can choose which kind of words to learn', () => {
+        cy.get('[data-testid="options-dialog"]').click()
         cy.get('[data-testid="card-type-select"]').click()
         cy.get('[data-testid="card-type-option-all"]').click()
         cy.get('[data-testid="card-type-select"]').click()
