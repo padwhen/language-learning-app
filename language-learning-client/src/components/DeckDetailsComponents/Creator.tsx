@@ -31,22 +31,22 @@ export const CreatorBar = ({id}: {id: string}) => {
     }
     
     return (
-        <div className="flex gap-2 justify-between max-w-[875px]">
-            <div className="flex gap-4 items-center justify-center">
-                <Avatar className="w-12 h-12">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between max-w-[875px] w-full px-4 sm:px-0">
+            <div className="flex gap-4 items-center">
+                <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                     <AvatarImage src={user?.avatarUrl} alt="@shadcn" />
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div>
-                    <h1 className="text-xl font-semibold">{user?.username}</h1>
-                    <h3 className="text-md text-gray-500">Created {formatDistance(getTimeStamp(id), new Date(), { addSuffix: true })}</h3>
+                    <h1 className="text-lg sm:text-xl font-semibold">{user?.username}</h1>
+                    <h3 className="text-sm sm:text-md text-gray-500">Created {formatDistance(getTimeStamp(id), new Date(), { addSuffix: true })}</h3>
                 </div>    
             </div>
-            <div className="flex gap-2 items-center justify-center">
+            <div className="flex flex-wrap gap-2 items-center justify-center sm:justify-end mt-2 sm:mt-0">
                 <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger className="flex rounded-lg hover:bg-gray-200 items-center justify-center">
-                        <ToolTip trigger={<MdAutoFixHigh size="25" />} content="Tailor this deck with AI" />
-                        <h1 className="text-lg items-center justify-center flex px-2">Tailor with AI</h1>    
+                    <DialogTrigger className="flex rounded-lg hover:bg-gray-200 items-center justify-center p-2">
+                        <ToolTip trigger={<MdAutoFixHigh size="20" />} content="Tailor this deck with AI" />
+                        <h1 className="hidden sm:inline text-sm sm:text-lg">Tailor with AI</h1>    
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -61,11 +61,11 @@ export const CreatorBar = ({id}: {id: string}) => {
                         </DialogHeader>
                     </DialogContent>
                 </Dialog>
-                <ToolTip trigger={<Download />} content="Export this deck" />
-                <ToolTip trigger={<Delete />} content="Delete this deck" />
-                <Link to={`/edit-deck/${id}`} data-testid="modify-deck" className="flex rounded-lg hover:bg-gray-200">
-                    <ToolTip trigger={<Pencil />} content="Modify this deck" />
-                    <h1 className="text-lg items-center justify-center flex px-2">Edit</h1>
+                <ToolTip trigger={<Download className="w-5 h-5 sm:w-6 sm:h-6" />} content="Export this deck" />
+                <ToolTip trigger={<Delete className="w-5 h-5 sm:w-6 sm:h-6" />} content="Delete this deck" />
+                <Link to={`/edit-deck/${id}`} data-testid="modify-deck" className="flex rounded-lg hover:bg-gray-200 items-center p-2">
+                    <ToolTip trigger={<Pencil className="w-5 h-5 sm:w-6 sm:h-6 sm:mr-2" />} content="Modify this deck" />
+                    <h1 className="text-sm sm:text-lg">Edit</h1>
                 </Link>
             </div>
         </div>

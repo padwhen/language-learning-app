@@ -7,7 +7,7 @@ const testSelectDropdown = (selectOption: string) => {
     cy.get(test_trigger).should('contain.text', selectOption);
 }
 
-describe('Deck details test', function() {
+describe('Deck info test', function() {
     const selectOptions = [
         'Most recent',
         'Top Progress',

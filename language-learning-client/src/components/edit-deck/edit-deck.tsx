@@ -85,44 +85,59 @@ export const EditPage = () => {
     };
 
     return (
-        <div className="pt-8">
-            <div className="container sticky top-0 w-full flex justify-between bg-white z-10 py-4">
-                <div className="mr-auto flex gap-16">
-                    <Button data-testid="done-button" className="flex gap-2 items-center justify-center text-xl" onClick={handleDone}>
+        <div className="pt-4 md:pt-8">
+            <div className="container sticky top-0 w-full flex flex-col md:flex-row justify-between bg-white z-10 md:py-4 py-2 md:px-8">
+                <div className="flex-col md:flex-row flex md:gap-16 gap-4 mb-4 md:mb-0">
+                    <Button data-testid="done-button" className="flex gap-2 items-center justify-center md:text-xl text-lg" onClick={handleDone}>
                         <IoIosDoneAll />
                         Done
                     </Button>
-                    <span className="flex justify-center items-center text-red-500 font-bold">
+                    <span className="flex justify-center items-center text-red-500 font-bold text-sm md:text-base">
                         Note: Modifying the cards will reset their score, meaning that all previous progress will be deleted, and you'll have to start over again.
                     </span>
                 </div>
             </div>
-            <div className="px-32 mt-8 w-full flex flex-col space-y-2">
+            <div className="px-4 md:px-32 mt-4 md:mt-8 w-full flex flex-col space-y-2">
                 <div>
                     <Label htmlFor="title" className="text-xl">Title</Label>
                     <Input data-testid="edit-title" type="text" value={deckName} size={80} className="mt-1 text-xl" onChange={handleDeckNameChange} />
                 </div>
-                <div className="flex flex-row gap-4">
-                    <span className="w-3/4">
-                        <Label htmlFor="tags" className="text-xl">Tags</Label>
-                        <div className="flex items-center mt-1 space-x-2">
-                            {deckTags.map(tag => (
-                                <div key={tag} className="flex items-center bg-gray-200 rounded-lg px-2 py-1">
-                                    <span className="mr-2">{tag}</span>
-                                    <button type="button" onClick={() => handleRemoveTag(tag)} data-testid="remove-tag">&times;</button>
-                                </div>
-                            ))}
-                            <Input data-testid="edit-tags-input" type="text" value={tagsInput} onChange={handleTagsInputChange} size={20} className="text-xl" />
-                            <button type="button" onClick={handleAddTag}>Add</button>
+                <div className="flex md:flex-row flex-col gap-4">
+                <span className="w-full md:w-3/4">
+                    <Label htmlFor="tags" className="md:text-xl text-lg">Tags</Label>
+                    <div className="flex flex-wrap items-center mt-1 gap-2">
+                        {deckTags.map(tag => (
+                            <div key={tag} className="flex items-center bg-gray-200 rounded-lg px-2 py-1 text-sm">
+                                <span className="mr-2">{tag}</span>
+                                <button type="button" onClick={() => handleRemoveTag(tag)} data-testid="remove-tag" className="text-gray-500 hover:text-gray-700">&times;</button>
+                            </div>
+                        ))}
+                        <div className="flex-grow flex items-center">
+                            <Input 
+                                data-testid="edit-tags-input" 
+                                type="text" 
+                                value={tagsInput} 
+                                onChange={handleTagsInputChange} 
+                                className="flex-grow text-lg w-full" 
+                                placeholder="Add a tag"
+                            />
+                            <Button 
+                                type="button" 
+                                onClick={handleAddTag}
+                                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                                Add
+                            </Button>
                         </div>
-                    </span>
-                    <span className="w-1/4">
-                        <Label htmlFor="language" className="text-xl">Language</Label>
-                        <Input data-testid="edit-language" type="text" value={userLang} size={80} className="mt-1 text-xl" onChange={handleUserLangChange} />
+                    </div>
+                </span>
+                    <span className="md:w-1/4 w-full">
+                        <Label htmlFor="language" className="md:text-xl text-lg">Language</Label>
+                        <Input data-testid="edit-language" type="text" value={userLang} size={80} className="mt-1 text-lg md:text-xl" onChange={handleUserLangChange} />
                     </span>
                 </div>
                 <div className="flex justify-between pt-4">
-                    <ImportCards setCards={setCards} />
+                    <div className='hidden sm:block'><ImportCards setCards={setCards} /></div>
                     <div className="flex items-center" data-testid="swap-terms">
                         <div className="cursor-pointer" onClick={() => cards.forEach((_card, index) => handleSwapTerms(index))}>
                             <ToolTip trigger={<IoMdSwap />} content="Swap terms for all cards" />
@@ -138,7 +153,7 @@ export const EditPage = () => {
                     </div>
                 </div>
                 <div className="bg-white z-10 py-4 flex justify-end w-full">
-                    <Button  data-testid="done-button-bottom" className="flex gap-2 items-center justify-center text-xl" onClick={handleDone}>
+                    <Button  data-testid="done-button-bottom" className="flex gap-2 items-center justify-center text-lg md:text-xl w-full md:w-auto" onClick={handleDone}>
                         <IoIosDoneAll />
                         Done
                     </Button>

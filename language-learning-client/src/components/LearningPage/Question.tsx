@@ -48,11 +48,11 @@ export const Question = (props: any) => {
     return (
         <div className="flex flex-col space-y-4" data-testid="question-box">
             <div>
-                <Label className="text-3xl font-bold">{props.data.text}</Label>
+                <Label className="text-2xl sm:text-3xl font-bold">{props.data.text}</Label>
             </div>
             <div>
                 <Label>Choose matching term</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                     {props.data.options.map((option: string, index: number) => (
                         <Button 
                             key={index} 

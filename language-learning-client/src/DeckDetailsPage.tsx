@@ -38,15 +38,24 @@ export const DeckDetailsPage = () => {
         if (autoPlay) {
             interval = setInterval(() => {
                 if (currentCardIndex < cards.length - 1) {
-                    setIsFlipped(true); // Flip the card
-                    setTimeout(() => {
-                        setIsFlipped(false); // Flip back the card
-                        setCurrentCardIndex(currentCardIndex + 1); // Move to the next card
-                    }, 2000);
-                } else {
-                    setAutoPlay(false); // Stop autoplay if at the last card
+                    if (!isFlipped) {
+                        // If showing front, flip to back
+                        setIsFlipped(true);
+                    } else {
+                        // If showing back, move to next card and show front
+                        setIsFlipped(false);
+                        setCurrentCardIndex(prevIndex => prevIndex + 1);
+                    }
+                } else if (currentCardIndex === cards.length - 1) {
+                    if (!isFlipped) {
+                        // If at last card and showing front, flip to back
+                        setIsFlipped(true);
+                    } else {
+                        // If at last card and showing back, stop autoplay
+                        setAutoPlay(false);
+                    }
                 }
-            }, 1000); // Adjust the delay based on your preference
+            }, 2000); // Adjust timing as needed
         }
         return () => { if (interval) clearInterval(interval); };
     }, [autoPlay, currentCardIndex, cards.length, isFlipped]);
@@ -57,16 +66,16 @@ export const DeckDetailsPage = () => {
     const hasCards = cards.length > 0;
     const hasMultipleCards = cards.length > 1;
 
-    const aStyle = "text-2xl inline-block px-8 py-2 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-[200px] text-center";
+    const aStyle = "text xl md:text-2xl inline-block px-4 md:px-8 py-3 rounded-sm border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-full sm:w-[205px] text-center";
     const moveLeftRightStyle = "border rounded-full hover:bg-gray-200 transition duration-300"
 
     useKeyboardNavigation(handleMoveLeft, handleMoveRight, currentCardIndex, cards.length)
 
     return (
-        <div className="pt-[20px] mx-16 flex gap-4">
-            <div className="w-3/4">
-            <h1 className="text-4xl font-bold mt-4">{deckName}</h1>
-            <div className="pt-5 flex flex-row gap-[25px]">
+        <div className="pt-5 px-4 md:px-8 lg:px-16 flex flex-col lg:flex-row gap-4">
+            <div className="w-full lg:w-3/4">
+            <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-6">{deckName}</h1>
+            <div className="flex flex-wrap gap-4 mb-6">
                 <a className={aStyle}>Flashcards</a>
                 <a className={aStyle}>
                     {cards.length >= 4 ? (
@@ -83,7 +92,7 @@ export const DeckDetailsPage = () => {
             </div>
             {hasCards ? (
                 <>
-                    <div className="w-[875px] border mt-5" data-testid="card-flip-container">
+                    <div className="w-full max-w-[875px] border mt-5" data-testid="card-flip-container">
                         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
                             <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
                                 <FrontCard word={cards[currentCardIndex]?.userLangCard} />
@@ -93,30 +102,29 @@ export const DeckDetailsPage = () => {
                             </div>
                         </ReactCardFlip>  
                     </div>    
-                    <div className="pt-4 flex justify-between max-w-[875px]">
-                        <div className="flex gap-4 items-center justify-center">
+                    <div className="pt-4 flex flex-wrap justify-between max-w-[875px]">
+                        <div className="flex gap-4 items-center justify-center mb-4 w-full sm:w-auto">
                             <ToolTip trigger={<Play />} content="Play" onClick={() => setAutoPlay(!autoPlay)} />
                             <ToolTip trigger={<Shuffle />} content="Shuffle" />
                         </div>
-                        <div className="flex items-center justify-center gap-5">
+                        <div className="flex items-center justify-center gap-5 mb-4 w-full sm:w-auto">
                             <div data-testid="move-left"
                                 className={`${moveLeftRightStyle} transform hover:-translate-x-1 ${currentCardIndex === 0 || !hasMultipleCards ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
                                 onClick={currentCardIndex !== 0 && hasMultipleCards ? handleMoveLeft : undefined}>
-                                <MoveLeft size={45} />
-                            </div>
+                                <MoveLeft className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-[45px] lg:h-[45px]" />                            </div>
                             <div data-testid="current-card-number" className="text-3xl">{currentCardIndex + 1} / {cards.length}</div>
                             <div data-testid="move-right"
                                  className={`${moveLeftRightStyle} transform hover:translate-x-1 ${currentCardIndex === cards.length - 1 || !hasMultipleCards ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
                                  onClick={currentCardIndex !== cards.length - 1 && hasMultipleCards ? handleMoveRight : undefined}>
-                                <MoveRight size={45} />
+                                <MoveRight className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-[45px] lg:h-[45px]" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center w-full sm:w-auto">
                             <ToolTip trigger={<Settings />} content="Settings" />
                         </div>
                     </div>
                     <div data-testid="progress-bar" className="pt-2">
-                        <Progress value={(currentCardIndex + 1) / cards.length * 100} className="max-w-[875px] max-h-1"  />
+                        <Progress value={(currentCardIndex + 1) / cards.length * 100} className="w-full max-w-[875px] max-h-1 mx-auto mt-4"  />
                     </div>
                     <div className="pt-[50px]">
                         <CreatorBar id={id as string} />
@@ -136,7 +144,7 @@ export const DeckDetailsPage = () => {
                 </div></>
             )}
             </div>
-            <div className="w-1/4 pt-5 ml-6">
+            <div className="w-full lg:w-1/4 pt-5 lg:ml-6">
                 <LearningHistory deckId={id} />
             </div>
         </div>
