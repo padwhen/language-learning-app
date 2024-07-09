@@ -49,17 +49,22 @@ jobs:
   deployed:
     needs: [build, e2e_tests]
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && !contains(toJson(github.event.head_commit.message), '#skip' )}}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Trigger deployment
+      - name: Build client and copy to backend
         working-directory: language-learning-client
-        if: ${{ github.ref == 'refs/heads/main' && !contains(toJson(github.event.head_commit.message), '#skip' ) }}
         run: |
           npm install
           npm run build
           cp -r dist ../backend
-          cd ../backend
+      - name: Deploy backend
+        working-directory: backend
+        run: |
           npm install
           flyctl deploy --remote-only
         env:
@@ -67,12 +72,12 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           PORT: ${{ secrets.PORT }}
   tag_release:
-    needs: [build, e2e_tests, deployed]
+    needs: [deployed]
     runs-on: ubuntu-20.04
+    if: ${{ github.ref == 'refs/heads/main' && !contains(toJson(github.event.head_commit.message), '#skip' )}}
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
-        if: ${{ github.ref == 'refs/heads/main' && !contains(toJson(github.event.head_commit.message), '#skip' ) }}
         uses: anothrNick/github-tag-action@1.64.0
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
