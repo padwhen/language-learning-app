@@ -19,14 +19,16 @@ describe('Deck interaction test', () => {
       cy.contains('saanut').should('be.visible')
     })
     it('user can scroll choosing decks', function() {
-        cy.get('[data-testid="input-bar"]').should('be.visible').and('not.be.disabled')
-        cy.wait(500)
-        cy.get('textarea').type('test')    
-        cy.contains('Translate').click()
-        cy.get('[data-testid="translation-result"]').should('be.visible').contains("An exceptional solution in grading the long mathematics high school exam: full points were not given for the correct answer.") 
-        cy.contains('saanut').should('be.visible').click()
-        cy.contains('Save this to a deck').should('be.visible').click()
-        cy.get('[data-testid="current-decks"]').should('be.visible').scrollTo('bottom', { ensureScrollable: true })
-        cy.contains('deck_example4').should('be.visible')
+      cy.viewport(1280, 720);
+      cy.get('[data-testid="input-bar"]').should('be.visible').and('not.be.disabled');
+      cy.wait(500);
+      cy.get('textarea').type('test');    
+      cy.contains('Translate').click();
+      cy.get('[data-testid="translation-result"]').should('be.visible').contains("An exceptional solution in grading the long mathematics high school exam: full points were not given for the correct answer."); 
+      cy.contains('saanut').should('be.visible').click();
+      cy.contains('Save this to a deck').should('be.visible').click();
+      cy.wait(1500)
+      cy.get('[data-testid="current-decks"]').should('be.visible');
+      cy.contains('deck_example4').scrollIntoView().should('be.visible');
     })
 })
