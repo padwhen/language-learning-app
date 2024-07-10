@@ -126,7 +126,11 @@ const LearningPage: React.FC = () => {
                     ) : (
                         quiz.map((quizItem, index) => (
                             index + 1 === question && (
-                                <Question key={index} data={quizItem} save={(e: string) => saveAnswer(e, question)} />
+                                <Question key={index} data={quizItem} 
+                                    save={(answer: string, correct: boolean, cardId: string) => 
+                                        saveAnswer(answer, correct, cardId)
+                                    } 
+                                />
                             )
                         ))
                     )}

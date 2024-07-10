@@ -3,7 +3,18 @@ import { Label } from "../ui/label";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"
 import { Button } from "../ui/button";
 
-export const Question = (props: any) => {
+interface QuestionProps {
+    data: {
+        userLangCard: string;
+        options: string[];
+        correctAnswer: string;
+        cardId: string;
+    };
+    save: (answer: string, correct: boolean, cardId: string) => void;
+}
+
+export const Question: React.FC<QuestionProps> = (props) => {
+    console.log(props.data.correctAnswer)
     const [answer, setAnswer] = useState('')
     const [submitted, setSubmitted] = useState(false)
 
@@ -29,18 +40,19 @@ export const Question = (props: any) => {
         setAnswer(selectedAnswer);
         setSubmitted(true);
         setTimeout(() => {
-            props.save(selectedAnswer === props.data.answer);
-        }, 1000); // Delay to show the correct/incorrect answer before moving to next question
+            const isCorrect = selectedAnswer === props.data.correctAnswer
+            props.save(selectedAnswer, isCorrect, props.data.cardId);
+        }, 1000); 
     }
 
     const checkAnswer = (val: any) => {
-        if (val === answer && val === props.data.answer) {
+        if (val === answer && val === props.data.correctAnswer) {
             return true;
         }
-        if (val === answer && val !== props.data.answer) {
+        if (val === answer && val !== props.data.correctAnswer) {
             return false;
         }
-        if (val !== answer && val === props.data.answer) {
+        if (val !== answer && val === props.data.correctAnswer) {
             return true;
         }
     }
@@ -48,7 +60,7 @@ export const Question = (props: any) => {
     return (
         <div className="flex flex-col space-y-4" data-testid="question-box">
             <div>
-                <Label className="text-2xl sm:text-3xl font-bold">{props.data.text}</Label>
+                <Label className="text-2xl sm:text-3xl font-bold">{props.data.userLangCard}</Label>
             </div>
             <div>
                 <Label>Choose matching term</Label>

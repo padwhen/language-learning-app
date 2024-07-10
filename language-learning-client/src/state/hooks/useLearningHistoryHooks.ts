@@ -1,11 +1,19 @@
 import { useState } from "react";
 import axios from "axios";
+import { Card } from "@/types";
 
 interface HistoryItem {
+    _id: string;
     correctAnswers?: number;
     date: string;
     cardsStudied: number;
-    quizType: 'learn' | 'review'
+    quizType: 'learn' | 'review';
+    randomName: string;
+}
+
+interface QuizHistory {
+    _id: string;
+    cards: Card[]
 }
 
 export const useFetchHistory = (userId: string | null, deckId: any) => {
@@ -46,4 +54,25 @@ export const useFetchNextQuizDate = (userId: string | null, deckId: any) => {
         }
     }
     return { nextQuizDate, loading, error, fetchNextQuizDate }
+}
+
+export const useFetchQuizHistory = (historyId: string) => {
+    const [quizHistory, setQuizHistory] = useState<QuizHistory | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState<boolean>(false)
+
+    const fetchQuizHistory = async () => {
+        setLoading(true)
+        try {
+            const response = await axios.get(`/learning-history/${historyId}`)
+            setQuizHistory(response.data)
+        } catch (error) {
+            console.error('Error fetching quiz history: ', error)
+            setError('Error fetching quiz history')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return { quizHistory, error, loading, fetchQuizHistory }
 }
