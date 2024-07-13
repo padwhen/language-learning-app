@@ -15,7 +15,8 @@ export const generateQuiz = (cards: Card[]): QuizItem[] => {
             userLangCard: card.userLangCard,
             options: options,
             correctAnswer: card.engCard,
-            cardId: card._id
+            cardId: card._id,
+            cardScore: card.cardScore
         }
     })
 }

@@ -89,6 +89,11 @@ export function MobileNav() {
                 Edit deck
               </MobileLink>
             )}
+            {isPage('/learning-report') && (
+              <MobileLink to={location.pathname} onOpenChange={setOpen}>
+                Learning Report
+              </MobileLink>
+            )}
           </div>
         </ScrollArea>
       </SheetContent>

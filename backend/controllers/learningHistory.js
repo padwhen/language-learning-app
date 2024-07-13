@@ -1,12 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const LearningHistory = require('../models/LearningHistory')
-const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
-const Deck = require('../models/Deck');
+const { uniqueNamesGenerator, colors, animals } = require('unique-names-generator');
 
 const config = {
-    dictionaries: [adjectives, colors, animals],
-    separator: '-',
+    dictionaries: [colors, animals],
+    separator: '_',
     seed: Math.floor(Math.random() * 10)
 }
   
@@ -21,10 +20,12 @@ router.post('/learning-history/save-quiz-result', async (req, res) => {
 
         const processedQuizDetails = quizDetails.map(card => ({
             question: card.engCard,
-            userAnswer: card.userLangCard,
+            userAnswer: card.userAnswer,
             correctAnswer: card.correctAnswer,
             correct: card.correct,
-            cardId: card._id
+            cardId: card._id,
+            cardScore: card.cardScore,
+            timeTaken: card.timeTaken
         }))
 
         const history = new LearningHistory({
@@ -47,7 +48,9 @@ router.get('/learning-history/:userId/:deckId', async (req, res) => {
                 date: new Date(entry.date).toLocaleDateString(),
                 cardsStudied: entry.cardsStudied,
                 quizType: entry.quizType,
-                correctAnswers: entry.correctAnswers
+                correctAnswers: entry.correctAnswers,
+                id: entry._id,
+                randomName: entry.randomName
             }));
             res.json({ history: formattedHistory });
         } else {
@@ -58,7 +61,6 @@ router.get('/learning-history/:userId/:deckId', async (req, res) => {
         res.status(500).json({ message: 'Error fetching learning history', error: error.message });
     }
 });
-
 
 router.get('/learning-history/next-quiz-date/:userId/:deckId', async (req, res) => {
     try {
@@ -75,6 +77,16 @@ router.get('/learning-history/next-quiz-date/:userId/:deckId', async (req, res) 
         res.status(500).json({ message: 'Error retrieving next quiz date', error: error.message })
     }
 })
+
+router.delete('/learning-history', async (req, res) => {
+    try {
+        await LearningHistory.deleteMany({});
+        res.status(200).json({ message: 'All learning history deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting learning history', error: error.message });
+    }
+});
+
 
 router.get('/learning-history/:learningHistoryId', async (req, res) => {
     try {

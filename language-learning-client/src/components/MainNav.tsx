@@ -59,6 +59,16 @@ export const MainNav = () => {
                                 </BreadcrumbItem>
                             </>
                         )}
+                        {isPage('/learning-report') && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <Link to={`${location.pathname}`} className="ml-1">
+                                        <h2 className={`text-base md:text-lg ${isPage('/learning-report') ? 'border-b-2 border-blue-500' : ''}`}>Learning Report</h2>
+                                    </Link>
+                                </BreadcrumbItem>
+                            </>
+                        )}
                     </BreadcrumbList>                        
                 </Breadcrumb>
             </div>

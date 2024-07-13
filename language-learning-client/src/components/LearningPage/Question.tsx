@@ -9,12 +9,12 @@ interface QuestionProps {
         options: string[];
         correctAnswer: string;
         cardId: string;
+        cardScore: number;
     };
-    save: (answer: string, correct: boolean, cardId: string) => void;
+    save: (answer: string, correct: boolean, cardId: string, cardScore: number) => void;
 }
 
 export const Question: React.FC<QuestionProps> = (props) => {
-    console.log(props.data.correctAnswer)
     const [answer, setAnswer] = useState('')
     const [submitted, setSubmitted] = useState(false)
 
@@ -41,7 +41,7 @@ export const Question: React.FC<QuestionProps> = (props) => {
         setSubmitted(true);
         setTimeout(() => {
             const isCorrect = selectedAnswer === props.data.correctAnswer
-            props.save(selectedAnswer, isCorrect, props.data.cardId);
+            props.save(selectedAnswer, isCorrect, props.data.cardId, props.data.cardScore);
         }, 1000); 
     }
 

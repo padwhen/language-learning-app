@@ -44,14 +44,17 @@ export interface QuizItem {
     options: string[];
     correctAnswer: string;
     cardId: string;
+    cardScore: number;
 }
 
 export interface Answer {
     question: number;
     userAnswer: string;
     correctAnswer: string;
-    correct?: boolean;
-    cardId?: string;
+    correct: boolean;
+    cardId: string;
+    cardScore: number;
+    timeTaken?: number;
 } 
 
 export type FormEvent = React.FormEvent<HTMLFormElement>

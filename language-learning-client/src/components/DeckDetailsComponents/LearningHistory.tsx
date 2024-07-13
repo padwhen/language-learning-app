@@ -14,7 +14,9 @@ const LearningHistory = ({ deckId }: { deckId: any }) => {
             fetchNextQuizDate()
         }
     }, [])
-    
+
+    console.log(history)
+
     return (
         <>
             <Card>
@@ -26,7 +28,7 @@ const LearningHistory = ({ deckId }: { deckId: any }) => {
                         <ul className="space-y-2">
                             {history.map((item, index) => (
                                 <li key={index}>
-                                    <span className="font-bold">{format(new Date(item.date), 'dd.MM.yyyy')}</span>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.correctAnswers} out of {item.cardsStudied} cards. 
+                                    <span className="font-bold">{item.randomName} {format(new Date(item.date), 'dd.MM.yyyy')}</span>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.correctAnswers} out of {item.cardsStudied} cards. 
                                 </li>
                             ))}
                         </ul>

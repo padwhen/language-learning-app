@@ -14,7 +14,9 @@ const LearningHistorySchema = new mongoose.Schema({
         userAnswer: String,
         correctAnswer: String,
         correct: Boolean,
-        cardId: String
+        cardId: String,
+        cardScore: Number,
+        timeTaken: Number
     }]
 })
 
