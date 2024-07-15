@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
 import { SettingPage } from './components/settings/settings'
-import { QuizReport } from './Test'
+import { QuizReport } from './components/LearningReport'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -29,7 +29,7 @@ function App() {
           <Route path="/learn-decks/:id" element={<LearningPage />} />
           <Route path="/edit-deck/:id" element={<EditPage />} />
           <Route path="/settings" element={<SettingPage />} />
-          <Route path='/learning-report' element={<QuizReport />} />
+          <Route path='/learning-report/:id' element={<QuizReport />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

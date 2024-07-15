@@ -21,6 +21,7 @@ export const DeckDetailsPage = () => {
     const [currentCardIndex, setCurrentCardIndex] = useState<number>(0); 
     const [deck, setDeck] = useState<any>({ cards: [] }); 
     const [autoPlay, setAutoPlay] = useState<boolean>(false);
+    const [hint, setHint] = useState<string>('')
 
     const { deckName, cards } = deck;
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards);
@@ -60,8 +61,14 @@ export const DeckDetailsPage = () => {
         return () => { if (interval) clearInterval(interval); };
     }, [autoPlay, currentCardIndex, cards.length, isFlipped]);
 
-    const handleMoveLeft = () => { moveLeft(currentCardIndex, setCurrentCardIndex)}
-    const handleMoveRight = () => { moveRight(currentCardIndex, deck.cards.length, setCurrentCardIndex)}
+    const handleMoveLeft = () => { 
+        moveLeft(currentCardIndex, setCurrentCardIndex)
+        setHint('')
+    }
+    const handleMoveRight = () => { 
+        moveRight(currentCardIndex, deck.cards.length, setCurrentCardIndex)
+        setHint('')
+    }
 
     const hasCards = cards.length > 0;
     const hasMultipleCards = cards.length > 1;
@@ -70,6 +77,32 @@ export const DeckDetailsPage = () => {
     const moveLeftRightStyle = "border rounded-full hover:bg-gray-200 transition duration-300"
 
     useKeyboardNavigation(handleMoveLeft, handleMoveRight, currentCardIndex, cards.length)
+
+    const generateHint = () => {
+        const word = cards[currentCardIndex]?.engCard
+        if (!word) return
+        if (word.length < 2) {
+            setHint(word)
+        } else {
+            const hintArray = word.split('').map((char: string, index: number) => {
+                if (index === 0 || index === word.length - 1) {
+                    return char
+                }
+                return " _ "
+            })
+            setHint(hintArray.join(''))
+        }
+    }
+
+    const handleCardClick = (event: React.MouseEvent) => {
+        if (!(event.target as HTMLElement).closest('button')) {
+            setIsFlipped(!isFlipped)
+        }
+    }
+
+    const handleGenerateHint = () => {
+        generateHint()
+    }
 
     return (
         <div className="pt-5 px-4 md:px-8 lg:px-16 flex flex-col lg:flex-row gap-4">
@@ -94,8 +127,8 @@ export const DeckDetailsPage = () => {
                 <>
                     <div className="w-full max-w-[875px] border mt-5" data-testid="card-flip-container">
                         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
-                            <div key="front" onClick={() => setIsFlipped(!isFlipped)}>
-                                <FrontCard word={cards[currentCardIndex]?.userLangCard} />
+                            <div key="front" onClick={handleCardClick}>
+                                <FrontCard word={cards[currentCardIndex]?.userLangCard} hint={hint} onGenerateHint={handleGenerateHint} />
                             </div>
                             <div key="back" onClick={() => setIsFlipped(!isFlipped)}>
                                 <BackCard word={cards[currentCardIndex]?.engCard} />

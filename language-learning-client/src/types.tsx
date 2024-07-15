@@ -57,6 +57,17 @@ export interface Answer {
     timeTaken?: number;
 } 
 
+export interface QuizDetail {
+    question: string;
+    userAnswer: string;
+    correctAnswer: string;
+    correct: boolean;
+    cardId: string;
+    cardScore: number;
+    timeTaken: number;
+    _id: string;
+}
+
 export type FormEvent = React.FormEvent<HTMLFormElement>
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>
 export type ChangeEvent = React.ChangeEvent<HTMLInputElement>
