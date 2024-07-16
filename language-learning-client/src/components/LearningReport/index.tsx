@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import mockdata from '../../mockdata.json'
 import { format } from "date-fns";
 import { useParams } from "react-router-dom"
 import { useFetchQuizHistory } from "@/state/hooks/useFetchQuizHistory"
@@ -29,9 +28,9 @@ export const QuizReport = () => {
     console.log(quizData)
 
     return (
-        <div className="container p-4 shadow-lg rounded-lg mx-4 space-y-2 sm:space-y-0 mt-4">
+        <div className="container p-4 shadow-lg rounded-lg space-y-2 sm:space-y-0 mt-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center ">
-                <h1 className="text-4xl font-bold text-gray-700">Quiz [{mockdata.randomName}] Report</h1>
+                <h1 className="text-4xl font-bold text-gray-700">Quiz [{quizData.randomName}] Report</h1>
                 <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                     <Input size={40} placeholder="Search Terms" value={searchTerm}
                            onChange={(e) => setSearchTerm(e.target.value)} className="w-full sm:w-auto" />
@@ -51,9 +50,9 @@ export const QuizReport = () => {
             </div>
 
             <div className="py-4">
-                <p className="text-lg font-semibold text-blue-500">🎯 {mockdata.correctAnswers} out of {mockdata.cardsStudied} ({(mockdata.correctAnswers / mockdata.cardsStudied * 100).toFixed(0)}%) correct 🪅</p>
+                <p className="text-lg font-semibold text-blue-500">🎯 {quizData.correctAnswers + 1} out of {quizData.cardsStudied} ({((quizData.correctAnswers + 1) / quizData.cardsStudied * 100).toFixed(0)}%) correct 🪅</p>
                 <p className="font-semibold">🕐 Average Time Taken: {averageTime}s a question 🕐</p>
-                <p className="font-sembibold text-lg">📪 Taken date: {format(new Date(mockdata.date), 'dd.MM.yyyy \'at\' HH.mm')}</p>
+                <p className="font-sembibold text-lg">📪 Taken date: {format(new Date(quizData.date), 'dd.MM.yyyy \'at\' HH.mm')}</p>
             </div>
 
             <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">

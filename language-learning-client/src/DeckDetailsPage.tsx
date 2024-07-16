@@ -14,7 +14,7 @@ import { CardCategory } from "./components/DeckDetailsComponents/CardCategory";
 import { moveLeft, moveRight } from "./utils/cardNavigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 import { useKeyboardNavigation } from "./utils/useKeyboardNavigation";
-import LearningHistory from "./components/DeckDetailsComponents/LearningHistory";
+import { LearningHistory } from "./components/DeckDetailsComponents/LearningHistory";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -109,18 +109,18 @@ export const DeckDetailsPage = () => {
             <div className="w-full lg:w-3/4">
             <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-6">{deckName}</h1>
             <div className="flex flex-wrap gap-4 mb-6">
-                <a className={aStyle}>Flashcards</a>
-                <a className={aStyle}>
+                <Link to={`/flashcards/${id}`} className={aStyle}>Flashcards</Link>
+                <Link to={`/learn-decks/${id}`} data-testid="learn-link" className={aStyle}>
                     {cards.length >= 4 ? (
-                        <Link to={`/learn-decks/${id}`} data-testid="learn-link">Learn</Link>
+                        <a>Learn</a>
                     ) : (
                         <TooltipProvider><Tooltip>
                             <TooltipTrigger><span data-testid="cannot-learn-link" className="opacity-50 cursor-not-allowed">Learn</span></TooltipTrigger>
                             <TooltipContent>Since "Learn" will create quizzes with options based on your flashcards, you need to have more than 4 flashcards</TooltipContent>
                         </Tooltip></TooltipProvider>
                     )}
-                </a>
-                <a className={aStyle}>Match</a>
+                </Link>
+                <Link to={`/matchgame/${id}`} className={aStyle}>Match</Link>
                 <a className={aStyle}>Test</a>
             </div>
             {hasCards ? (

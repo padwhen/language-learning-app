@@ -12,6 +12,8 @@ import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
 import { SettingPage } from './components/settings/settings'
 import { QuizReport } from './components/LearningReport'
+import { FlashcardPage } from './components/DeckDetailsComponents/FlashCardPage'
+import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -30,6 +32,8 @@ function App() {
           <Route path="/edit-deck/:id" element={<EditPage />} />
           <Route path="/settings" element={<SettingPage />} />
           <Route path='/learning-report/:id' element={<QuizReport />} />
+          <Route path='/flashcards/:id' element={<FlashcardPage />} />
+          <Route path='/matchgame/:id' element={<MatchGame />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

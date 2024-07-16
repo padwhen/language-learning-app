@@ -3,7 +3,7 @@ import axios from "axios";
 import { Card } from "@/types";
 
 interface HistoryItem {
-    _id: string;
+    id: string;
     correctAnswers?: number;
     date: string;
     cardsStudied: number;
