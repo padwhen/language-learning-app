@@ -23,7 +23,10 @@ export const CardCategory = ({ categoryName, cards, id }: CardCategoryProps) => 
                     )}
                     <div className="flex flex-col gap-2 sm:gap-3 mt-2">
                         {cards.map((card: any) => (
-                            <Word cardId={card._id} key={card._id} deckId={id} engCard={card.engCard} userLangCard={card.userLangCard} />
+                            <Word cardId={card._id} key={card._id} deckId={id} 
+                            engCard={card.engCard} userLangCard={card.userLangCard}
+                            favorite={card.favorite}
+                            />
                         ))}
                     </div>
                 </>

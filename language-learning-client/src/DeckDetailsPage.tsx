@@ -15,6 +15,7 @@ import { moveLeft, moveRight } from "./utils/cardNavigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 import { useKeyboardNavigation } from "./utils/useKeyboardNavigation";
 import { LearningHistory } from "./components/DeckDetailsComponents/LearningHistory";
+import { useUpdateFavorite } from "./state/hooks/useUpdateFavorite";
 
 export const DeckDetailsPage = () => {
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -27,12 +28,14 @@ export const DeckDetailsPage = () => {
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards);
     const { id } = useParams();
 
+    const { updateFavorite } = useUpdateFavorite()
+
     useEffect(() => {
         const fetchDeck = async () => {
             await axios.get(`/decks/${id}`).then((response) => setDeck(response.data));
         };
         fetchDeck();
-    }, [id]);
+    }, []);
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null;
@@ -68,6 +71,16 @@ export const DeckDetailsPage = () => {
     const handleMoveRight = () => { 
         moveRight(currentCardIndex, deck.cards.length, setCurrentCardIndex)
         setHint('')
+    }
+
+    const handleToggleFavorite = async () => {
+        if (!deck || !cards || deck.cards.length === 0) return
+        const currentCard = cards[currentCardIndex]
+        try {
+            await updateFavorite(id, currentCard._id, !currentCard.favorite)
+        } catch (error) {
+            console.error('Error updating favorite status: ', error)
+        }
     }
 
     const hasCards = cards.length > 0;
@@ -121,14 +134,19 @@ export const DeckDetailsPage = () => {
                     )}
                 </Link>
                 <Link to={`/matchgame/${id}`} className={aStyle}>Match</Link>
-                <a className={aStyle}>Test</a>
+                <Link to={`/view-decks/${id}`} className={`${aStyle} cursor-not-allowed opacity-20`}>Test</Link>
             </div>
             {hasCards ? (
                 <>
                     <div className="w-full max-w-[875px] border mt-5" data-testid="card-flip-container">
                         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
                             <div key="front" onClick={handleCardClick}>
-                                <FrontCard word={cards[currentCardIndex]?.userLangCard} hint={hint} onGenerateHint={handleGenerateHint} />
+                                <FrontCard word={cards[currentCardIndex]?.userLangCard} 
+                                           hint={hint} 
+                                           onGenerateHint={handleGenerateHint}
+                                           favorite={cards[currentCardIndex]?.favorite || false}
+                                           onToggleFavorite={handleToggleFavorite}
+                                           />
                             </div>
                             <div key="back" onClick={() => setIsFlipped(!isFlipped)}>
                                 <BackCard word={cards[currentCardIndex]?.engCard} />

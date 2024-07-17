@@ -6,7 +6,7 @@ export const useUpdateFavorite = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const updateFavorite = async (deckId: string, cardId: string, favorite: boolean): Promise<void> => {
+    const updateFavorite = async (deckId: any, cardId: string, favorite: boolean): Promise<void> => {
         setIsLoading(true)
         setError(null)
 

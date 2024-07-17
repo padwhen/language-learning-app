@@ -161,17 +161,15 @@ deckRouter.put('/decks/:deckId/cards/:cardId/favorite', async (request, response
         const { deckId, cardId } = request.params
         const { favorite } = request.body
         const userData = jwt.verify(token, JWT_SECRET)
-        const deck = await Deck.findOne({ _id: deckId, owner: userData._id })
-        if (!deck) {
-            return response.status(404).json({ error: 'Deck not found' })
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: deckId, owner: userData.id, "cards._id": cardId },
+            { $set: { "cards.$.favorite": favorite } },
+            { new: true, runValidators: true }
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck or card not found' })
         }
-        const card = deck.cards.id(cardId)
-        if (!card) {
-            return response.status(404).json({ error: 'Card not found' })
-        }
-        card.favorite = favorite
-        await deck.save()
-        response.json(deck)
+        response.json(updatedDeck)
     } catch (error) {
         console.error('Error updating card favorite status: ', error)
         response.status(500).json({ error: 'Internal Server Error' })

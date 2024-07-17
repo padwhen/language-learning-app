@@ -2,21 +2,42 @@ import { Pencil } from "lucide-react"
 import { ToolTip } from "../../composables/ToolTip"
 import { Volume1 } from "lucide-react"
 import { Star } from "lucide-react"
+import { useEffect, useState } from "react";
 
 interface Props {
     word: string;
     hint: string;
     onGenerateHint: () => void;
+    favorite: boolean;
+    onToggleFavorite: () => void;
 }
 
-export const FrontCard = ({ word, hint, onGenerateHint }: Props) => {
+export const FrontCard = ({ word, hint, onGenerateHint, favorite, onToggleFavorite }: Props) => {
+    const [isFavorite, setIsFavorite] = useState(favorite)
+
+    useEffect(() => {
+        setIsFavorite(favorite)
+    }, [favorite])
+
+    const handleToggleFavorite = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setIsFavorite(!isFavorite)
+        onToggleFavorite()
+    }
+
     return (
         <div className="min-h-[250px] md:h-[350px] shadow-md">
             <header className="mt-2 ml-2 flex flex-col sm:flex-row justify-between items-center">
                 <div className="inline-flex flex-row gap-2 items-center justify-center sm:ml-5 ml-2 mb-2 sm:mb-0">
                     <ToolTip trigger={<Pencil />} content="Edit the flashcard" />
                     <ToolTip trigger={<Volume1 />} content="Speak the word!" />
-                    <ToolTip trigger={<Star />} content="Mark as favorite" />
+                    <ToolTip trigger={
+                        <Star
+                            className={`cursor-pointer ${isFavorite ? 'text-yellow-400 fill-yellow-400' : ''}`}
+                            onClick={handleToggleFavorite}
+                        />
+                    } 
+                    content={isFavorite ? 'Remove from favorites' : 'Mark as favorite'} />
                 </div>
                 <button onClick={(e) => {
                     e.stopPropagation();
