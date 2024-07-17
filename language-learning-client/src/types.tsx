@@ -37,6 +37,7 @@ export interface Card {
     engCard: string;
     userLangCard: string;
     cardScore: number;
+    favorite?: boolean;
 }
 
 export interface QuizItem {

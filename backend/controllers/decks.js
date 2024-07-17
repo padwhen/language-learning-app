@@ -151,4 +151,31 @@ deckRouter.put('/decks/update/:id', async (request, response) => {
     }
 })
 
+// Update favorite of a card
+deckRouter.put('/decks/:deckId/cards/:cardId/favorite', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { deckId, cardId } = request.params
+        const { favorite } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const deck = await Deck.findOne({ _id: deckId, owner: userData._id })
+        if (!deck) {
+            return response.status(404).json({ error: 'Deck not found' })
+        }
+        const card = deck.cards.id(cardId)
+        if (!card) {
+            return response.status(404).json({ error: 'Card not found' })
+        }
+        card.favorite = favorite
+        await deck.save()
+        response.json(deck)
+    } catch (error) {
+        console.error('Error updating card favorite status: ', error)
+        response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
 module.exports = deckRouter

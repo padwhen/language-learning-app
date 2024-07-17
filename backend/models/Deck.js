@@ -10,7 +10,8 @@ const DeckSchema = new Schema({
         _id: { type: String, required: false },
         engCard: { type: String, required: true },
         userLangCard: { type: String, required: true },
-        cardScore: { type: Number, default: 0 }
+        cardScore: { type: Number, default: 0 },
+        favorite: { type: Boolean, default: false }
     }]
 });
 
