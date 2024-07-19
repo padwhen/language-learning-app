@@ -69,6 +69,12 @@ export interface QuizDetail {
     _id: string;
 }
 
+export interface Question {
+    question: string;
+    options?: string[];
+    correct_answer: string;
+}
+
 export type FormEvent = React.FormEvent<HTMLFormElement>
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>
 export type ChangeEvent = React.ChangeEvent<HTMLInputElement>

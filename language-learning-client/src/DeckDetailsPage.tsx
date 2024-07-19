@@ -134,7 +134,7 @@ export const DeckDetailsPage = () => {
                     )}
                 </Link>
                 <Link to={`/matchgame/${id}`} className={aStyle}>Match</Link>
-                <Link to={`/view-decks/${id}`} className={`${aStyle} cursor-not-allowed opacity-20`}>Test</Link>
+                <Link to={`/testpage/${id}`} className={aStyle}>Test</Link>
             </div>
             {hasCards ? (
                 <>

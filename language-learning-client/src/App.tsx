@@ -35,7 +35,7 @@ function App() {
           <Route path='/learning-report/:id' element={<QuizReport />} />
           <Route path='/flashcards/:id' element={<FlashcardPage />} />
           <Route path='/matchgame/:id' element={<MatchGame />} />
-          <Route path='/testpage/' element={<TestPage />} />
+          <Route path='/testpage/:id' element={<TestPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>
