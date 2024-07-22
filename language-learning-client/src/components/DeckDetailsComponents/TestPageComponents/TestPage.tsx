@@ -8,6 +8,12 @@ import { useParams } from 'react-router-dom'
 import Countdown from 'react-countdown'
 import useFetchDeck from '@/state/hooks/useFetchDeck'
 import { QuestionNav } from './QuestionNav'
+import { SubmitButton } from './SubmitButton'
+import { GradeStatistics } from './GradeStatistics'
+import { Statistics } from '@/types'
+import { useTestSubmit } from '@/state/hooks/useTestSubmit'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { ResponsiveBar } from '@nivo/bar'
 
 
 export const TestPage =  () => {
@@ -16,15 +22,22 @@ export const TestPage =  () => {
     console.log(cards)
     const [currentSection, setCurrentSection] = useState<'passage' | 'synonym' | 'scramble'>('passage')
     const [answers, setAnswers] = useState<Record<string, string>>({})
+    const [grade, setGrade] = useState<string | null>(null)
+    const [statistics, setStatistics] = useState<Statistics | null>(null)
+    const [isSubmitted, setIsSubmitted] = useState(false)
+    
+    const { handleSubmit } = useTestSubmit(answers, setGrade, setStatistics)
 
     const endTime = useMemo(() => Date.now() + 20 * 60 * 1000, [])
 
     const handleAnswer = (questionId: string, answer: string) => {
-        setAnswers({ ...answers, [questionId]: answer })
+        if (!isSubmitted) {
+            setAnswers(prevAnswers => ({...prevAnswers, [questionId]: answer}))
+        }
     }
 
     const renderer = ({ minutes, seconds, completed }: { minutes: number, seconds: number, completed: boolean}) => {
-        if (completed) {
+        if (completed || isSubmitted) {
             return <span>Time's up!</span>
         } else {
             return <span>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>;
@@ -37,6 +50,28 @@ export const TestPage =  () => {
             element.scrollIntoView({ behavior: 'smooth' })
         }
     }
+
+    const onSubmit = () => {
+        setIsSubmitted(true)
+        handleSubmit()
+    }
+
+    const fractionToNumber = (fraction: string): number => {
+        const [numerator, denominator] = fraction.split('/').map(Number)
+        return numerator / denominator
+    }
+
+    const chartData = statistics ? [
+        { section: 'Passage', score: fractionToNumber(statistics.passageScore) }, 
+        { section: 'Synonym', score: fractionToNumber(statistics.synonymScore) },
+        { section: 'Scramble', score: fractionToNumber(statistics.scrambleScore) }
+    ] : []
+
+    const getStatisticScore = (stats: Statistics | null, indexValue: string | number): string => {
+        if (!stats) return 'N/A';
+        const key = `${String(indexValue).toLowerCase()}Score` as keyof Statistics;
+        return key in stats ? stats[key] as string : 'N/A';
+    };
 
     return (
         <div className='flex h-screen p-4'>
@@ -72,11 +107,37 @@ export const TestPage =  () => {
                     onQuestionClick={handleQuestionClick} 
                     mockData={mockData}    
                 />
+                <div className={isSubmitted ? 'hidden' : ''}><SubmitButton onSubmit={onSubmit} /></div>
+                {grade && statistics && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="link" className="mt-4 w-full">Click here to see the result</Button>
+                        </DialogTrigger>
+                        <DialogContent className='sm:max-w-[425px]'>
+                            <GradeStatistics grade={grade} statistics={statistics} />
+                            <div style={{ height: 300}}>
+                                <ResponsiveBar 
+                                    data={chartData} 
+                                    keys={['score']} 
+                                    indexBy="section"
+                                    margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+                                    padding={0.3}
+                                    colors={{ scheme: 'nivo' }}
+                                    axisBottom={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Section', legendPosition: 'middle', legendOffset: 32 }}
+                                    axisLeft={{ tickSize: 5, tickPadding: 5, tickRotation: 0, legend: 'Score', legendPosition: 'middle', legendOffset: -40, format: (value) => `${(value * 100).toFixed(0)}%` }}
+                                    label={(datum) => getStatisticScore(statistics, datum.indexValue)}
+                                    labelSkipWidth={12}
+                                    labelSkipHeight={12}
+                                />
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
             <div className='w-3/4 overflow-y-auto'>
-                {currentSection === 'passage' && <PassageSection passage={mockData.passage} handleAnswer={handleAnswer} />}
-                {currentSection === 'synonym' && <SynonymMatchingSections questions={mockData.questions.synonym_matching} handleAnswer={handleAnswer} />}
-                {currentSection === 'scramble' && <WordScramble questions={mockData.questions.word_scramble} handleAnswer={handleAnswer} />}
+                {currentSection === 'passage' && <PassageSection passage={mockData.passage} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
+                {currentSection === 'synonym' && <SynonymMatchingSections questions={mockData.questions.synonym_matching} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
+                {currentSection === 'scramble' && <WordScramble questions={mockData.questions.word_scramble} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
             </div>
         </div>
     )

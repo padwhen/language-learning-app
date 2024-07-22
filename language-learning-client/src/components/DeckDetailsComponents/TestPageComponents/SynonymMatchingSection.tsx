@@ -6,9 +6,11 @@ import { Question } from "@/types";
 interface SynonymMatchingProps {
     questions: Question[]
     handleAnswer: (questionId: string, answer: string) => void;
+    isSubmitted: boolean;
+    answers: Record<string, string>
 }
 
-export const SynonymMatchingSections: React.FC<SynonymMatchingProps> = ({ questions, handleAnswer}) => {
+export const SynonymMatchingSections: React.FC<SynonymMatchingProps> = ({ questions, handleAnswer, isSubmitted, answers }) => {
     return (
         <Card className="mb-4">
             <CardContent className="p-4">
@@ -16,10 +18,13 @@ export const SynonymMatchingSections: React.FC<SynonymMatchingProps> = ({ questi
                 {questions.map((question, index) =>  (
                     <div key={index} className="mt-2">
                         <Label>{question.question}</Label>
-                        <RadioGroup onValueChange={(value) => handleAnswer(`synonym_${index}`, value)}>
+                        <RadioGroup onValueChange={(value) => handleAnswer(`synonym_${index}`, value)} 
+                                    disabled={isSubmitted}
+                                    value={answers[`synonym_${index}`] || ""}            
+                        >
                             {question.options?.map((option) => (
                                 <div className="flex items-center space-x-2" key={option}>
-                                    <RadioGroupItem value={option} id={`synonym_${index}_${option}`} />
+                                    <RadioGroupItem value={option} id={`synonym_${index}_${option}`} disabled={isSubmitted} />
                                     <Label htmlFor={`synonym_${index}_${option}`}>{option}</Label>
                                 </div>
                             ))}

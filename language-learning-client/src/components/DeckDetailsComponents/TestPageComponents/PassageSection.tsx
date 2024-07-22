@@ -13,10 +13,12 @@ interface PassageSectionProps {
         vocab_hints: Record<string, string>,
         blanks: Record<string, { options: string[], correct_answer: string }>
     },
-    handleAnswer: (questionId: string, answer: string) => void
+    handleAnswer: (questionId: string, answer: string) => void,
+    isSubmitted: boolean,
+    answers: Record<string, string>
 }
 
-export const PassageSection: React.FC<PassageSectionProps> = ({ passage, handleAnswer }) => {
+export const PassageSection: React.FC<PassageSectionProps> = ({ passage, handleAnswer, isSubmitted, answers }) => {
     const [showTranslation, setShowTranslation] = useState(false)
     const [showContext, setShowContext] = useState(false)
 
@@ -80,13 +82,16 @@ export const PassageSection: React.FC<PassageSectionProps> = ({ passage, handleA
                 )}
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                     {Object.entries(passage.blanks).map(([id, blank]: [string, any], index) => (
-                        <div key={id} id={`question_${index + 1}`}>
+                        <div key={id} id={`question_${index}`}>
                             <Label className="font-semibold mb-2 block">Blank {id}</Label>
-                            <RadioGroup onValueChange={(value) => handleAnswer(`passage_${id}`, value)}>
+                            <RadioGroup disabled={isSubmitted}
+                                        onValueChange={(value) => handleAnswer(`passage_${id}`, value)}
+                                        value={answers[`passage_${id}`] || "" }
+                            >
                                 <div className="space-y-1">
                                     {blank.options.map((option: string) => (
                                         <div className="flex items-center space-x-2" key={option}>
-                                            <RadioGroupItem value={option} id={`${id}_${option}`} />
+                                            <RadioGroupItem value={option} id={`${id}_${option}`} disabled={isSubmitted} />
                                             <Label htmlFor={`${id}_${option}`}>{option}</Label>
                                         </div>
                                     ))}

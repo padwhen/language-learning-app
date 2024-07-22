@@ -10,6 +10,8 @@ interface QuestionNavProps {
 export const QuestionNav: React.FC<QuestionNavProps> = ({
     mockData, answeredQuestions, currentSection, onQuestionClick
 }) => {
+
+
     const getTotalQuestions = () => {
         switch(currentSection) {
             case 'passage':
@@ -22,21 +24,32 @@ export const QuestionNav: React.FC<QuestionNavProps> = ({
                 return 0;
         }
     }
+
+    const isQuestionAnswered = (questionNumber: number) => {
+        if (currentSection === 'passage') {
+            const isAnswered = !!answeredQuestions[`passage_${questionNumber}`]
+            return isAnswered;
+        } else {
+            return !!answeredQuestions[`${currentSection}_${questionNumber - 1}`]
+        }
+    }
+
     const totalQuestions = getTotalQuestions();
+
     return (
         <div>
             <h1 className="text-xl font-bold capitalize">{currentSection} Questions</h1>
             <div className="grid grid-cols-5 gap-2 mt-4">
-                {Array.from({ length: totalQuestions }, (_, i) => i + 1).map((num, index) => (
+                {Array.from({ length: totalQuestions }, (_, i) => i + 1).map((num) => (
                     <Button key={num} 
                         onClick={() => onQuestionClick(num)}
                         className={`
-                            ${answeredQuestions[`${currentSection}_${num - 1}`] ? 'bg-green-500 opacity-50' : 'bg-blue-500'}
+                            ${isQuestionAnswered(num) ? 'bg-green-500 opacity-50' : 'bg-blue-500'}
                             hover:opacity-100 transition-opacity
                         `}
-                        id={`question_${index + 1}`}
+                        id={`question_${num}`}
                     >
-                        {num}. {answeredQuestions[`${currentSection}_${num - 1}`] && '✓'}
+                        {num}. {isQuestionAnswered(num) && '✓'}
                     </Button>
                 ))}
             </div>

@@ -6,9 +6,11 @@ import { Question } from "@/types";
 interface WordScrambleProps {
     questions: Question[]
     handleAnswer: (questionId: string, answer: string) => void;
+    isSubmitted: boolean;
+    answers: Record<string, string>
 }
 
-export const WordScramble: React.FC<WordScrambleProps> = ({ questions, handleAnswer }) => {
+export const WordScramble: React.FC<WordScrambleProps> = ({ questions, handleAnswer, isSubmitted, answers }) => {
     return (
         <Card className="mb-4">
             <CardContent className="p-4">
@@ -16,7 +18,11 @@ export const WordScramble: React.FC<WordScrambleProps> = ({ questions, handleAns
                 {questions.map((question, index) => (
                     <div key={index} id={`question_${index + 1}`} className="mt-2">
                         <Label>{question.question}</Label>
-                        <Input type="text" onChange={(e) => handleAnswer(`scramble_${index}`, e.target.value)} />
+                        <Input  type="text" 
+                                onChange={(e) => handleAnswer(`scramble_${index}`, e.target.value)} 
+                                disabled={isSubmitted}
+                                value={answers[`scramble_${index}`] || ""}
+                        />
                     </div>
                 ))}
             </CardContent>

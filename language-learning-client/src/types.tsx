@@ -75,6 +75,18 @@ export interface Question {
     correct_answer: string;
 }
 
+export interface Statistics {
+    totalScore: string;
+    passageScore: string;
+    synonymScore: string;
+    scrambleScore: string;
+    wrongAnswers: {
+        passage: string[];
+        synonym: string[];
+        scramble: string[]
+    }
+}
+
 export type FormEvent = React.FormEvent<HTMLFormElement>
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>
 export type ChangeEvent = React.ChangeEvent<HTMLInputElement>
