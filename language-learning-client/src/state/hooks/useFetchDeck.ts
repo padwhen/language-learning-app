@@ -29,7 +29,7 @@ const useFetchDeck = (id: string | undefined) => {
             }
         };
         fetchData();
-    }, [id]);
+    }, []);
 
     return { deck, cards, deckName, deckTags, userLang, setDeck, setCards, setDeckName, setDeckTags, setUserLang };
 };

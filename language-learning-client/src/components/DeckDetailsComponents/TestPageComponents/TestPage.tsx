@@ -1,34 +1,49 @@
 import { useMemo, useState } from 'react'
-import mockData from './mockdata.json'  
 import { PassageSection } from './PassageSection'
 import { Button } from '@/components/ui/button'
 import { SynonymMatchingSections } from './SynonymMatchingSection'
 import { WordScramble } from './WordScrambleSection'
-import { useParams } from 'react-router-dom'
 import Countdown from 'react-countdown'
-import useFetchDeck from '@/state/hooks/useFetchDeck'
 import { QuestionNav } from './QuestionNav'
 import { SubmitButton } from './SubmitButton'
 import { GradeStatistics } from './GradeStatistics'
-import { Statistics } from '@/types'
+import { Card, Statistics } from '@/types'
 import { useTestSubmit } from '@/state/hooks/useTestSubmit'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { ResponsiveBar } from '@nivo/bar'
+import { generateTest } from './createTest'
+import { WordSelectionDialog } from './WordSectionDialog'
+import { LoadingSection } from './LoadingSection'
 
 
 export const TestPage =  () => {
-    const { id } = useParams()
-    const { cards } = useFetchDeck(id)
-    console.log(cards)
+    const [test, setTest] = useState<any | null>(null)
+    const [isWordSelectionOpen, setIsWordSelectionOpen] = useState(true)
+    const [_selectedCards, setSelectedCards] = useState<Card[] | null>(null)
     const [currentSection, setCurrentSection] = useState<'passage' | 'synonym' | 'scramble'>('passage')
     const [answers, setAnswers] = useState<Record<string, string>>({})
     const [grade, setGrade] = useState<string | null>(null)
     const [statistics, setStatistics] = useState<Statistics | null>(null)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     
-    const { handleSubmit } = useTestSubmit(answers, setGrade, setStatistics)
+    const { handleSubmit } = useTestSubmit(answers, setGrade, setStatistics, test)
 
     const endTime = useMemo(() => Date.now() + 20 * 60 * 1000, [])
+
+    const handleWordSelectionClose = async (cards: any[] | null) => {
+        setIsWordSelectionOpen(false)
+        if (cards) {
+            setSelectedCards(cards)
+            setIsLoading(true)
+            try {
+                const generatedTest = await generateTest(cards)
+                setTest(generatedTest)                
+            } finally {
+                setIsLoading(false)
+            }
+        }
+    }
 
     const handleAnswer = (questionId: string, answer: string) => {
         if (!isSubmitted) {
@@ -75,6 +90,18 @@ export const TestPage =  () => {
 
     return (
         <div className='flex h-screen p-4'>
+            <WordSelectionDialog
+                isOpen={isWordSelectionOpen}
+                onClose={handleWordSelectionClose}
+            />
+            {isLoading ? (
+                <LoadingSection />
+            ) : !test ? (
+                <div className="flex items-center justify-center w-full h-full">
+                    <p className="text-lg">Please select words to start the test by refresh the page.</p>
+                </div>
+            ): (
+                <>
             <div className='w-1/4 pr-4'>
                 <h2 className='text-2xl font-bold mb-4'>Sections</h2>
                 <Button 
@@ -105,7 +132,7 @@ export const TestPage =  () => {
                     answeredQuestions={answers}
                     currentSection={currentSection}
                     onQuestionClick={handleQuestionClick} 
-                    mockData={mockData}    
+                    mockData={test}    
                 />
                 <div className={isSubmitted ? 'hidden' : ''}><SubmitButton onSubmit={onSubmit} /></div>
                 {grade && statistics && (
@@ -135,10 +162,11 @@ export const TestPage =  () => {
                 )}
             </div>
             <div className='w-3/4 overflow-y-auto'>
-                {currentSection === 'passage' && <PassageSection passage={mockData.passage} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
-                {currentSection === 'synonym' && <SynonymMatchingSections questions={mockData.questions.synonym_matching} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
-                {currentSection === 'scramble' && <WordScramble questions={mockData.questions.word_scramble} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
-            </div>
+                {currentSection === 'passage' && <PassageSection passage={test.passage} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
+                {currentSection === 'synonym' && <SynonymMatchingSections questions={test.questions.synonym_matching} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
+                {currentSection === 'scramble' && <WordScramble questions={test.questions.word_scramble} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
+            </div>                
+        </>)}
         </div>
     )
 }
