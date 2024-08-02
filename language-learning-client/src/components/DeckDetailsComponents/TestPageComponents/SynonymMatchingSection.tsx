@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Question } from "@/types";
+import { highlightText } from "@/utils/testUtils";
 
 interface SynonymMatchingProps {
     questions: Question[]
@@ -17,7 +18,7 @@ export const SynonymMatchingSections: React.FC<SynonymMatchingProps> = ({ questi
                 <h3 className="text-lg font-semibold mb-2">Synonym Matching</h3>
                 {questions.map((question, index) =>  (
                     <div key={index} className="mt-2">
-                        <Label>{question.question}</Label>
+                        <Label>{highlightText(question.question)}</Label>
                         <RadioGroup onValueChange={(value) => handleAnswer(`synonym_${index}`, value)} 
                                     disabled={isSubmitted}
                                     value={answers[`synonym_${index}`] || ""}            

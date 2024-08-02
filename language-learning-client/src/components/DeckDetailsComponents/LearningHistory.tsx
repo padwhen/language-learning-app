@@ -27,7 +27,7 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                         <ul className="space-y-2">
                             {history.map((item, index) => (
                                 <li key={index}>
-                                    <Link to={`/learning-report/${item.id}`} className="font-bold underline text-blue-500 hover:text-blue-700">{item.randomName} {format(new Date(item.date), 'dd.MM.yyyy')}</Link>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.correctAnswers ? item.correctAnswers + 1 : 'Error'} out of {item.cardsStudied} cards. 
+                                    <Link to={`/learning-report/${item.id}`} className="font-bold underline text-blue-500 hover:text-blue-700">{item.randomName} {format(new Date(item.date), 'dd.MM.yyyy')}</Link>: {item.quizType === 'learn' ? 'Learned' : 'Reviewed'} {item.correctAnswers ? item.correctAnswers : 'Error'} out of {item.cardsStudied} cards. 
                                 </li>
                             ))}
                         </ul>

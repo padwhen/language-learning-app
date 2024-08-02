@@ -1,4 +1,5 @@
 import { Card, Question } from "@/types";
+import React from "react";
 
 type TestCard = Pick<Card, 'engCard' | 'userLangCard'>
 
@@ -28,7 +29,7 @@ export function generateWordScrambleQuestions(flashcards: TestCard[], count: num
             .sort(() => 0.5 - Math.random())
             .join('')
         return {
-            question: `Unscrambled this word ${scrambledWord}`,
+            question: `Unscrambled this word **${scrambledWord}**`,
             correct_answer: card.userLangCard
         }
     })
@@ -40,3 +41,15 @@ export function subsetCards(cards: Card[]): TestCard[] {
         userLangCard
     }));
 }
+
+export const highlightText = (text: string): (string | JSX.Element)[] => {
+    return text.split(/(\*\*.*?\*\*)/).map((part, index) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+            return React.createElement('span', { 
+                key: index, 
+                className: "font-bold text-primary" 
+            }, part.slice(2, -2));
+        }
+        return part;
+    });
+};

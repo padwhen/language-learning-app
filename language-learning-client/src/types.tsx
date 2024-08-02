@@ -27,7 +27,7 @@ export interface Deck {
     _id: string;
     owner?: string;
     deckName: string;
-    deckPercentage: string;
+    deckPercentage?: string;
     deckTags: string[];
     cards: Card[]
 }
@@ -85,6 +85,15 @@ export interface Statistics {
         synonym: string[];
         scramble: string[]
     }
+}
+
+export interface GameCard extends Card {
+    type: 'eng' | 'userLang'
+}
+
+export interface GameOptions {
+    showTimer: boolean;
+    allowDeselect: boolean;
 }
 
 export type FormEvent = React.FormEvent<HTMLFormElement>

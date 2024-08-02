@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Question } from "@/types";
+import { highlightText } from "@/utils/testUtils";
 
 interface WordScrambleProps {
     questions: Question[]
@@ -17,7 +18,7 @@ export const WordScramble: React.FC<WordScrambleProps> = ({ questions, handleAns
                 <h3 className="text-lg font-semibold mb-2">Word Scramble</h3>
                 {questions.map((question, index) => (
                     <div key={index} id={`question_${index + 1}`} className="mt-2">
-                        <Label>{question.question}</Label>
+                        <Label>{highlightText(question.question)}</Label>
                         <Input  type="text" 
                                 onChange={(e) => handleAnswer(`scramble_${index}`, e.target.value)} 
                                 disabled={isSubmitted}

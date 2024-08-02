@@ -50,7 +50,7 @@ export const QuizReport = () => {
             </div>
 
             <div className="py-4">
-                <p className="text-lg font-semibold text-blue-500">🎯 {quizData.correctAnswers + 1} out of {quizData.cardsStudied} ({((quizData.correctAnswers + 1) / quizData.cardsStudied * 100).toFixed(0)}%) correct 🪅</p>
+                <p className="text-lg font-semibold text-blue-500">🎯 {quizData.correctAnswers} out of {quizData.cardsStudied} ({((quizData.correctAnswers) / quizData.cardsStudied * 100).toFixed(0)}%) correct 🪅</p>
                 <p className="font-semibold">🕐 Average Time Taken: {averageTime}s a question 🕐</p>
                 <p className="font-sembibold text-lg">📪 Taken date: {format(new Date(quizData.date), 'dd.MM.yyyy \'at\' HH.mm')}</p>
             </div>

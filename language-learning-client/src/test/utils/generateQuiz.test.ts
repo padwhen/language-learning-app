@@ -14,9 +14,9 @@ describe('generateQuiz function', () => {
         const quiz: QuizItem[] = generateQuiz(cards)
         expect(quiz.length).toBe(cards.length)
         quiz.forEach((item, index) => {
-            expect(item).toHaveProperty('text', cards[index].userLangCard)
+            expect(item).toHaveProperty('userLangCard', cards[index].userLangCard)
             expect(item).toHaveProperty('options')
-            expect(item).toHaveProperty('answer', cards[index].engCard)
+            expect(item).toHaveProperty('correctAnswer', cards[index].engCard)
             expect(item.options.length).toBe(4)
             expect(item.options).toContain(cards[index].engCard)
         })
@@ -24,7 +24,7 @@ describe('generateQuiz function', () => {
     it('should shuffle options correctly', () => {
         const quiz: QuizItem[] = generateQuiz(cards)
         quiz.forEach(item => {
-            const correctAnswer = item.answer
+            const correctAnswer = item.correctAnswer
             const options = item.options
             expect(options).toContain(correctAnswer)
             expect(options).not.toContain(cards.map(card => card.engCard))

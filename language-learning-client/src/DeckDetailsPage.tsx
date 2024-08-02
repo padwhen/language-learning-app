@@ -13,6 +13,7 @@ import useFetchDeck from "./state/hooks/useFetchDeck";
 import { useHint } from "./state/hooks/useHint";
 import { useAutoPlay } from "./state/hooks/useAutoPlay";
 import { DeckControls, DeckLinks, DeckNavigation, FlashCard } from "./components/DeckDetailsComponents/DeckDetailsComponents";
+import { AnimatePresence } from "framer-motion";
 
 export const DeckDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -69,6 +70,7 @@ export const DeckDetailsPage: React.FC = () => {
           <DeckLinks id={id!} cardsLength={cards.length} />
           {cards.length > 0 ? (
             <>
+            <AnimatePresence>
               <FlashCard 
                 card={cards[currentCardIndex]} 
                 isFlipped={isFlipped} 
@@ -77,6 +79,7 @@ export const DeckDetailsPage: React.FC = () => {
                 onGenerateHint={handleGenerateHintClick}
                 onToggleFavorite={handleToggleFavorite}
               />
+            </AnimatePresence>
               <DeckControls 
                 onPlay={() => setAutoPlay(!autoPlay)}
                 onShuffle={() => {/* Implement shuffle */}}
