@@ -31,7 +31,7 @@ export const CreatorBar = ({id}: {id: string}) => {
     }
     
     return (
-        <div className="flex flex-col sm:flex-row gap-4 justify-between max-w-[875px] w-full px-4 sm:px-0">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between max-w-[875px] w-full px-4 sm:px-0 mt-4">
             <div className="flex gap-4 items-center">
                 <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                     <AvatarImage src={user?.avatarUrl} alt="@shadcn" />

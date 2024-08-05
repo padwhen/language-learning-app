@@ -61,7 +61,7 @@ deckRouter.put('/decks/:id', async (request, response) => {
         const userData = jwt.verify(token, JWT_SECRET)
         const updatedDeck = await Deck.findOneAndUpdate(
             { _id: id, owner: userData.id },
-            { $set: { cards: cards } }, 
+            { $push: { cards: { $each: cards } } },
             { new: true}
         )
         if (!updatedDeck) {
@@ -148,6 +148,62 @@ deckRouter.put('/decks/update/:id', async (request, response) => {
     } catch (error) {
         console.error('Error updating deck', error)
         response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+// Update favorite of a card
+deckRouter.put('/decks/:deckId/cards/:cardId/favorite', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { deckId, cardId } = request.params
+        const { favorite } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: deckId, owner: userData.id, "cards._id": cardId },
+            { $set: { "cards.$.favorite": favorite } },
+            { new: true, runValidators: true }
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck or card not found' })
+        }
+        response.json(updatedDeck)
+    } catch (error) {
+        console.error('Error updating card favorite status: ', error)
+        response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+deckRouter.put('/decks/:id/add-card', async (request, response) => {
+    try {
+      const { token } = request.cookies
+      if (!token) {
+        return response.status(401).json({ error: 'Unauthorized' })
+      }
+      const { id } = request.params
+      const newCard = request.body
+      const userData = jwt.verify(token, JWT_SECRET)
+      
+      const updatedDeck = await Deck.findOneAndUpdate(
+        { 
+          _id: id, 
+          owner: userData.id,
+          'cards.engCard': { $ne: newCard.engCard },
+          'cards.userLangCard': { $ne: newCard.userLangCard }
+        },
+        { $addToSet: { cards: newCard } },
+        { new: true }
+      )
+      
+      if (!updatedDeck) {
+        return response.status(404).json({ error: 'Deck not found or card already exists' })
+      }
+      response.json(updatedDeck)
+    } catch (error) {
+      console.error('Error adding card to deck:', error)
+      response.status(500).json({ error: 'Internal Server Error' })
     }
 })
 

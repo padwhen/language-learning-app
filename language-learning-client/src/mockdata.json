@@ -1,0 +1,84 @@
+{
+    "_id": "6690ef13a2f0f9429baa26e0",
+    "userId": "6643b4ab2934e1b5ef41a3b3",
+    "deckId": "664efbf61621205465108f00",
+    "cardsStudied": 8,
+    "correctAnswers": 2,
+    "quizType": "learn",
+    "nextQuizDate": "2024-07-13T08:53:39.405Z",
+    "randomName": "moccasin_platypus",
+    "quizDetails": [
+        {
+            "question": "Term1",
+            "userAnswer": "Definition1",
+            "correctAnswer": "Definition1",
+            "correct": true,
+            "cardId": "664efc631621205465159f38",
+            "cardScore": 5,
+            "timeTaken": 1737,
+            "_id": "6690ef13a2f0f9429baa26e1"
+        },
+        {
+            "question": "Term2",
+            "userAnswer": "Definition7",
+            "correctAnswer": "Definition2",
+            "correct": false,
+            "cardId": "664efd701621205465221a9c",
+            "cardScore": 0,
+            "timeTaken": 1044,
+            "_id": "6690ef13a2f0f9429baa26e2"
+        },
+        {
+            "question": "Term4",
+            "userAnswer": "Definition6",
+            "correctAnswer": "Definition4",
+            "correct": false,
+            "cardId": "664efdab162120546524d5ea",
+            "cardScore": 0,
+            "timeTaken": 2785,
+            "_id": "6690ef13a2f0f9429baa26e3"
+        },
+        {
+            "question": "Term6",
+            "userAnswer": "Definition8",
+            "correctAnswer": "Definition6",
+            "correct": false,
+            "cardId": "664efeb81621205465322264",
+            "cardScore": 0,
+            "timeTaken": 4176,
+            "_id": "6690ef13a2f0f9429baa26e4"
+        },
+        {
+            "question": "Term7",
+            "userAnswer": "Definition7",
+            "correctAnswer": "Definition7",
+            "correct": true,
+            "cardId": "664efec3162120546532b43c",
+            "cardScore": 1,
+            "timeTaken": 8303,
+            "_id": "6690ef13a2f0f9429baa26e5"
+        },
+        {
+            "question": "Term8",
+            "userAnswer": "Definition4",
+            "correctAnswer": "Definition8",
+            "correct": false,
+            "cardId": "3028f8b4-0050-46d0-b0ef-c59031eb5339",
+            "cardScore": 0,
+            "timeTaken": 3107,
+            "_id": "6690ef13a2f0f9429baa26e6"
+        },
+        {
+            "question": "Term3",
+            "userAnswer": "Definition1",
+            "correctAnswer": "Definition3",
+            "correct": false,
+            "cardId": "664efd9d1621205465242d1a",
+            "cardScore": 0,
+            "timeTaken": 5568,
+            "_id": "6690ef13a2f0f9429baa26e7"
+        }
+    ],
+    "date": "2024-07-12T08:53:39.408Z",
+    "__v": 0
+}

@@ -74,7 +74,7 @@ export function MobileNav() {
             <MobileLink to="/settings" onOpenChange={setOpen}>
               Settings
             </MobileLink>
-            {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/edit-deck')) && (
+            {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/matchgame') || isPage('/learning-history') || isPage('/flashcards') || isPage('/edit-deck')) && (
               <MobileLink to={`/view-decks/${deckId}`} onOpenChange={setOpen}>
                 Deck Details
               </MobileLink>
@@ -87,6 +87,21 @@ export function MobileNav() {
             {isPage('/edit-deck') && (
               <MobileLink to={location.pathname} onOpenChange={setOpen}>
                 Edit deck
+              </MobileLink>
+            )}
+            {isPage('/learning-report') && (
+              <MobileLink to={location.pathname} onOpenChange={setOpen}>
+                Learning Report
+              </MobileLink>
+            )}
+            {isPage('/flashcards') && (
+              <MobileLink to={location.pathname} onOpenChange={setOpen}>
+                Flashcards Review
+              </MobileLink>
+            )}
+            {isPage('/matchgame') && (
+              <MobileLink to={location.pathname} onOpenChange={setOpen}>
+                Match Game
               </MobileLink>
             )}
           </div>

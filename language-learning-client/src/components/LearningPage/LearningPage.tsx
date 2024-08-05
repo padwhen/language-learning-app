@@ -25,7 +25,6 @@ const LearningPage: React.FC = () => {
     const { cards } = useFetchDeck(id)
     const userId = localStorage.getItem('userId')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-
     const {
         includeCompletedCards,
         setIncludeCompletedCards,
@@ -36,7 +35,6 @@ const LearningPage: React.FC = () => {
         setShuffleCards,
         filterCards,
     } = useQuizOptions(cards)
-
     const filteredAndSortedCards = filterCards()
     const quiz = generateQuiz(filteredAndSortedCards)
     const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
@@ -126,7 +124,11 @@ const LearningPage: React.FC = () => {
                     ) : (
                         quiz.map((quizItem, index) => (
                             index + 1 === question && (
-                                <Question key={index} data={quizItem} save={(e: string) => saveAnswer(e, question)} />
+                                <Question key={index} data={quizItem} 
+                                    save={(answer: string, correct: boolean, cardId: string) => 
+                                        saveAnswer(answer, correct, cardId)
+                                    } 
+                                />
                             )
                         ))
                     )}

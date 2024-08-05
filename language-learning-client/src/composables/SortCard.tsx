@@ -1,9 +1,4 @@
-interface Card {
-    engCard: string;
-    userLangCard: string;
-    cardScore: number;
-    _id: string
-}
+import { Card } from "@/types";
 
 interface OrganizedCard {
     stillLearning: Card[]
@@ -26,6 +21,15 @@ export const organizeCardsByScore = (cards: Card[]): OrganizedCard => {
             completed.push(card);
         }
     })
-    stillLearning.sort((a, b) => a.cardScore - b.cardScore)
+    const sortWithFavoritesAtTop = (a: Card, b: Card) => {
+        if (a.favorite === b.favorite) {
+            return a.cardScore - b.cardScore
+        }
+        return a.favorite ? -1 : 1
+    }
+    stillLearning.sort(sortWithFavoritesAtTop)
+    notStudied.sort(sortWithFavoritesAtTop)
+    completed.sort(sortWithFavoritesAtTop)
+    
     return { stillLearning, notStudied, completed }
 }

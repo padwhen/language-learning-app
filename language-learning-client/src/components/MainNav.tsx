@@ -30,7 +30,7 @@ export const MainNav = () => {
                                 </Link>   
                             )}
                         </BreadcrumbItem>
-                        {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/edit-deck')) && (
+                        {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/matchgame') || isPage('/learning-report') || isPage('/flashcards') || isPage('/testpage') || isPage('/edit-deck')) &&  (
                             <>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
@@ -55,6 +55,46 @@ export const MainNav = () => {
                                 <BreadcrumbItem>
                                     <Link to={`${location.pathname}`} className="ml-1">
                                         <h2 className={`text-base md:text-lg ${isPage('/edit-deck') ? 'border-b-2 border-blue-500' : ''}`}>Edit deck</h2>
+                                    </Link>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        {isPage('/learning-report') && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <Link to={`${location.pathname}`} className="ml-1">
+                                        <h2 className={`text-base md:text-lg ${isPage('/learning-report') ? 'border-b-2 border-blue-500' : ''}`}>Learning Report</h2>
+                                    </Link>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        {isPage('/flashcards') && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <Link to={`${location.pathname}`} className="ml-1">
+                                        <h2 className={`text-base md:text-lg ${isPage('/flashcards') ? 'border-b-2 border-blue-500' : ''}`}>Flashcards Review</h2>
+                                    </Link>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        {isPage('/matchgame') && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <Link to={`${location.pathname}`} className="ml-1">
+                                        <h2 className={`text-base md:text-lg ${isPage('/matchgame') ? 'border-b-2 border-blue-500' : ''}`}>Match Game</h2>
+                                    </Link>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        {isPage('/testpage') && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <Link to={`${location.pathname}`} className="ml-1">
+                                        <h2 className={`text-base md:text-lg ${isPage('/testpage') ? 'border-b-2 border-blue-500' : ''}`}>Test</h2>
                                     </Link>
                                 </BreadcrumbItem>
                             </>

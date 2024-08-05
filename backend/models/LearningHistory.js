@@ -7,7 +7,17 @@ const LearningHistorySchema = new mongoose.Schema({
     cardsStudied: { type: Number, required: true },
     correctAnswers: { type: Number, required: true },
     quizType: { type: String, enum: ['learn', 'review'], required: true },
-    nextQuizDate: { type: Date, required: true }
+    nextQuizDate: { type: Date, required: true },
+    randomName: { type: String, required: true },
+    quizDetails: [{
+        question: String, 
+        userAnswer: String,
+        correctAnswer: String,
+        correct: Boolean,
+        cardId: String,
+        cardScore: Number,
+        timeTaken: Number
+    }]
 })
 
 const LearningHistoryModel = mongoose.model('LearningHistory', LearningHistorySchema)

@@ -27,7 +27,7 @@ export interface Deck {
     _id: string;
     owner?: string;
     deckName: string;
-    deckPercentage: string;
+    deckPercentage?: string;
     deckTags: string[];
     cards: Card[]
 }
@@ -37,18 +37,64 @@ export interface Card {
     engCard: string;
     userLangCard: string;
     cardScore: number;
+    favorite?: boolean;
 }
 
 export interface QuizItem {
-    text: string;
+    userLangCard: string;
     options: string[];
-    answer: string;
+    correctAnswer: string;
+    cardId: string;
+    cardScore: number;
 }
 
 export interface Answer {
     question: number;
-    answer: string;
+    userAnswer: string;
+    correctAnswer: string;
+    correct: boolean;
+    cardId: string;
+    cardScore: number;
+    timeTaken?: number;
 } 
+
+export interface QuizDetail {
+    question: string;
+    userAnswer: string;
+    correctAnswer: string;
+    correct: boolean;
+    cardId: string;
+    cardScore: number;
+    timeTaken: number;
+    _id: string;
+}
+
+export interface Question {
+    question: string;
+    options?: string[];
+    correct_answer: string;
+}
+
+export interface Statistics {
+    totalScore: string;
+    passageScore: string;
+    synonymScore: string;
+    scrambleScore: string;
+    wrongAnswers: {
+        passage: string[];
+        synonym: string[];
+        scramble: string[]
+    }
+}
+
+export interface GameCard extends Card {
+    type: 'eng' | 'userLang'
+}
+
+export interface GameOptions {
+    showTimer: boolean;
+    allowDeselect: boolean;
+}
 
 export type FormEvent = React.FormEvent<HTMLFormElement>
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>
