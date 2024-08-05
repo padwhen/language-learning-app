@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import useFetchDeck from "./useFetchDeck"
 import { GameCard, GameOptions } from "@/types"
 
@@ -28,17 +28,25 @@ export const useMatchGame = (deckId: string) => {
     }, [cards])
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            if (!isGameCompleted) {
+        let timer: number
+        if (gameStarted && !isGameCompleted) {
+            timer = window.setInterval(() => {
                 setTimeElapsed(prev => prev + 10)
-            }
-        }, 10)
-        return () => clearInterval(timer)
-    }, [isGameCompleted])
+            }, 10)
+        }
+        return () => {
+            if (timer) clearInterval(timer)
+        }
+    }, [gameStarted, isGameCompleted])
 
     useEffect(() => {
         checkForMatch()
     }, [selectedCards])
+
+    const startGame = useCallback(() => {
+        setGameStarted(true)
+        setTimeElapsed(0)
+    }, [])
 
     const resetGame = () => {
         setSelectedCards([])
@@ -116,7 +124,8 @@ export const useMatchGame = (deckId: string) => {
         gameOptions,
         shuffleCards,
         handleCardClick,
-        setGameStarted,
+        startGame,
+        resetGame,
         setGameOptions
     }
 }

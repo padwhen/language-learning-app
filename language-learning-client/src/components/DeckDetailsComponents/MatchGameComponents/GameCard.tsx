@@ -19,6 +19,7 @@ export const GameCard: React.FC<GameCardProps> = ({
 }) => (
     <AnimatePresence>
         <motion.div
+            data-testid={`game-card-${card._id}-${card.type}`}
             animate={isIncorrect ? shakeAnimation : {}}
             className={`cursor-pointer w-full aspect-[4/3] rounded-lg shadow-md flex items-center justify-center p-4 text-center
               ${isSelected ? 'bg-blue-100' : 'bg-white'}  

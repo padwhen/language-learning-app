@@ -15,14 +15,14 @@ export const MatchGame = () => {
         gameStarted,
         showPenalty,
         gameOptions,
+        setGameOptions,
         shuffleCards,
         handleCardClick,
-        setGameStarted,
-        setGameOptions
+        startGame,
     } = useMatchGame(id)
 
     if (!gameStarted) {
-        return <GameIntro onStart={() => setGameStarted(true)} />
+        return <GameIntro gameOptions={gameOptions} setGameOptions={setGameOptions} onStart={startGame} />
     }
 
     return (
@@ -32,7 +32,6 @@ export const MatchGame = () => {
                 timeElapsed={timeElapsed}
                 showPenalty={showPenalty}
                 gameOptions={gameOptions}
-                setGameOptions={setGameOptions}
             />
             <GameBoard
                 gameCards={gameCards}
