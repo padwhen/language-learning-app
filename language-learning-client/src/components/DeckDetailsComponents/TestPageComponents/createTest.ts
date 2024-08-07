@@ -20,7 +20,6 @@ interface Test {
 
 export const generateTest = async (cards: Card[]): Promise<Test> => {
     const subsettedCards = subsetCards(cards);
-    console.log(subsettedCards)
     const response_json = await createTest(subsettedCards);
     
     let passage: Passage;
