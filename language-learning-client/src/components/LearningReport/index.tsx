@@ -25,8 +25,6 @@ export const QuizReport = () => {
     if (error) return <div>Error: {error.message}</div>
     if (!quizData) return
 
-    console.log(quizData)
-
     return (
         <div className="container p-4 shadow-lg rounded-lg space-y-2 sm:space-y-0 mt-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center ">
