@@ -8,8 +8,8 @@ import { QuizDetailsCard } from "./QuizDetailsCard"
 import { NextQuizCard } from "./NextQuizCard"
 
 export const QuizReport = () => {
-    const { id } = useParams()
-    if (!id) return
+    const { id, reportId } = useParams()
+    if (!id || !reportId ) return
 
     const { 
         quizData, 
@@ -17,15 +17,13 @@ export const QuizReport = () => {
         setFilter,
         averageTime, filteredQuizDetails,
         loading, error
-    } = useFetchQuizHistory(id)
+    } = useFetchQuizHistory(reportId)
 
     const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
     if (loading) return <div>Loading...</div>
     if (error) return <div>Error: {error.message}</div>
     if (!quizData) return
-
-    console.log(quizData)
 
     return (
         <div className="container p-4 shadow-lg rounded-lg space-y-2 sm:space-y-0 mt-4">

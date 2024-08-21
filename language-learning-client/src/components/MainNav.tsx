@@ -30,7 +30,7 @@ export const MainNav = () => {
                                 </Link>   
                             )}
                         </BreadcrumbItem>
-                        {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/matchgame') || isPage('/learning-report') || isPage('/flashcards') || isPage('/testpage') || isPage('/edit-deck')) &&  (
+                        {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/matchgame') || isPage(`/view-decks/${deckId}`) || isPage('/flashcards') || isPage('/testpage') || isPage('/edit-deck')) &&  (
                             <>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
@@ -59,12 +59,12 @@ export const MainNav = () => {
                                 </BreadcrumbItem>
                             </>
                         )}
-                        {isPage('/learning-report') && (
+                        {isPage(`/view-decks/${deckId}/learning-report`) && (
                             <>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
                                     <Link to={`${location.pathname}`} className="ml-1">
-                                        <h2 className={`text-base md:text-lg ${isPage('/learning-report') ? 'border-b-2 border-blue-500' : ''}`}>Learning Report</h2>
+                                        <h2 className={`text-base md:text-lg ${isPage(`/view-decks/${deckId}/learning-report`) ? 'border-b-2 border-blue-500' : ''}`}>Learning Report</h2>
                                     </Link>
                                 </BreadcrumbItem>
                             </>

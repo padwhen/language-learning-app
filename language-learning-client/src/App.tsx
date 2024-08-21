@@ -32,7 +32,7 @@ function App() {
           <Route path="/learn-decks/:id" element={<LearningPage />} />
           <Route path="/edit-deck/:id" element={<EditPage />} />
           <Route path="/settings" element={<SettingPage />} />
-          <Route path='/learning-report/:id' element={<QuizReport />} />
+          <Route path='/view-decks/:id/learning-report/:reportId' element={<QuizReport />} />
           <Route path='/flashcards/:id' element={<FlashcardPage />} />
           <Route path='/matchgame/:id' element={<MatchGame />} />
           <Route path='/testpage/:id' element={<TestPage />} />

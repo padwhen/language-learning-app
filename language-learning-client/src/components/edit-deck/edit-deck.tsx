@@ -35,7 +35,7 @@ export const EditPage = () => {
             ...card, cardScore: card._id in modifiedCardIds ? 0 : card.cardScore
         }))
         try {
-            const response = await axios.put(`/decks/update/${id}`, { cards: updatedCards });
+            const response = await axios.put(`/decks/update/${id}`, { deckName, deckTags, cards: updatedCards });
             console.log('Updated deck: ', response.data)
             window.history.back()
         } catch (error) { console.error('Error updating deck: ', error)}
