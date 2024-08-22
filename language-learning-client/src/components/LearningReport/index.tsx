@@ -9,7 +9,7 @@ import { NextQuizCard } from "./NextQuizCard"
 
 export const QuizReport = () => {
     const { id, reportId } = useParams()
-    if (!id || !reportId ) return
+    const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
     const { 
         quizData, 
@@ -17,10 +17,9 @@ export const QuizReport = () => {
         setFilter,
         averageTime, filteredQuizDetails,
         loading, error
-    } = useFetchQuizHistory(reportId)
+    } = useFetchQuizHistory(reportId ?? '')
 
-    const [hoveredCard, setHoveredCard] = useState<string | null>(null)
-
+    if (!id || !reportId ) return
     if (loading) return <div>Loading...</div>
     if (error) return <div>Error: {error.message}</div>
     if (!quizData) return

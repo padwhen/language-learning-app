@@ -57,7 +57,7 @@ export const NextQuizCard: React.FC<NextQuizCardProps> = ({ quizData, averageTim
                     });
                 };
             
-                let reviewArray = [
+                const reviewArray = [
                     ...addToReviewArray(incorrectQuizzes),
                     ...addToReviewArray(correctButSlow),
                     ...addToReviewArray(notStudiedOrOngoing),

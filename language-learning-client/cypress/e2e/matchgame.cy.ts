@@ -11,7 +11,7 @@ describe('Match Game Test', () => {
         cy.contains('Login').click();
         cy.contains("View All Your Decks").click()
         cy.url().should('include', '/view-all-decks')
-        cy.contains('Test').click()
+        cy.contains('deck_example').click()
         cy.contains('Match').click()    
         cy.url().should('include', '/matchgame/');
     })

@@ -1,10 +1,10 @@
 import { useMatchGame } from "@/state/hooks/useMatchGame"
-import { useParams } from "react-router-dom"
+import { Navigate, useParams } from "react-router-dom"
 import { GameBoard, GameCompletedMessage, GameHeader, GameIntro } from "./MatchGameComponents/MatchGameComponents";
 
 export const MatchGame = () => {
-    const { id } = useParams<{ id: string }>()
-    if (!id) return null;
+    const { id } = useParams()
+
     const {
         gameCards, 
         selectedCards,
@@ -19,7 +19,9 @@ export const MatchGame = () => {
         shuffleCards,
         handleCardClick,
         startGame,
-    } = useMatchGame(id)
+    } = useMatchGame(id ?? '')
+
+    if (!id) { return <Navigate to="/" replace /> }
 
     if (!gameStarted) {
         return <GameIntro gameOptions={gameOptions} setGameOptions={setGameOptions} onStart={startGame} />

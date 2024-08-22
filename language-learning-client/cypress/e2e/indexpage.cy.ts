@@ -14,7 +14,7 @@ describe('log in', () => {
   })
   it('should display username not found for incorrect username', () => {
     cy.contains('Log In').click()
-    cy.get('#username').type('testuser');
+    cy.get('#username').type('nottestuser');
     cy.get('[data-testid="pin-input"]') 
     .find('input')
     .each(($el) => {

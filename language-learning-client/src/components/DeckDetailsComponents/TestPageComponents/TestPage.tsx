@@ -7,7 +7,7 @@ import Countdown from 'react-countdown'
 import { QuestionNav } from './QuestionNav'
 import { SubmitButton } from './SubmitButton'
 import { GradeStatistics } from './GradeStatistics'
-import { Card, Statistics } from '@/types'
+import { Statistics } from '@/types'
 import { useTestSubmit } from '@/state/hooks/useTestSubmit'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { ResponsiveBar } from '@nivo/bar'
@@ -19,7 +19,6 @@ import { LoadingSection } from './LoadingSection'
 export const TestPage =  () => {
     const [test, setTest] = useState<any | null>(null)
     const [isWordSelectionOpen, setIsWordSelectionOpen] = useState(true)
-    const [_selectedCards, setSelectedCards] = useState<Card[] | null>(null)
     const [currentSection, setCurrentSection] = useState<'passage' | 'synonym' | 'scramble'>('passage')
     const [answers, setAnswers] = useState<Record<string, string>>({})
     const [grade, setGrade] = useState<string | null>(null)
@@ -34,7 +33,6 @@ export const TestPage =  () => {
     const handleWordSelectionClose = async (cards: any[] | null) => {
         setIsWordSelectionOpen(false)
         if (cards) {
-            setSelectedCards(cards)
             setIsLoading(true)
             try {
                 const generatedTest = await generateTest(cards)
