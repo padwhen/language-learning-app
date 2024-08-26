@@ -15,6 +15,7 @@ import { QuizReport } from './components/LearningReport'
 import { FlashcardPage } from './components/DeckDetailsComponents/FlashCardPage'
 import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
 import { TestPage } from './components/DeckDetailsComponents/TestPageComponents/TestPage'
+import { VocabularyPage } from './components/vocabulary-page'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -36,6 +37,7 @@ function App() {
           <Route path='/flashcards/:id' element={<FlashcardPage />} />
           <Route path='/matchgame/:id' element={<MatchGame />} />
           <Route path='/testpage/:id' element={<TestPage />} />
+          <Route path='/vocabulary' element={<VocabularyPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

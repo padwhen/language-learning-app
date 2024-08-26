@@ -24,11 +24,7 @@ export const IndexPage = () => {
             </div>
             <div className="w-full lg:w-1/4 pt-1 px-4 lg:px-8 mt-8 flex flex-col">
                 <User />
-                <div className="text-center lg:text-left mt-4">
-                    Test username: 0000
-                    Test pin: 0000
-                </div>
-                <div className="mt-5">
+                <div className="mt-2">
                     <DeckInfo />
                 </div>
             </div>

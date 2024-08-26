@@ -20,11 +20,17 @@ export const MainNav = () => {
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            {isPage('/settings') ? (
+                            {isPage('/settings') && (
                                 <Link to={'/settings'}>
                                     <h2 className={`text-base md:text-lg text-black ${location.pathname === '/settings' ? 'border-b-2 border-blue-500' : ''}`}>Settings</h2>
                                 </Link>  
-                            ) : (
+                            )}
+                            {isPage('/vocabulary') && (
+                                <Link to={'/vocabulary'}>
+                                    <h2 className={`text-base md:text-lg text-black ${location.pathname === '/vocabulary' ? 'border-b-2 border-blue-500' : ''}`}>Vocabulary</h2>
+                                </Link>  
+                            )}
+                            {!isPage('/settings') && !isPage('/vocabulary') && (
                                 <Link to={'/view-all-decks'}>
                                     <h2 className={`text-base md:text-lg text-black ${location.pathname === '/view-all-decks' ? 'border-b-2 border-blue-500' : ''}`}>Your decks</h2>
                                 </Link>   
