@@ -145,7 +145,7 @@ export const EditPage = () => {
                     </div>
                 </div>
                 <div className="flex flex-col space-y-8 pt-16">
-                    <EditCardDetails cards={cards} userLang={userLang} onChange={handleCardChange} />
+                    <EditCardDetails deckName={deckName} cards={cards} userLang={userLang} onChange={handleCardChange} />
                     <div data-testid="add-card-button" className="w-full rounded-xl h-34 flex flex-col cursor-pointer" onClick={addCard}>
                         <span className="flex justify-center items-center">
                             <h1 className="text-3xl border-b-4 pb-1 hover:border-blue-500">+ Add Card</h1>
