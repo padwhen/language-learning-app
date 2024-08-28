@@ -17,7 +17,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
     const { decks } = useContext(DeckContext)
     const capitalizedUserLang = userLang.charAt(0).toUpperCase() + userLang.slice(1);
     const [ignoreDuplicates, setIgnoreDuplicates] = useState(false)
-    const [keepThisDuplicate, setKeepThisDuplicate] = useState<{[key: number]: boolean}>({})
+    const [keepThisDuplicate, setKeepThisDuplicate] = useState<{[key: string]: boolean}>({})
 
     const handleCardChange = (index: number, updatedCard: Card) => {
         const updatedCards = [...cards];
@@ -37,16 +37,22 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
 
     const handleDeleteCard = (index: number) => {
         const updatedCards = [...cards];
+        const deletedCardId = updatedCards[index]._id
         updatedCards.splice(index, 1);
         onChange(updatedCards);
+        setKeepThisDuplicate(prev => {
+            const updated = {...prev}
+            delete updated[deletedCardId]
+            return updated
+        })
     }
 
-    const findDuplicates = (card: Card, index: number) => {
+    const findDuplicates = (card: Card) => {
         for (const deck of decks) {
             if (deck.deckTags[0].toLowerCase() !== userLang.toLowerCase()) continue;
-            const duplicateCard = deck.cards.find((c, idx) => 
+            const duplicateCard = deck.cards.find((c) => 
             (c.userLangCard === card.userLangCard || c.engCard === card.engCard) && 
-            (deck.deckName !== deck.deckName || idx !== index)
+            (c._id !== card._id)
             )
             if (duplicateCard) {
                 return {
@@ -56,24 +62,25 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
                 }
             }
         }
-        return { isDuplicate: false, deckName: '', isDuplicateTerm: false, keepThis: false }
+        return { isDuplicate: false, deckName: '', isDuplicateTerm: false }
     }
 
-    const handleDuplicateAction = (index: number, action: string) => {
+    const handleDuplicateAction = (cardId: string, action: string) => {
         if (action === 'delete') {
-            handleDeleteCard(index)
+            const index = cards.findIndex(card => card._id === cardId)
+            if (index !== -1) handleDeleteCard(index)
         } else if (action === 'keep-no-show') {
             setIgnoreDuplicates(true)
         } else if (action === 'keep') {
-            setKeepThisDuplicate(prev => ({...prev, [index]: true}))
+            setKeepThisDuplicate(prev => ({...prev, [cardId]: true}))
         }
     }
 
     return (
         <div>
             {cards.map((card, index) => {
-                const { isDuplicate, deckName, isDuplicateTerm } = findDuplicates(card, index)
-                const showDuplicateWarning = isDuplicate && !ignoreDuplicates && !keepThisDuplicate[index]
+                const { isDuplicate, deckName, isDuplicateTerm } = findDuplicates(card)
+                const showDuplicateWarning = isDuplicate && !ignoreDuplicates && !keepThisDuplicate[card._id]
                 return (
                     <div key={card._id} className="w-full rounded-xl md:h-34 h-auto flex flex-col">
                         <div className="flex justify-between border-b-2 p-2 md:p-4">
@@ -106,7 +113,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
                                 <strong className="font-bold">
                                     This term appeared on {deckName}. Do you still want to add?
                                 </strong>
-                                <Select onValueChange={(value) => handleDuplicateAction(index, value)}>
+                                <Select onValueChange={(value) => handleDuplicateAction(card._id, value)}>
                                     <SelectTrigger className="w-[180px] mt-2">
                                         <SelectValue placeholder="Select an option" />
                                     </SelectTrigger>
