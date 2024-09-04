@@ -21,9 +21,18 @@ deckRouter.get('/decks', async (request, response) => {
 deckRouter.get('/decks/:id', async (request, response) => {
     const { id } = request.params
     try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized '})
+        }
+        const userData = jwt.verify(token, JWT_SECRET)
         const deck = await Deck.findById(id)
         if (!deck) {
             return response.status(404).json({ message: 'Deck not found' })
+        }
+        console.log(deck)
+        if (deck.owner.toString() !== userData.id) {
+            return response.status(403).json({ message: 'Forbidden: You do not have access to this deck'})
         }
         response.json(deck)
     } catch (error) {

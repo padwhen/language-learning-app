@@ -2,7 +2,7 @@ import { FaTrash } from "react-icons/fa"
 import { MdDragHandle } from "react-icons/md"
 import { Input } from "../ui/input"
 import { Card, ChangeEvent, Deck } from "@/types";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import { DeckContext } from "@/DeckContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
@@ -13,45 +13,53 @@ interface EditCardDetailsProps {
     deckName: string;
 }
 
+interface DuplicateInfo {
+    deckName: string;
+    isDuplicateTerm: boolean;
+    definition: string;
+    cardId: string;
+}
+
 export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCardDetailsProps) => {
     const { decks } = useContext(DeckContext)
     const capitalizedUserLang = userLang.charAt(0).toUpperCase() + userLang.slice(1);
     const [ignoreDuplicates, setIgnoreDuplicates] = useState(false)
-    const [duplicates, setDuplicates] = useState<{[key: string]: {deckName: string, isDuplicateTerm: boolean}}>({})
+    const [duplicates, setDuplicates] = useState<{[key: string]: DuplicateInfo[]}>({})
     const [localDecks, setLocalDecks] = useState<Deck[]>([])
+
+    console.log(duplicates)
 
     useEffect(() => {
         // Create a deep copy of the decks
         setLocalDecks(JSON.parse(JSON.stringify(decks)))
     }, [decks])
 
-    const findDuplicates = (card: Card) => {
+    const findDuplicates = useCallback((card: Card) => {
+        const duplicatesFound: DuplicateInfo[] = []
         for (const deck of localDecks) {
             if (deck.deckTags[0].toLowerCase() !== userLang.toLowerCase()) continue;
-            const duplicateCard = deck.cards.find((c) => 
-                (c.userLangCard === card.userLangCard || c.engCard === card.engCard) && 
-                (c._id !== card._id)
+            const duplicateCards = deck.cards.filter((c) => 
+            (c.userLangCard === card.userLangCard) &&
+            (c._id !== card._id)
             )
-            if (duplicateCard) {
-                return {
-                    deckName: deck.deckName === deckName ? 'this deck' : `"${deck.deckName}"`,
-                    isDuplicate: true,
+            duplicateCards.forEach(duplicateCard => {
+                duplicatesFound.push({
+                    deckName: deck.deckName === deckName ? 'This current deck' : `"${deck.deckName}"`,
                     isDuplicateTerm: duplicateCard.userLangCard === card.userLangCard,
-                }
-            }
+                    definition: duplicateCard.engCard,
+                    cardId: duplicateCard._id
+                })
+            })
         }
-        return { isDuplicate: false, deckName: '', isDuplicateTerm: false }
-    }
+        return duplicatesFound
+    }, [localDecks, deckName, userLang]);
 
     useEffect(() => {
-        const newDuplicates: {[key: string]: {deckName: string, isDuplicateTerm: boolean}} = {};
+        const newDuplicates: {[key: string]: DuplicateInfo[]} = {};
         cards.forEach(card => {
-            const duplicate = findDuplicates(card);
-            if (duplicate.isDuplicate) {
-                newDuplicates[card._id] = {
-                    deckName: duplicate.deckName,
-                    isDuplicateTerm: duplicate.isDuplicateTerm,
-                };
+            const duplicatesFound = findDuplicates(card)
+            if (duplicatesFound.length > 0) {
+                newDuplicates[card._id] = duplicatesFound
             }
         });
         setDuplicates(newDuplicates);
@@ -74,8 +82,8 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
     }
 
     const handleDeleteCard = (index: number) => {
-        const updatedCards = [...cards];
-        const deletedCardId = updatedCards[index]._id
+        const updatedCards = cards.filter((_, i) => i !== index);
+        const deletedCardId = cards[index]._id
         updatedCards.splice(index, 1);
         onChange(updatedCards);
         
@@ -95,44 +103,42 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
         })
     }
 
-    const handleDuplicateAction = (cardId: string, action: string) => {
-        if (action === 'delete') {
+    const handleDuplicateAction = (cardId: string, action: string, duplicateCardIds?: string[]) => {
+        if (action === 'delete-this') {
             const index = cards.findIndex(card => card._id === cardId)
             if (index !== -1) handleDeleteCard(index)
-        } else if (action === 'keep-no-show') {
-            setIgnoreDuplicates(true)
-        } else if (action === 'keep') {
-            // Remove the duplicate from localDecks
-            const cardToKeep = cards.find(card => card._id === cardId);
-            if (cardToKeep) {
-                setLocalDecks(prevDecks => 
+        } else if (action === 'delete-other') {
+            if (duplicateCardIds && duplicateCardIds.length > 0) {
+                // Remove the duplicates from localDecks
+                setLocalDecks(prevDecks =>
                     prevDecks.map(deck => ({
                         ...deck,
-                        cards: deck.cards.filter(c => 
-                            !(c.userLangCard === cardToKeep.userLangCard || c.engCard === cardToKeep.engCard)
-                        )
+                        cards: deck.cards.filter(c => !duplicateCardIds.includes(c._id))
                     }))
-                );
+                )
+                // Remove the duplicates from the duplicates state
+                setDuplicates(prev => {
+                    const updated = {...prev}
+                    delete updated[cardId]
+                    return updated
+                })
             }
-
-            // Update duplicates for all cards
+        } else if (action === 'keep-no-show') {
+            setIgnoreDuplicates(true)
+        } else if (action === 'keep-all') {
+            // Remove all duplicates for this card from the duplicates state
             setDuplicates(prev => {
-                const updated = {...prev};
-                Object.keys(updated).forEach(key => {
-                    if (updated[key].deckName === updated[cardId]?.deckName) {
-                        delete updated[key];
-                    }
-                });
-                return updated;
-            });
+                const updated = {...prev}
+                delete updated[cardId]
+                return updated
+            })
         }
     }
-
-    console.log(duplicates)
 
     return (
         <div>
             {cards.map((card, index) => {
+                const cardDuplicates = duplicates[card._id]
                 const showDuplicateWarning = duplicates[card._id] && !ignoreDuplicates
                 return (
                     <div key={card._id} className="w-full rounded-xl md:h-34 h-auto flex flex-col">
@@ -161,19 +167,28 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
                                 </span>
                             </div>
                         </div>
-                        {showDuplicateWarning && duplicates[card._id]?.isDuplicateTerm && (
+                        {showDuplicateWarning && cardDuplicates && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2" role="alert">
                                 <strong className="font-bold">
-                                    This term appeared on {duplicates[card._id]?.deckName}. Do you still want to add?
+                                    This term has {cardDuplicates.length} duplicate(s)
                                 </strong>
-                                <Select onValueChange={(value) => handleDuplicateAction(card._id, value)}>
+                                <ul className="mt-2 list-disc list-inside">
+                                    {cardDuplicates.map((duplicate, i) => (
+                                        <li key={i}>
+                                            {duplicate.deckName} ({card.userLangCard} - {duplicate.definition})
+                                        </li>
+                                    ))}
+                                </ul>
+                                <p className="mt-2">How would you like to proceed?</p>
+                                <Select onValueChange={(value) => handleDuplicateAction(card._id, value, cardDuplicates.map(d => d.cardId))}>
                                     <SelectTrigger className="w-[180px] mt-2">
                                         <SelectValue placeholder="Select an option" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="keep">Keep</SelectItem>
-                                        <SelectItem value="delete">Delete</SelectItem>
-                                        <SelectItem value="keep-no-show">Keep & don't show this message again</SelectItem>
+                                        <SelectItem value="keep-all">Keep all</SelectItem>
+                                        <SelectItem value="delete-this">Delete this one, keep the other(s)</SelectItem>
+                                        <SelectItem value="delete-other">Keep this one, delete the other(s)</SelectItem>
+                                        <SelectItem value="keep-no-show">Keep all & don't show this message again</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
