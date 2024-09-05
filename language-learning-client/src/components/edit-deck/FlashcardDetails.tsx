@@ -84,7 +84,6 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
     const handleDeleteCard = (index: number) => {
         const updatedCards = cards.filter((_, i) => i !== index);
         const deletedCardId = cards[index]._id
-        updatedCards.splice(index, 1);
         onChange(updatedCards);
         
         // Remove the card from localDecks
@@ -118,7 +117,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
                 )
                 // Remove the duplicates from the duplicates state
                 setDuplicates(prev => {
-                    const updated = {...prev}
+                    const updated = { ...prev }
                     delete updated[cardId]
                     return updated
                 })

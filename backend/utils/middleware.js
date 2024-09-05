@@ -1,4 +1,7 @@
+const { JWT_SECRET } = require('./config')
 const logger = require('./logger')
+const jwt = require('jsonwebtoken')
+
 
 const requestLogger = (request, response, next) => {
     logger.info('Method:', request.method)
@@ -22,6 +25,21 @@ const errorHandler = (error, request, response, next) => {
     next(error)
 }
 
+const verifyToken = (req, res, next) => {
+    const { token } = req.cookies;
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' })
+    }
+    try {
+        const userData = jwt.verify(token, JWT_SECRET)
+        req.userData = userData
+        next()
+    } catch (error) {
+        console.error('Error verifying token: ', error)
+        return res.status(401).json({ error: 'Unauthorized' })
+    }
+}
+
 module.exports = {
-    requestLogger, unknownEndpoint, errorHandler
+    requestLogger, unknownEndpoint, errorHandler, verifyToken
 }
