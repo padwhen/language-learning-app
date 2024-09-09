@@ -1,3 +1,4 @@
+import { textToSpeech } from "@/ChatCompletion";
 import { useState, useEffect } from "react";
 
 interface InputBarProps {
@@ -9,6 +10,8 @@ interface InputBarProps {
 
 export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, handleTranslation, ready }) => {
     const [countdown, setCountdown] = useState(60);
+    const [audioUrl, setAudioUrl] = useState<string | null>(null)
+    const [loadingTTS, setLoadingTTS] = useState(false)
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -24,6 +27,26 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
         setInputText(event.target.value);
     }
 
+    const handleSpeak = async () => {
+        if (!inputText) return
+        setLoadingTTS(true)
+        try {
+            const url = await textToSpeech(inputText)
+            setAudioUrl(url)
+        } catch (error) {
+            console.error('Error generating speech:', error)
+        } finally {
+            setLoadingTTS(false)
+        }
+    }
+
+    useEffect(() => {
+        if (audioUrl) {
+            const audio = new Audio(audioUrl)
+            audio.play()
+        }
+    }, [audioUrl])
+
     return (
         <div className="mt-5 w-full max-w-3xl px-4">
             <div className="w-full">
@@ -38,9 +61,15 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
             </div>
             <div className="flex flex-col sm:flex-row justify-between w-full items-center">
                 {ready ? (
-                    <button onClick={handleTranslation} className="w-full sm:w-auto shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded mt-2 sm:mt-0" type="submit">
-                        Translate
-                    </button>
+                    <>
+                        <button onClick={handleTranslation} className="w-full sm:w-auto shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded mt-2 sm:mt-0" type="submit">
+                            Translate
+                        </button>      
+                        <button onClick={handleSpeak} className="w-full sm:w-auto shadow bg-indigo-600 hover:bg-indigo-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 rounded mt-2 sm:mt-0" type="button" disabled={loadingTTS}>
+                            {loadingTTS ? "Speaking..." : "Speak"}
+                        </button>              
+                    </>
+
                 ) : (
                     <div className="flex flex-col sm:flex-row justify-between w-full items-center mt-2 sm:mt-0">
                         <span className="mb-2 sm:mb-0 sm:mr-4 text-center sm:text-left">

@@ -27,8 +27,6 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
     const [duplicates, setDuplicates] = useState<{[key: string]: DuplicateInfo[]}>({})
     const [localDecks, setLocalDecks] = useState<Deck[]>([])
 
-    console.log(duplicates)
-
     useEffect(() => {
         // Create a deep copy of the decks
         setLocalDecks(JSON.parse(JSON.stringify(decks)))
