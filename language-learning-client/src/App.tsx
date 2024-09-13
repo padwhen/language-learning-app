@@ -32,7 +32,7 @@ function App() {
   return (
     <UserContextProvider>
       <DeckContextProvider>
-        {location.pathname !== '/' && <Header />}
+        {location.pathname.startsWith('/') && <Header />}
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />

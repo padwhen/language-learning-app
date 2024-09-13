@@ -21,7 +21,6 @@ export const DeckInfo = () => {
     return (
         <div className="w-full max-w-md mx-auto px-4">
             <div className="flex flex-col items-center mb-4">
-                <h1 className="text-2xl font-bold text-blue-500 mb-2">Your decks</h1>
                 <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />
             </div>
             <div className="space-y-4">

@@ -54,4 +54,26 @@ describe('useFindDuplicates', () => {
         })
     })
 
+    it('should not find duplicates in decks with different language', async () => {
+      const spanishDeck: Deck = {
+        _id: '3',
+        deckName: 'Spanish Basics',
+        deckTags: ['Spanish'],
+        cards: [
+          { _id: '5', engCard: 'Hello', userLangCard: 'Hola', cardScore: 0 },
+        ],
+      }
+
+      const combinedDecks = mockDecks.concat(spanishDeck)
+  
+      const { result } = renderHook(() => 
+        useFindDuplicates(mockCards, combinedDecks, 'French Basics', 'French')
+      )
+  
+      await waitFor(() => {
+        expect(result.current.duplicates['1'][0].deckName).not.toBe('"Spanish Basics"')
+      })
+    })
+  
+
 })

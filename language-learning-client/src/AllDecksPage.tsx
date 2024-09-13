@@ -15,7 +15,7 @@ export const AllDecks = () => {
     const { allLanguages, displayedDecks } = sortAndFilterDecks(decks, sortBy, false)
 
     return (
-        <div className="pt-4 md:pt-[30px] px-4 md:px-5">
+        <div className="pt-4 md:pt-[30px] px-4 md:px-5 md:mx-32">
             <div className="flex sm:flex-row items-center justify-center mb-6 text-2xl md:text-4xl font-bold">
                 <h1 className="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-transparent bg-clip-text">
                     @{user?.name || user?.username}
@@ -25,11 +25,11 @@ export const AllDecks = () => {
             {displayedDecks.length > 0 && (
                 <div className="w-full max-w-7xl mx-auto">
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
-                        <div className="w-full sm:w-auto">
+                        <div className="w-full sm:w-auto ml-auto">
                             <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 justify-center items-stretch">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-5 justify-center items-stretch">
                     {displayedDecks.map((deck: any) => (
                         <Link key={deck._id} to={`/view-decks/${deck._id}`} className="flex">
                             <DockCardLarge deck={deck} />
