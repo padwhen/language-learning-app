@@ -1,23 +1,24 @@
 import { FaTrash } from "react-icons/fa";
 import { MdDragHandle } from "react-icons/md";
 import { Input } from "../ui/input";
-import { Card, ChangeEvent } from "@/types";
-import { useContext, useState } from "react";
-import { DeckContext } from "@/DeckContext";
+import { Card, ChangeEvent, Deck } from "@/types";
+import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { useFindDuplicates } from "@/state/hooks/useFindDuplicates";
 
 interface EditCardDetailsProps {
   cards: Card[];
   userLang: string;
   onChange: (updatedCards: Card[]) => void;
   deckName: string;
+  duplicates: {[key: string]: any[]};
+  setDuplicates: React.Dispatch<React.SetStateAction<{[key: string]: any[]}>>;
+  localDecks: Deck[];
+  updateLocalDecks: (updatedDecks: Deck[]) => void;
+  cardRefs: React.MutableRefObject<{[key: string]: HTMLDivElement | null}>;
 }
 
-export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCardDetailsProps) => {
-  const { decks } = useContext(DeckContext);
+export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDuplicates, localDecks, updateLocalDecks, cardRefs }: EditCardDetailsProps) => {
   const [ignoreDuplicates, setIgnoreDuplicates] = useState(false);
-  const { duplicates, setDuplicates, localDecks, updateLocalDecks } = useFindDuplicates(cards, decks, deckName, userLang);
 
   const capitalizedUserLang = userLang.charAt(0).toUpperCase() + userLang.slice(1);
 
@@ -119,7 +120,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, deckName }: EditCar
         const cardDuplicates = duplicates[card._id];
         const showDuplicateWarning = cardDuplicates && !ignoreDuplicates;
         return (
-          <div key={card._id} className="w-full rounded-xl md:h-34 h-auto flex flex-col">
+          <div key={card._id} className="w-full rounded-xl md:h-34 h-auto flex flex-col" ref={el => cardRefs.current[card._id] = el}>
             <div className="flex justify-between border-b-2 p-2 md:p-4">
               <span className="text-2xl md:text-3xl">{index + 1}</span>
               <span className="flex gap-4 md:gap-8">
