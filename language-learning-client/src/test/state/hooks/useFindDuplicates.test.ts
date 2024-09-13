@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, it, expect} from 'vitest'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { Card, Deck } from '@/types'
 import { useFindDuplicates } from '@/state/hooks/useFindDuplicates'
 
@@ -75,5 +75,40 @@ describe('useFindDuplicates', () => {
       })
     })
   
+    it('should update localDecks when updateLocalDecks is called', async () => {
+      const { result } = renderHook(() => useFindDuplicates(mockCards, mockDecks, 'French Basics', 'French'))
 
+      const updatedDecks = [...mockDecks, {
+        _id: '4',
+        deckName: 'New Deck', 
+        deckTags: ['French'],
+        cards: []
+      }]
+
+      act(() => {
+        result.current.updateLocalDecks(updatedDecks)
+      })
+
+      expect(result.current.localDecks).toEqual(updatedDecks)
+    })
+
+    it('should not find duplicates when card IDs are the same', async () => {
+      const cardsWithSameID: Card[] = [
+        { _id: '1', engCard: 'Hello', userLangCard: 'Bonjour', cardScore: 0 },
+      ]
+      const { result } = renderHook(() => useFindDuplicates(cardsWithSameID, mockDecks, 'French Basics', 'French'))
+
+      await waitFor(() => {
+        expect(result.current.duplicates).toEqual({
+          '1': [
+            {
+              deckName: 'This current deck',
+              isDuplicateTerm: true,
+              definition: 'Good morning',
+              cardId: '3'
+            }
+          ]
+        })
+      })
+    })
 })
