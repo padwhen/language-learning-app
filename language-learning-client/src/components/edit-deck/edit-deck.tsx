@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Card, ChangeEvent } from '@/types';
@@ -13,13 +13,15 @@ import useFetchDeck from '@/state/hooks/useFetchDeck';
 import { ImportCards } from './ImportCards';
 import { useFindDuplicates } from '@/state/hooks/useFindDuplicates';
 import { DuplicateWarningsButton } from './DuplicateWarningsButton';
+import { DeckContext } from '@/DeckContext';
 
 export const EditPage = () => {
     const { id } = useParams<{ id: string }>();
     const { deck, cards, deckName, deckTags, userLang, setCards, setDeckName, setDeckTags, setUserLang } = useFetchDeck(id);
     const [tagsInput, setTagsInput] = useState<string>('');
     const [modifiedCardIds, setModifiedCardIds] = useState<Set<string>>(new Set());
-    const { duplicates, setDuplicates, localDecks, updateLocalDecks } = useFindDuplicates(cards, deck ? [deck] : [], deckName, userLang)
+    const { decks } = useContext(DeckContext)
+    const { duplicates, setDuplicates, localDecks, updateLocalDecks } = useFindDuplicates(cards, decks, deckName, userLang)
     const cardRefs = useRef<{[key: string]: HTMLDivElement | null}>({})
 
     const addCard = () => {

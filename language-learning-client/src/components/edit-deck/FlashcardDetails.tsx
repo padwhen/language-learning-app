@@ -19,6 +19,7 @@ interface EditCardDetailsProps {
 
 export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDuplicates, localDecks, updateLocalDecks, cardRefs }: EditCardDetailsProps) => {
   const [ignoreDuplicates, setIgnoreDuplicates] = useState(false);
+  const [checkOnlyCurrentDeck, setCheckOnlyCurrentDeck] = useState(false)
 
   const capitalizedUserLang = userLang.charAt(0).toUpperCase() + userLang.slice(1);
 
@@ -57,33 +58,46 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
 
   const handleDuplicateAction = (cardId: string, action: string, duplicateCardIds?: string[]) => {
     switch (action) {
-      case 'delete-this':
-        const index = cards.findIndex(card => card._id === cardId);
-        if (index !== -1) handleDeleteCard(index);
-        break;
-      case 'delete-other':
-        if (duplicateCardIds && duplicateCardIds.length > 0) {
-          updateLocalDecks(localDecks.map(deck => ({
-            ...deck,
-            cards: deck.cards.filter(c => !duplicateCardIds.includes(c._id))
-          })));
-          setDuplicates(prev => {
-            const updated = { ...prev };
+        case 'delete-this':
+            const index = cards.findIndex(card => card._id === cardId);
+            if (index !== -1) handleDeleteCard(index);
+            break;
+        case 'delete-other':
+            if (duplicateCardIds && duplicateCardIds.length > 0) {
+            updateLocalDecks(localDecks.map(deck => ({
+                ...deck,
+                cards: deck.cards.filter(c => !duplicateCardIds.includes(c._id))
+            })));
+            setDuplicates(prev => {
+                const updated = { ...prev };
+                delete updated[cardId];
+                return updated;
+            });
+            }
+            break;
+        case 'keep-no-show':
+            setIgnoreDuplicates(true);
+            break;
+        case 'keep-all':
+            setDuplicates(prev => {
+            const updated = {...prev};
             delete updated[cardId];
             return updated;
-          });
-        }
-        break;
-      case 'keep-no-show':
-        setIgnoreDuplicates(true);
-        break;
-      case 'keep-all':
-        setDuplicates(prev => {
-          const updated = {...prev};
-          delete updated[cardId];
-          return updated;
-        });
-        break;
+            });
+            break;
+        case 'check-only-current':
+            setCheckOnlyCurrentDeck(true)
+            setDuplicates(prev => {
+                const updated = {...prev}
+                Object.keys(updated).forEach(key => {
+                    updated[key] = updated[key].filter(dup => dup.deckName === 'This current deck')
+                    if (updated[key].length === 0) {
+                        delete updated[key]
+                    }
+                })
+                return updated
+            })
+            break;
     }
   };
 
@@ -109,6 +123,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
           <SelectItem value="delete-this">Delete this one, keep the other(s)</SelectItem>
           <SelectItem value="delete-other">Keep this one, delete the other(s)</SelectItem>
           <SelectItem value="keep-no-show">Keep all & don't show this message again</SelectItem>
+          <SelectItem value="check-only-current">Check duplicates only in this deck</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -118,7 +133,7 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
     <div>
       {cards.map((card, index) => {
         const cardDuplicates = duplicates[card._id];
-        const showDuplicateWarning = cardDuplicates && !ignoreDuplicates;
+        const showDuplicateWarning = cardDuplicates && !ignoreDuplicates && (!checkOnlyCurrentDeck || cardDuplicates.some(dup => dup.deckName === 'This current deck'));
         return (
           <div key={card._id} className="w-full rounded-xl md:h-34 h-auto flex flex-col" ref={el => cardRefs.current[card._id] = el}>
             <div className="flex justify-between border-b-2 p-2 md:p-4">
