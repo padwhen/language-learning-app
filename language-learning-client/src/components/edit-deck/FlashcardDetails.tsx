@@ -58,11 +58,12 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
 
   const handleDuplicateAction = (cardId: string, action: string, duplicateCardIds?: string[]) => {
     switch (action) {
-        case 'delete-this':
+        case 'DELETE-THIS': {
             const index = cards.findIndex(card => card._id === cardId);
             if (index !== -1) handleDeleteCard(index);
             break;
-        case 'delete-other':
+        }
+        case 'DELETE-OTHER':
             if (duplicateCardIds && duplicateCardIds.length > 0) {
             updateLocalDecks(localDecks.map(deck => ({
                 ...deck,
@@ -75,17 +76,17 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
             });
             }
             break;
-        case 'keep-no-show':
+        case 'KEEP-NO-SHOW':
             setIgnoreDuplicates(true);
             break;
-        case 'keep-all':
+        case 'KEEP-ALL':
             setDuplicates(prev => {
             const updated = {...prev};
             delete updated[cardId];
             return updated;
             });
             break;
-        case 'check-only-current':
+        case 'CHECK-ONLY-CURRENT':
             setCheckOnlyCurrentDeck(true)
             setDuplicates(prev => {
                 const updated = {...prev}
@@ -119,11 +120,11 @@ export const EditCardDetails = ({ cards, userLang, onChange, duplicates, setDupl
           <SelectValue placeholder="Select an option" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="keep-all">Keep all</SelectItem>
-          <SelectItem value="delete-this">Delete this one, keep the other(s)</SelectItem>
-          <SelectItem value="delete-other">Keep this one, delete the other(s)</SelectItem>
-          <SelectItem value="keep-no-show">Keep all & don't show this message again</SelectItem>
-          <SelectItem value="check-only-current">Check duplicates only in this deck</SelectItem>
+          <SelectItem value="KEEP-ALL">Keep all</SelectItem>
+          <SelectItem value="DELETE-THIS">Delete this one, keep the other(s)</SelectItem>
+          <SelectItem value="DELETE-OTHER">Keep this one, delete the other(s)</SelectItem>
+          <SelectItem value="KEEP-NO-SHOW">Keep all & don't show this message again</SelectItem>
+          <SelectItem value="CHECK-ONLY-CURRENT">Check duplicates only in this deck</SelectItem>
         </SelectContent>
       </Select>
     </div>
