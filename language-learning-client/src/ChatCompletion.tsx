@@ -78,3 +78,17 @@ export const createTest = async (data: any) => {
     }
     return aiResponse;
 }
+
+export const textToSpeech = async (text: string) => {
+    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
+    const mp3 = await openai.audio.speech.create({
+        model: 'tts-1',
+        voice: 'nova',
+        input: text
+    })
+    const arrayBuffer = await mp3.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(blob);
+
+    return audioUrl;
+}

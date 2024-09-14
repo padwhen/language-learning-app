@@ -12,7 +12,7 @@ export const IndexPage = () => {
 
     return (
         <div className="flex flex-col lg:flex-row">
-            <div className="w-full px-4 lg:px-8 lg:w-3/4 pt-1 flex flex-col items-center">
+            <div className="w-full px-4 lg:px-16 flex flex-col items-center">
                 <TranslationBar fromLanguage={fromLanguage} setFromLanguage={setFromLanguage} />
                 <InputBar inputText={inputText} setInputText={setInputText} handleTranslation={handleTranslation} ready={ready} />
                 {response?.sentence && (
@@ -22,13 +22,9 @@ export const IndexPage = () => {
                     <WordDetails words={response.words} />    
                 )}
             </div>
-            <div className="w-full lg:w-1/4 pt-1 px-4 lg:px-8 mt-8 flex flex-col">
-                <User />
-                <div className="text-center lg:text-left mt-4">
-                    Test username: 0000
-                    Test pin: 0000
-                </div>
-                <div className="mt-5">
+            <div className="w-full lg:w-1/4 flex flex-col mr-4">
+                <div className="md:hidden lg:hidden"><User /></div>
+                <div className="mt-2">
                     <DeckInfo />
                 </div>
             </div>

@@ -26,6 +26,9 @@ const UserLoggedIn = ({ user, handleLogout }: {
                 <Link to="/settings" className="w-full sm:w-auto text-center px-4 py-2 text-md font-semibold rounded-lg text-blue-600 hover:bg-blue-50">
                     Profile Settings
                 </Link>
+                <Link to="/vocabulary" className="w-full sm:w-auto text-center px-4 py-2 text-md font-semibold rounded-lg text-blue-600 hover:bg-blue-50">
+                    All Vocabulary
+                </Link>
                 <button onClick={handleLogout} className="w-full sm:w-auto text-center px-4 py-2 text-md font-semibold rounded-lg text-blue-600 hover:bg-blue-50">
                     Log Out
                 </button>

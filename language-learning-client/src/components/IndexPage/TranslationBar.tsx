@@ -10,7 +10,7 @@ export const TranslationBar: React.FC<{
         setFromLanguage(language);
     }
     return (
-        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 lg:gap-8 w-full md:w-auto mt-8 p-4 rounded-lg">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 lg:gap-8 w-full md:w-auto mt-4 p-2 rounded-lg">
             <div className="relative inline-flex w-full md:w-auto">
                 <div className="w-full md:w-64 lg:w-80">
                     <DropdownMenu>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Card, ChangeEvent } from '@/types';
@@ -11,12 +11,18 @@ import { ToolTip } from '@/composables/ToolTip';
 import { EditCardDetails } from './FlashcardDetails';
 import useFetchDeck from '@/state/hooks/useFetchDeck';
 import { ImportCards } from './ImportCards';
+import { useFindDuplicates } from '@/state/hooks/useFindDuplicates';
+import { DuplicateWarningsButton } from './DuplicateWarningsButton';
+import { DeckContext } from '@/DeckContext';
 
 export const EditPage = () => {
     const { id } = useParams<{ id: string }>();
     const { deck, cards, deckName, deckTags, userLang, setCards, setDeckName, setDeckTags, setUserLang } = useFetchDeck(id);
     const [tagsInput, setTagsInput] = useState<string>('');
     const [modifiedCardIds, setModifiedCardIds] = useState<Set<string>>(new Set());
+    const { decks } = useContext(DeckContext)
+    const { duplicates, setDuplicates, localDecks, updateLocalDecks } = useFindDuplicates(cards, decks, deckName, userLang)
+    const cardRefs = useRef<{[key: string]: HTMLDivElement | null}>({})
 
     const addCard = () => {
         const newCard: Card = { _id: uuidv4(), engCard: '', userLangCard: '', cardScore: 0 };
@@ -35,9 +41,11 @@ export const EditPage = () => {
             ...card, cardScore: card._id in modifiedCardIds ? 0 : card.cardScore
         }))
         try {
-            const response = await axios.put(`/decks/update/${id}`, { deckName, deckTags, cards: updatedCards });
-            console.log('Updated deck: ', response.data)
+            await axios.put(`/decks/update/${id}`, { deckName, deckTags, cards: updatedCards });
             window.history.back()
+            setTimeout(() => {
+                window.location.reload()
+            }, 100)
         } catch (error) { console.error('Error updating deck: ', error)}
     };
 
@@ -84,6 +92,13 @@ export const EditPage = () => {
         });
     };
 
+    const navigateToCard = (cardId: string) => {
+        const cardElement = cardRefs.current[cardId]
+        if (cardElement) {
+            cardElement.scrollIntoView({ behavior: 'smooth', block: 'start'})
+        }
+    }
+
     return (
         <div className="pt-4 md:pt-8">
             <div className="container sticky top-0 w-full flex flex-col md:flex-row justify-between bg-white z-10 md:py-4 py-2 md:px-8">
@@ -95,6 +110,7 @@ export const EditPage = () => {
                     <span className="flex justify-center items-center text-red-500 font-bold text-sm md:text-base">
                         Note: Modifying the cards will reset their score, meaning that all previous progress will be deleted, and you'll have to start over again.
                     </span>
+                    <DuplicateWarningsButton duplicates={duplicates} onNavigate={navigateToCard} />
                 </div>
             </div>
             <div className="px-4 md:px-32 mt-4 md:mt-8 w-full flex flex-col space-y-2">
@@ -138,14 +154,24 @@ export const EditPage = () => {
                 </div>
                 <div className="flex justify-between pt-4">
                     <div className='hidden sm:block'><ImportCards setCards={setCards} /></div>
-                    <div className="flex items-center" data-testid="swap-terms">
+                    <div className="flex items-center gap-4" data-testid="swap-terms">
                         <div className="cursor-pointer" onClick={() => cards.forEach((_card, index) => handleSwapTerms(index))}>
                             <ToolTip trigger={<IoMdSwap />} content="Swap terms for all cards" />
                         </div>
                     </div>
                 </div>
                 <div className="flex flex-col space-y-8 pt-16">
-                    <EditCardDetails cards={cards} userLang={userLang} onChange={handleCardChange} />
+                    <EditCardDetails 
+                        deckName={deckName} 
+                        cards={cards} 
+                        userLang={userLang} 
+                        onChange={handleCardChange} 
+                        duplicates={duplicates}
+                        setDuplicates={setDuplicates}
+                        localDecks={localDecks}
+                        updateLocalDecks={updateLocalDecks}
+                        cardRefs={cardRefs}
+                    />
                     <div data-testid="add-card-button" className="w-full rounded-xl h-34 flex flex-col cursor-pointer" onClick={addCard}>
                         <span className="flex justify-center items-center">
                             <h1 className="text-3xl border-b-4 pb-1 hover:border-blue-500">+ Add Card</h1>

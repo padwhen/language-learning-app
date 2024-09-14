@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const LearningHistory = require('../models/LearningHistory')
 const { uniqueNamesGenerator, colors, animals } = require('unique-names-generator');
+const { verifyToken } = require('../utils/middleware');
 
 const config = {
     dictionaries: [colors, animals],
@@ -13,9 +14,16 @@ const createRandomName = () => {
     return uniqueNamesGenerator(config)
 }
 
+router.use(verifyToken)
+
 router.post('/learning-history/save-quiz-result', async (req, res) => {
     try {
         const { userId, deckId, cardsStudied, correctAnswers, quizType, quizDetails } = req.body
+        const { userData } = req
+
+        if (userId !== userData.id) {
+            return res.status(403).json({ message: "Forbidden" })
+        }
         const nextQuizDate = determineNextQuizDate(cardsStudied, correctAnswers)
 
         const processedQuizDetails = quizDetails.map(card => ({
@@ -42,6 +50,10 @@ router.post('/learning-history/save-quiz-result', async (req, res) => {
 router.get('/learning-history/:userId/:deckId', async (req, res) => {
     try {
         const { userId, deckId } = req.params;
+        const { userData } = req
+        if (userId !== userData.id) {
+            return res.status(403).json({ message: 'Forbidden. You cannot access other user\'s learning history' })
+        }
         const history = await LearningHistory.find({ userId, deckId }).sort({ date: -1 });
         if (history.length > 0) {
             const formattedHistory = history.map(entry => ({
@@ -65,6 +77,10 @@ router.get('/learning-history/:userId/:deckId', async (req, res) => {
 router.get('/learning-history/next-quiz-date/:userId/:deckId', async (req, res) => {
     try {
         const { userId, deckId } = req.params
+        const { userData } = req
+        if (userId !== userData.id) {
+            return res.status(403).json({ message: 'Forbidden. You cannot access other user\'s learning history' })
+        }
         const latestHistory = await LearningHistory.findOne({ userId, deckId })
             .sort({ date: -1 })
             .limit(10)
@@ -91,6 +107,17 @@ router.delete('/learning-history', async (req, res) => {
 router.get('/learning-history/:learningHistoryId', async (req, res) => {
     try {
         const { learningHistoryId } = req.params
+        const { userData } = req
+
+        const learningHistory = await LearningHistory.findById(learningHistoryId);
+        if (!learningHistory) {
+            return res.status(404).json({ message: 'Learning history not found' });
+        }
+
+        if (learningHistory.userId.toString() !== userData.id) {
+            return res.status(403).json({ message: 'Forbidden: You cannot delete another user\'s learning history' });
+        }
+
         const quizHistory = await LearningHistory.findById(learningHistoryId)
         if (quizHistory) {
             res.json(quizHistory)

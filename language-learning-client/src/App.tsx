@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AllDecks } from './AllDecksPage'
 import './App.css'
 import { DeckDetailsPage } from './DeckDetailsPage'
@@ -15,16 +15,24 @@ import { QuizReport } from './components/LearningReport'
 import { FlashcardPage } from './components/DeckDetailsComponents/FlashCardPage'
 import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
 import { TestPage } from './components/DeckDetailsComponents/TestPageComponents/TestPage'
+import { VocabularyPage } from './components/vocabulary-page'
+import { useEffect } from 'react'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate()
+  useEffect(() => {
+      const userId = localStorage.getItem('userId')
+      if (!userId) navigate('/')
+  }, [navigate])
+
   return (
     <UserContextProvider>
       <DeckContextProvider>
-        {location.pathname !== '/' && <Header />}
+        {location.pathname.startsWith('/') && <Header />}
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />
@@ -36,6 +44,7 @@ function App() {
           <Route path='/flashcards/:id' element={<FlashcardPage />} />
           <Route path='/matchgame/:id' element={<MatchGame />} />
           <Route path='/testpage/:id' element={<TestPage />} />
+          <Route path='/vocabulary' element={<VocabularyPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>
