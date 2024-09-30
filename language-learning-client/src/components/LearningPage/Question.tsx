@@ -58,35 +58,37 @@ export const Question: React.FC<QuestionProps> = (props) => {
     }
 
     return (
-        <div className="flex flex-col space-y-4" data-testid="question-box">
+        <div className="flex flex-col space-y-6 w-full max-w-3xl mx-auto" data-testid="question-box">
             <div>
-                <Label className="text-2xl sm:text-3xl font-bold">{props.data.userLangCard}</Label>
+                <Label className="text-3xl sm:text-4xl md:text-5xl font-bold block text-center mb-6">
+                    {props.data.userLangCard}
+                </Label>
             </div>
-            <div>
-                <Label>Choose matching term</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            <div className="w-full">
+                <Label className="text-xl sm:text-2xl mb-4 block">Choose matching term</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {props.data.options.map((option: string, index: number) => (
                         <Button 
                             key={index} 
                             variant={answer === option ? "default" : "outline"}
-                            className="justify-between"
+                            className="justify-between text-lg sm:text-xl py-6 px-6"
                             onClick={() => !submitted && submitAnswer(option)}
                             disabled={submitted}
                             data-testid="answer-test"
                         >
                             <span>{index + 1}. {option}</span>
-                            {submitted && checkAnswer(option) === true && <FaCheckCircle size={20} color="#0cde0c" />}
-                            {submitted && checkAnswer(option) === false && <FaTimesCircle size={20} color="#de3c3c" />}
+                            {submitted && checkAnswer(option) === true && <FaCheckCircle size={24} color="#0cde0c" />}
+                            {submitted && checkAnswer(option) === false && <FaTimesCircle size={24} color="#de3c3c" />}
                         </Button>
                     ))}
                 </div>
             </div>
             {!submitted && (
-                <Button variant="link" className="w-full" onClick={() => submitAnswer('')}>
+                <Button variant="link" className="w-full text-lg" onClick={() => submitAnswer('')}>
                     Don't know?
                 </Button>
             )}
-            {submitted && <div className="mt-1">Moving to next question...</div>}
+            {submitted && <div className="mt-4 text-center text-xl">Moving to next question...</div>}
         </div>
     )
 }

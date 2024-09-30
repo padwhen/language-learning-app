@@ -11,7 +11,8 @@ const DeckSchema = new Schema({
         engCard: { type: String, required: true },
         userLangCard: { type: String, required: true },
         cardScore: { type: Number, default: 0 },
-        favorite: { type: Boolean, default: false }
+        favorite: { type: Boolean, default: false },
+        learning: { type: Boolean, default: false }
     }]
 });
 

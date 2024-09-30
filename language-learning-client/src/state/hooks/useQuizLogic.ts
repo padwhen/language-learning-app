@@ -80,6 +80,11 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
                 const newScore = Math.min(Math.max(card.cardScore + (correct ? 1 : -1), 0), 5);
+                if (!card.learning) {
+                    card.learning = true
+                    // Call the backend to update the learning property
+                    axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: true })
+                }
                 return { ...card, cardScore: newScore };
             }
             return card;

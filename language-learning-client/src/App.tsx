@@ -6,7 +6,6 @@ import { IndexPage } from './IndexPage'
 import axios from 'axios'
 import { UserContextProvider } from './UserContext'
 import { DeckContextProvider } from './DeckContext'
-import LearningPage from './components/LearningPage/LearningPage'
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
@@ -17,6 +16,7 @@ import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
 import { TestPage } from './components/DeckDetailsComponents/TestPageComponents/TestPage'
 import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
+import { LearningPage } from './components/LearningPage/LearningPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
