@@ -112,7 +112,7 @@ export const DeckDetailsPage: React.FC = () => {
               <DeckControls 
                 onPlay={() => setAutoPlay(!autoPlay)}
                 onShuffle={() => {/* Implement shuffle */}}
-                onSettings={() => {/* Implement settings */}}
+                id={id}
               />
               <DeckNavigation 
                 currentCardIndex={currentCardIndex}
