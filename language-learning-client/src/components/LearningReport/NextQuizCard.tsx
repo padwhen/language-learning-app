@@ -5,6 +5,7 @@ import { getUniqueQuizDetails } from "@/utils/quizUtils";
 import { format } from "date-fns";
 import { Button } from "../ui/button";
 import { shuffleArray } from "@/state/hooks/useMatchGame";
+import { useNavigate } from "react-router-dom";
 
 interface QuizData {
     nextQuizDate: string;
@@ -14,6 +15,7 @@ interface QuizData {
 interface NextQuizCardProps {
     quizData: QuizData;
     averageTime: any;
+    id: string;
 }
 
 interface NextQuizSectionProps {
@@ -21,7 +23,7 @@ interface NextQuizSectionProps {
     items: Array<{ label: string; value: string}>
 }
 
-export const NextQuizCard: React.FC<NextQuizCardProps> = ({ quizData, averageTime }) => {
+export const NextQuizCard: React.FC<NextQuizCardProps> = ({ quizData, averageTime, id }) => {
     const details = quizData.quizDetails
     const incorrectQuizzes = getUniqueQuizDetails(details, q => !q.correct)
     const correctButSlow = getUniqueQuizDetails(details, q => q.correct && q.timeTaken > averageTime * 1000)
@@ -34,6 +36,8 @@ export const NextQuizCard: React.FC<NextQuizCardProps> = ({ quizData, averageTim
             .filter(filterFn)
             .map(({ cardId, cardScore, question, correctAnswer }) => ({ cardId, cardScore, question, correctAnswer }));
     
+            const navigate = useNavigate()
+
             const createQuizForReview = () => {
                 const incorrectQuizzes = filterAndMapQuiz(details, q => !q.correct);
                 const correctButSlow = filterAndMapQuiz(details, q => q.correct && q.timeTaken > averageTime);
@@ -67,7 +71,9 @@ export const NextQuizCard: React.FC<NextQuizCardProps> = ({ quizData, averageTim
                     ...addToReviewArray(notStudiedOrOngoing)
                 ];
             
-                console.log(shuffleArray(reviewArray));
+                const shuffledArray = shuffleArray(reviewArray)
+
+                navigate(`/review-page/${id}`, { state: { shuffledArray }})
             };
 
     return (

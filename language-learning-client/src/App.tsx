@@ -17,6 +17,7 @@ import { TestPage } from './components/DeckDetailsComponents/TestPageComponents/
 import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
+import { ReviewPage } from './components/ReviewPage/ReviewPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -45,6 +46,7 @@ function App() {
           <Route path='/matchgame/:id' element={<MatchGame />} />
           <Route path='/testpage/:id' element={<TestPage />} />
           <Route path='/vocabulary' element={<VocabularyPage />} />
+          <Route path='/review-page/:id' element={<ReviewPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

@@ -45,6 +45,7 @@ export interface QuizItem {
     userLangCard: string;
     options: string[];
     correctAnswer: string;
+    correctIndex: number;
     cardId: string;
     cardScore: number;
 }

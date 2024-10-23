@@ -7,12 +7,12 @@ interface UseQuizLogicReturn {
     answers: Answer[];
     quizdone: boolean;
     score: number;
-    saveAnswer: (answer: string, correct: boolean, cardId: string) => void;
+    saveAnswer: (answerIndex: number, correct: boolean, cardId: string) => void;
     cards: Card[];
     nextQuizDate?: Date | null;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, map?: Record<string, number>): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
     const [question, setQuestion] = useState<number>(1)
     const [answers, setAnswers] = useState<Answer[]>([])
@@ -61,40 +61,72 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
                 deckId: deckId,
                 cardsStudied: allAnswers.length, 
                 correctAnswers: allAnswers.filter(a => a.correct).length,
-                quizType: 'learn',
+                quizType: isReviewMode ? 'review': 'learn',
                 quizDetails: quizDetails
             })
             setNextQuizDate(new Date(response.data.nextQuizDate))
         } catch (error) {
             console.error('Error saving quiz result: ', error)
         }
-    }, [userId, deckId, quiz, answers])
+    }, [userId, deckId, quiz, answers, isReviewMode])
 
-    const saveAnswer = async (userAnswer: string, correct: boolean, cardId: string) => {
+    const saveAnswer = async (
+        userAnswerIndex: number, 
+        correct: boolean, 
+        cardId: string,
+    ) => {
+
         const currentQuestion = quiz[question - 1]
 
         const endTime = Date.now()
         const timeTaken = endTime - startTimeRef.current
-        
+
+        if (isReviewMode && correct && map && map[cardId] > 0) {
+            map[cardId]--
+        }        
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
-                const newScore = Math.min(Math.max(card.cardScore + (correct ? 1 : -1), 0), 5);
-                if (!card.learning) {
-                    card.learning = true
-                    // Call the backend to update the learning property
-                    axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: true })
+                let newScore = card.cardScore
+                if (isReviewMode) {
+                    // Review mode logic
+                    console.log(map![cardId])
+                    const reviewStatus = map![cardId] || 0
+                    if (reviewStatus === 0) {
+                        newScore += 1
+                    } else if (reviewStatus === 2) {
+                        newScore -= 1
+                    }
+                    newScore = Math.max(0, Math.min(newScore, 5))
+                } else {
+                    // Learn mode logic
+                    if (correct) {
+                        newScore = Math.min(card.cardScore + 1, 5)
+                    } else {
+                        newScore = 0
+                    }
                 }
-                return { ...card, cardScore: newScore };
+                // Update learning status
+                let learning = card.learning
+                if (newScore === 0) {
+                    learning = true
+                } else if (newScore === 5) {
+                    learning = false
+                }
+                // Call the backend to update the learning property if changed
+                if (learning !== card.learning) {
+                    axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: learning })
+                }
+                return {...card, cardScore: newScore, learning: learning}
             }
-            return card;
-        });
+            return card
+        })
         
         setCards(updatedCards);
 
         const newAnswer: Answer = {
             question: question,
-            userAnswer: userAnswer,
+            userAnswer: currentQuestion.options[userAnswerIndex],
             correctAnswer: currentQuestion.correctAnswer,
             correct: correct,
             cardId: cardId,

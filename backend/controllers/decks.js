@@ -254,7 +254,7 @@ deckRouter.put('/decks/:id/reset-progress', async (request, response) => {
         const userData = jwt.verify(token, JWT_SECRET)
         const updatedDeck = await Deck.findOneAndUpdate(
             { _id: id, owner: userData.id },
-            { $set: { "cards.$[].cardScore": 0 } },
+            { $set: { "cards.$[].cardScore": 0,"cards.$[].learning": false } },
             { new: true }
         )
         if (!updatedDeck) {

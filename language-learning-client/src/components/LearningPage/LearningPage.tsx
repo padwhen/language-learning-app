@@ -142,9 +142,10 @@ export const LearningPage: React.FC = () => {
                                 <Question 
                                     key={index} 
                                     data={quizItem} 
-                                    save={(answer: string, correct: boolean, cardId: string) => 
-                                        saveAnswer(answer, correct, cardId)
+                                    save={(answerIndex: number, correct: boolean, cardId: string) => 
+                                        saveAnswer(answerIndex, correct, cardId)
                                     } 
+                                    isReviewMode={false}
                                 />
                             )
                         ))
