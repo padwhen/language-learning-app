@@ -3,7 +3,7 @@ import { Card } from '@/types';
 
 const useQuizOptions = (cards: Card[]) => {
     const [includeCompletedCards, setIncludeCompletedCards] = useState(false);
-    const [cardsToLearn, setCardsToLearn] = useState(10);
+    const [cardsToLearn, setCardsToLearn] = useState(50);
     const [cardTypeToLearn, setCardTypeToLearn] = useState<'All' | 'Completed' | 'Not studied' | 'Learning'>('All');
     const [shuffleCards, setShuffleCards] = useState(false);
 

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import useQuizLogic from "@/state/hooks/useQuizLogic";
 import { generateQuiz } from "@/utils/generateQuiz";
 import { Link, useLocation, useParams } from "react-router-dom"
@@ -23,21 +24,30 @@ export const ReviewPage = () => {
     const location = useLocation()
     const { shuffledArray } = (location.state as { shuffledArray: ReviewCard[]})
     
-    let map: Record<string, number> = {}
-    for (let i = 0; i < shuffledArray.length; i++) {
-        let card = shuffledArray[i].cardId
-        map[card] = (map[card] || 0) + 1
-    }
+    // Memoize the card count map
+    const cardCountMap = useMemo(() => {
+        const map: Record<string, number> = {}
+        for (let i = 0; i < shuffledArray.length; i++) {
+            let card = shuffledArray[i].cardId
+            map[card] = (map[card] || 0) + 1
+        }
+        return map
+    }, [shuffledArray]);
 
-    const cards = shuffledArray.map((card) => ({
-        _id: card.cardId,
-        engCard: card.question,
-        userLangCard: card.correctAnswer,
-        cardScore: card.cardScore,
-    }))
+    // Memoize the transformed cards array
+    const cards = useMemo(() => 
+        shuffledArray.map((card) => ({
+            _id: card.cardId,
+            engCard: card.correctAnswer,
+            userLangCard: card.question,
+            cardScore: card.cardScore,
+        }))
+    , [shuffledArray]);
 
-    const quiz = generateQuiz(cards)
-    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id, true, map)
+    // Memoize the quiz generation
+    const quiz = useMemo(() => generateQuiz(cards), [cards]);
+
+    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id, true, cardCountMap);
 
     return (
         <div className="flex justify-center items-center min-h-screen p-2 sm:p-4">

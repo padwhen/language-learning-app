@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card as CardUI, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Question } from './Question';
 import { Progress } from "@/components/ui/progress"
@@ -18,6 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from '../ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { Input } from '../ui/input';
+import { QuizItem } from '@/types';
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
 
@@ -26,6 +27,8 @@ export const LearningPage: React.FC = () => {
     const { cards } = useFetchDeck(id)
     const userId = localStorage.getItem('userId')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [quiz, setQuiz] = useState<QuizItem[]>([])
+
     const {
         includeCompletedCards,
         setIncludeCompletedCards,
@@ -36,11 +39,22 @@ export const LearningPage: React.FC = () => {
         setShuffleCards,
         filterCards,
     } = useQuizOptions(cards)
-    const filteredAndSortedCards = filterCards()
-    const quiz = generateQuiz(filteredAndSortedCards)
-    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
 
+    const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
+    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
+
+    useEffect(() => {
+        if (filteredAndSortedCards.length > 0) {
+            const newQuiz = generateQuiz(filteredAndSortedCards)
+            setQuiz(newQuiz)
+        }
+    }, [
+        filteredAndSortedCards,
+        includeCompletedCards,  
+        cardsToLearn,
+        shuffleCards
+    ])
 
     useEffect(() => {
         fetchNextQuizDate()

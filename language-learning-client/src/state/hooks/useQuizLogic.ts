@@ -12,7 +12,7 @@ interface UseQuizLogicReturn {
     nextQuizDate?: Date | null;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, map?: Record<string, number>): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
     const [question, setQuestion] = useState<number>(1)
     const [answers, setAnswers] = useState<Answer[]>([])
@@ -20,6 +20,7 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
     const [score, setScore] = useState<number>(0)
     const [cards, setCards] = useState<Card[]>([])
     const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
+    const map = useRef<Record<string, number>>(mapInput || {});
 
     const startTimeRef = useRef<number>(Date.now())
 
@@ -42,7 +43,6 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
 
     const finishQuiz = useCallback(async (updatedCards: Card[], lastAnswer?: Answer) => {
         try {
-            // Update the deck on the server
             await axios.put(`/decks/update-card/${deckId}`, { cards: updatedCards });
 
             const allAnswers = lastAnswer ? [...answers, lastAnswer] : answers;
@@ -75,29 +75,40 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
         correct: boolean, 
         cardId: string,
     ) => {
-
         const currentQuestion = quiz[question - 1]
-
         const endTime = Date.now()
         const timeTaken = endTime - startTimeRef.current
 
-        if (isReviewMode && correct && map && map[cardId] > 0) {
-            map[cardId]--
+        if (isReviewMode && correct && map.current[cardId] > 0) {
+            map.current[cardId]--
         }        
+
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
+                const currentCard = cards.find(c => c._id === cardId);
+                if (currentCard) {
+                    console.log(currentCard.engCard + " = " + map.current[cardId])
+                }
+
                 let newScore = card.cardScore
+                let scoreUpdated = false
+
                 if (isReviewMode) {
-                    // Review mode logic
-                    console.log(map![cardId])
-                    const reviewStatus = map![cardId] || 0
-                    if (reviewStatus === 0) {
-                        newScore += 1
-                    } else if (reviewStatus === 2) {
-                        newScore -= 1
+                    // Review mode logic - only update score when map[cardId] reaches 0
+                    const reviewStatus = map.current[cardId] || 0
+                    if (reviewStatus === 0 && correct) {
+                        newScore = Math.min(card.cardScore + 1, 5)
+                        scoreUpdated = true
+                    } else if (reviewStatus === 2 && !correct) {
+                        newScore = Math.max(card.cardScore - 1, 0)
+                        scoreUpdated = true
                     }
-                    newScore = Math.max(0, Math.min(newScore, 5))
+                    
+                    // Remove card from map if score was updated
+                    if (scoreUpdated) {
+                        delete map.current[cardId]
+                    }
                 } else {
                     // Learn mode logic
                     if (correct) {
@@ -106,18 +117,26 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
                         newScore = 0
                     }
                 }
-                // Update learning status
+
+                // Always set learning to true the first time the card is interacted with
                 let learning = card.learning
-                if (newScore === 0) {
+                if (card.cardScore === 0 && !card.learning) {
                     learning = true
-                } else if (newScore === 5) {
-                    learning = false
+                }
+                // Reset learning to false if card is fully learned (score reaches threshold)
+                if (newScore >= 5) {
+                    learning = false;
                 }
                 // Call the backend to update the learning property if changed
                 if (learning !== card.learning) {
                     axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: learning })
                 }
-                return {...card, cardScore: newScore, learning: learning}
+
+                if (currentCard) {
+                    console.log(`${currentCard.engCard} current score is ${newScore}`)
+                }
+                
+                return {...card, cardScore: newScore, learning: learning}                
             }
             return card
         })
