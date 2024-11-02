@@ -86,11 +86,6 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
-                const currentCard = cards.find(c => c._id === cardId);
-                if (currentCard) {
-                    console.log(currentCard.engCard + " = " + map.current[cardId])
-                }
-
                 let newScore = card.cardScore
                 let scoreUpdated = false
 
@@ -130,10 +125,6 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
                 // Call the backend to update the learning property if changed
                 if (learning !== card.learning) {
                     axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: learning })
-                }
-
-                if (currentCard) {
-                    console.log(`${currentCard.engCard} current score is ${newScore}`)
                 }
                 
                 return {...card, cardScore: newScore, learning: learning}                
