@@ -14,7 +14,7 @@ describe('useQuizOptions', () => {
     test('initial state', () => {
         const { result } = renderHook(() => useQuizOptions(mockCards))
         expect(result.current.includeCompletedCards).toBe(false)
-        expect(result.current.cardsToLearn).toBe(10)
+        expect(result.current.cardsToLearn).toBe(50)
         expect(result.current.cardTypeToLearn).toBe('All')
         expect(result.current.shuffleCards).toBe(false)
         const filterCards = result.current.filterCards()

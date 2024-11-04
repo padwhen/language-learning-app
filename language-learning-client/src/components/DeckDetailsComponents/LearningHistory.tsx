@@ -66,8 +66,9 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                                             onClick={() => toggleGroup(groupName)}
                                         >
                                             <div className="space-y-1">
-                                                <div className="font-bold text-blue-500">
+                                                <div className="font-bold text-blue-500 flex gap-2">
                                                     {learningSession?.randomName}
+                                                    <Link to={`/view-decks/${deckId}/learning-report/${learningSession?.id}`} className="underline">[Review]</Link>
                                                 </div>
                                                 <div className="text-sm text-gray-600">
                                                 Started: {format(new Date(learningSession!.date), 'dd.MM.yyyy')} • {learningSession!.cardsStudied} cards

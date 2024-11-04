@@ -23,7 +23,7 @@ export const ReviewPage = () => {
     const { id } = useParams()
     const location = useLocation()
     const { shuffledArray } = (location.state as { shuffledArray: ReviewCard[]})
-    
+        
     // Memoize the card count map
     const cardCountMap = useMemo(() => {
         const map: Record<string, number> = {}
@@ -47,7 +47,9 @@ export const ReviewPage = () => {
     // Memoize the quiz generation
     const quiz = useMemo(() => generateQuiz(cards), [cards]);
 
-    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id, true, cardCountMap);
+    const { question, quizdone, score, saveAnswer, loading } = useQuizLogic(quiz, id, true, cardCountMap);
+
+    if (loading) return <p>Loading....</p>
 
     return (
         <div className="flex justify-center items-center min-h-screen p-2 sm:p-4">
