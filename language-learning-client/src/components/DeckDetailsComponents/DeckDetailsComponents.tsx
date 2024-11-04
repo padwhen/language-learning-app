@@ -6,6 +6,12 @@ import { Card } from "@/types";
 import ReactCardFlip from "react-card-flip";
 import { FrontCard } from "../FlashCardComponents/FrontCard";
 import { BackCard } from "../FlashCardComponents/BackCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { useState } from "react";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import { SettingsDialogContentProps } from "./SettingsDialogContent";
+import axios from "axios";
+import { useToast } from "../ui/use-toast";
 
 interface DeckNavigationProps {
     currentCardIndex: number;
@@ -17,7 +23,7 @@ interface DeckNavigationProps {
 interface DeckControlsProps {
     onPlay: () => void;
     onShuffle: () => void;
-    onSettings: () => void;
+    id: any
 }
 
 interface DeckLinksProps {
@@ -61,18 +67,57 @@ export const DeckNavigation: React.FC<DeckNavigationProps> = ({
 }
 
 export const DeckControls: React.FC<DeckControlsProps> = ({
-    onPlay, onShuffle, onSettings
-}) => (
-    <div className="pt-4 flex flex-wrap justify-between max-w-[875px]">
-        <div className="flex gap-4 items-center justify-center mb-4 w-full sm:w-auto">
-            <ToolTip trigger={<Play />} content="Play" onClick={onPlay} />
-            <ToolTip trigger={<Shuffle />} content="Shuffle" onClick={onShuffle} />
+    onPlay, onShuffle, id
+}) => {
+
+    const [isHandwritingRecognitionEnabled, setIsHandwritingRecognitionEnabled] = useState(false)
+    const { toast } = useToast()
+
+    const handleResetProgress = async () => {
+        try {
+            await axios.put(`/decks/${id}/reset-progress`)
+        } catch (error) {
+
+        } finally {
+            toast({
+                title: 'Deck progress is now reset.'
+            })
+        }
+    }
+
+    const handleToggleHandwritingRecognition = (enabled: boolean) => {
+        setIsHandwritingRecognitionEnabled(enabled)
+    }
+
+    return (
+        <div className="pt-4 flex flex-wrap justify-between max-w-[875px]">
+            <div className="flex gap-4 items-center justify-center mb-4 w-full sm:w-auto">
+                <ToolTip trigger={<Play />} content="Play" onClick={onPlay} />
+                <ToolTip trigger={<Shuffle />} content="Shuffle" onClick={onShuffle} />
+            </div>
+            <div className="flex items-center justify-center w-full sm:w-auto">
+                <Dialog>
+                    <DialogTrigger>
+                        <ToolTip trigger={<Settings />} content="Settings" />
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Settings</DialogTitle>
+                            <DialogDescription>
+                                Manage your deck settings and preferences
+                            </DialogDescription>
+                        </DialogHeader>
+                        <SettingsDialogContentProps 
+                            onResetProgress={handleResetProgress}
+                            onToggleHandwritingRecognition={handleToggleHandwritingRecognition}
+                            isHandwritingRecognitionEnabled={isHandwritingRecognitionEnabled}
+                        />
+                    </DialogContent>
+                </Dialog>
+            </div>
         </div>
-        <div className="flex items-center justify-center w-full sm:w-auto">
-            <ToolTip trigger={<Settings />} content="Settings" onClick={onSettings} />
-        </div>
-    </div>
-)
+    )
+}
 
 export const DeckLinks: React.FC<DeckLinksProps> = ({ id, cardsLength }) => {
     const aStyle = "text xl md:text-2xl inline-block px-4 md:px-8 py-3 rounded-sm border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-full sm:w-[205px] text-center"

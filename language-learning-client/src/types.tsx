@@ -38,12 +38,14 @@ export interface Card {
     userLangCard: string;
     cardScore: number;
     favorite?: boolean;
+    learning?: boolean;
 }
 
 export interface QuizItem {
     userLangCard: string;
     options: string[];
     correctAnswer: string;
+    correctIndex: number;
     cardId: string;
     cardScore: number;
 }

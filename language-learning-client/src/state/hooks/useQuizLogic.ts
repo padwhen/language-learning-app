@@ -7,12 +7,13 @@ interface UseQuizLogicReturn {
     answers: Answer[];
     quizdone: boolean;
     score: number;
-    saveAnswer: (answer: string, correct: boolean, cardId: string) => void;
+    saveAnswer: (answerIndex: number, correct: boolean, cardId: string) => void;
     cards: Card[];
     nextQuizDate?: Date | null;
+    loading: boolean;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
     const [question, setQuestion] = useState<number>(1)
     const [answers, setAnswers] = useState<Answer[]>([])
@@ -20,6 +21,8 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
     const [score, setScore] = useState<number>(0)
     const [cards, setCards] = useState<Card[]>([])
     const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
+    const [loading, setLoading] = useState(true)
+    const map = useRef<Record<string, number>>(mapInput || {});
 
     const startTimeRef = useRef<number>(Date.now())
 
@@ -33,16 +36,17 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
             setCards(response.data.cards);
         } catch (error) {
             console.error('Error fetching cards:', error);
+        } finally {
+            setLoading(false)
         }
     };
 
     useEffect(() => {
-        fetchCards();
+        fetchCards();            
     }, [deckId])
 
     const finishQuiz = useCallback(async (updatedCards: Card[], lastAnswer?: Answer) => {
         try {
-            // Update the deck on the server
             await axios.put(`/decks/update-card/${deckId}`, { cards: updatedCards });
 
             const allAnswers = lastAnswer ? [...answers, lastAnswer] : answers;
@@ -61,35 +65,89 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
                 deckId: deckId,
                 cardsStudied: allAnswers.length, 
                 correctAnswers: allAnswers.filter(a => a.correct).length,
-                quizType: 'learn',
+                quizType: isReviewMode ? 'review': 'learn',
                 quizDetails: quizDetails
             })
             setNextQuizDate(new Date(response.data.nextQuizDate))
         } catch (error) {
             console.error('Error saving quiz result: ', error)
         }
-    }, [userId, deckId, quiz, answers])
+    }, [userId, deckId, quiz, answers, isReviewMode])
 
-    const saveAnswer = async (userAnswer: string, correct: boolean, cardId: string) => {
+    const saveAnswer = async (
+        userAnswerIndex: number, 
+        correct: boolean, 
+        cardId: string,
+    ) => {
+        if (loading) return
         const currentQuestion = quiz[question - 1]
-
         const endTime = Date.now()
         const timeTaken = endTime - startTimeRef.current
-        
+
+        if (isReviewMode && correct && map.current[cardId] > 0) {
+            map.current[cardId]--
+        }      
+
+        console.log("Initial cards:", JSON.stringify(cards, null, 2));
+        console.log("Current question:", question);
+        console.log("Current card ID:", cardId);
+
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
-                const newScore = Math.min(Math.max(card.cardScore + (correct ? 1 : -1), 0), 5);
-                return { ...card, cardScore: newScore };
+                console.log(`Updating card with ID ${cardId}`);
+                let newScore = card.cardScore
+                let scoreUpdated = false
+
+                if (isReviewMode) {
+                    // Review mode logic - only update score when map[cardId] reaches 0
+                    const reviewStatus = map.current[cardId] || 0
+                    if (reviewStatus === 0 && correct) {
+                        newScore = Math.min(card.cardScore + 1, 5)
+                        scoreUpdated = true
+                    } else if (reviewStatus === 2 && !correct) {
+                        newScore = Math.max(card.cardScore - 1, 0)
+                        scoreUpdated = true
+                    }
+                    
+                    // Remove card from map if score was updated
+                    if (scoreUpdated) {
+                        delete map.current[cardId]
+                    }
+                } else {
+                    // Learn mode logic
+                    if (correct) {
+                        newScore = Math.min(card.cardScore + 1, 5)
+                    } else {
+                        newScore = 0
+                    }
+                }
+
+                // Always set learning to true the first time the card is interacted with
+                let learning = card.learning
+                if (card.cardScore === 0 && !card.learning) {
+                    learning = true
+                }
+                // Reset learning to false if card is fully learned (score reaches threshold)
+                if (newScore >= 5) {
+                    learning = false;
+                }
+                // Call the backend to update the learning property if changed
+                if (learning !== card.learning) {
+                    axios.put(`/decks/${deckId}/cards/${cardId}/learning`, { learning: learning })
+                }
+                
+                return {...card, cardScore: newScore, learning: learning}                
             }
-            return card;
-        });
+            return card
+        })
         
         setCards(updatedCards);
+        console.log(JSON.stringify(updatedCards, null, 2));
 
         const newAnswer: Answer = {
             question: question,
-            userAnswer: userAnswer,
+            userAnswer: currentQuestion.options[userAnswerIndex],
             correctAnswer: currentQuestion.correctAnswer,
             correct: correct,
             cardId: cardId,
@@ -105,12 +163,12 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any): UseQuizLogicReturn => {
             setAnswers(prev => [...prev, newAnswer])
             setQuestion(prevQuestion => prevQuestion + 1)
         } else {
-            await finishQuiz(updatedCards, newAnswer)
+            await finishQuiz([...updatedCards], newAnswer)
             setQuizDone(true)
         }
     }
 
-    return { question, answers, quizdone, score, saveAnswer, cards, nextQuizDate }
+    return { question, answers, quizdone, score, saveAnswer, cards, nextQuizDate, loading }
 }
 
 export default useQuizLogic

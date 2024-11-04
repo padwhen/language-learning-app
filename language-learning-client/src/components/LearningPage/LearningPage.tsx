@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card as CardUI, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Question } from './Question';
 import { Progress } from "@/components/ui/progress"
@@ -10,21 +10,25 @@ import { Link, useParams } from "react-router-dom";
 import useFetchDeck from '@/state/hooks/useFetchDeck';
 import { generateQuiz } from '@/utils/generateQuiz';
 import useQuizLogic from '@/state/hooks/useQuizLogic';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Checkbox } from '../ui/checkbox';
 import useQuizOptions from '@/state/hooks/useQuizOptions';
 import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
 import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
 import { Settings } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Checkbox } from '../ui/checkbox';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
+import { Input } from '../ui/input';
+import { QuizItem } from '@/types';
 
-const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 800 }
+const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
 
-const LearningPage: React.FC = () => {
+export const LearningPage: React.FC = () => {
     const { id } = useParams<{ id: string }>()
     const { cards } = useFetchDeck(id)
     const userId = localStorage.getItem('userId')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [quiz, setQuiz] = useState<QuizItem[]>([])
+
     const {
         includeCompletedCards,
         setIncludeCompletedCards,
@@ -35,40 +39,65 @@ const LearningPage: React.FC = () => {
         setShuffleCards,
         filterCards,
     } = useQuizOptions(cards)
-    const filteredAndSortedCards = filterCards()
-    const quiz = generateQuiz(filteredAndSortedCards)
-    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
 
+    const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
+    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
+
+    useEffect(() => {
+        if (filteredAndSortedCards.length > 0) {
+            const newQuiz = generateQuiz(filteredAndSortedCards)
+            setQuiz(newQuiz)
+        }
+    }, [
+        filteredAndSortedCards,
+        includeCompletedCards,  
+        cardsToLearn,
+        shuffleCards
+    ])
 
     useEffect(() => {
         fetchNextQuizDate()
     }, [id])
     
+    if (filteredAndSortedCards.length === 0) {
+        return (
+            <div className="flex justify-center items-center min-h-screen p-4">
+                <Alert className="w-full max-w-2xl">
+                    <AlertTitle className="text-xl font-bold">No Cards Available</AlertTitle>
+                    <AlertDescription className="text-lg">
+                        All cards in this deck are currently being learned or have been completed. 
+                        Check back later or adjust your quiz options to include more cards.
+                    </AlertDescription>
+                </Alert>
+            </div>
+        )
+    }
+
     return (
         <div className="flex justify-center items-center min-h-screen p-2 sm:p-4">
-            <CardUI className='w-full max-w-[600px]'>
-                <CardHeader className='relative'>
+            <CardUI className='w-full max-w-4xl h-full min-h-[80vh] flex flex-col'>
+                <CardHeader className='relative flex-shrink-0'>
                     {quizdone ? (
                         <>
-                            <Label className='text-xl sm:text-3xl'>Quiz Result</Label>
-                            <Separator className='my-2' />
+                            <Label className='text-3xl sm:text-4xl md:text-5xl font-bold'>Quiz Result</Label>
+                            <Separator className='my-4' />
                             <ConfettiExplosion {...confettiOptions} />
                         </>
                     ) : (
                         <>
-                            <Progress className='h-[2px] mb-5 opacity-50' value={question * 100 / quiz.length} />
-                            <CardTitle className='text-lg'>Question {question}/{quiz.length}</CardTitle>
+                            <Progress className='h-2 mb-6 opacity-70' value={question * 100 / quiz.length} />
+                            <CardTitle className='text-2xl sm:text-3xl md:text-4xl font-bold'>Question {question}/{quiz.length}</CardTitle>
                         </>
                     )}
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className='absolute top-2 right-2' data-testid="options-dialog">
-                                <Settings className='w-4 h-4' />
+                            <Button variant="ghost" size="icon" className='absolute top-4 right-4' data-testid="options-dialog">
+                                <Settings className='w-6 h-6' />
                             </Button>
                         </DialogTrigger>
                         <DialogContent className='sm:max-w-[425px] w-[90vw] max-w-[90vw] sm:w-full'>
-                            <CardTitle>Options</CardTitle>
+                        <CardTitle>Options</CardTitle>
                             <div className='space-y-4 mt-4'>
                             <div className='flex items-center space-x-2'>
                                 <Checkbox id='includeCompleted' 
@@ -110,24 +139,27 @@ const LearningPage: React.FC = () => {
                         </DialogContent>
                     </Dialog>
                 </CardHeader>
-                <CardContent>
+                <CardContent className='flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8'>
                     {quizdone ? (
-                        <div className='grid gap-4 place-items-center'>
-                            <span className='text-xl sm:text-2xl text-center'>{score}/{quiz.length} Questions are correct!</span>
+                        <div className='grid gap-6 place-items-center'>
+                            <span className='text-3xl sm:text-4xl md:text-5xl font-bold text-center'>{score}/{quiz.length} Questions are correct!</span>
                             {nextQuizDate && (
-                                <span className='text-sm sm:text-base text-center'>Next quiz scheduled for: {nextQuizDate.toLocaleDateString()}</span>
+                                <span className='text-xl sm:text-2xl text-center'>Next quiz scheduled for: {nextQuizDate.toLocaleDateString()}</span>
                             )}
                             <Link to={`/view-decks/${id}`}>
-                                <Button className='mt-2 sm:mt-5'>Back to Home</Button>
+                                <Button className='mt-4 sm:mt-6 text-xl py-6 px-8'>Back to Home</Button>
                             </Link>
                         </div>
                     ) : (
                         quiz.map((quizItem, index) => (
                             index + 1 === question && (
-                                <Question key={index} data={quizItem} 
-                                    save={(answer: string, correct: boolean, cardId: string) => 
-                                        saveAnswer(answer, correct, cardId)
+                                <Question 
+                                    key={index} 
+                                    data={quizItem} 
+                                    save={(answerIndex: number, correct: boolean, cardId: string) => 
+                                        saveAnswer(answerIndex, correct, cardId)
                                     } 
+                                    isReviewMode={false}
                                 />
                             )
                         ))
@@ -138,4 +170,3 @@ const LearningPage: React.FC = () => {
     )
 }
 
-export default LearningPage;

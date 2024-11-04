@@ -218,4 +218,53 @@ deckRouter.put('/decks/:id/add-card', async (request, response) => {
     }
 })
 
+// Update favorite of a card
+deckRouter.put('/decks/:deckId/cards/:cardId/learning', async (request, response) => {
+    try {
+        const { token } = request.cookies;
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { deckId, cardId } = request.params
+        const { learning } = request.body
+        const userData = jwt.verify(token, JWT_SECRET)
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: deckId, owner: userData.id, "cards._id": cardId },
+            { $set: { "cards.$.learning": learning } },
+            { new: true, runValidators: true }
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck or card not found'})
+        }
+        response.json(updatedDeck)
+    } catch (error) {
+        console.error('Error updating card learning status: ', error)
+        response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+// Reset progress for all cards in a deck
+deckRouter.put('/decks/:id/reset-progress', async (request, response) => {
+    try {
+        const { token } = request.cookies
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' })
+        }
+        const { id } = request.params
+        const userData = jwt.verify(token, JWT_SECRET)
+        const updatedDeck = await Deck.findOneAndUpdate(
+            { _id: id, owner: userData.id },
+            { $set: { "cards.$[].cardScore": 0,"cards.$[].learning": false } },
+            { new: true }
+        )
+        if (!updatedDeck) {
+            return response.status(404).json({ error: 'Deck not found' })
+        }
+        response.json(updatedDeck)
+    } catch (error) {
+        console.error('Error resetting progress:', error)
+        response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
 module.exports = deckRouter

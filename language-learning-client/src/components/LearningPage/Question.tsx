@@ -8,14 +8,16 @@ interface QuestionProps {
         userLangCard: string;
         options: string[];
         correctAnswer: string;
+        correctIndex: number;
         cardId: string;
         cardScore: number;
     };
-    save: (answer: string, correct: boolean, cardId: string, cardScore: number) => void;
+    save: (answerIndex: number, correct: boolean, cardId: string, cardScore: number) => void;
+    isReviewMode: boolean
 }
 
 export const Question: React.FC<QuestionProps> = (props) => {
-    const [answer, setAnswer] = useState('')
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [submitted, setSubmitted] = useState(false)
 
     useEffect(() => {
@@ -23,8 +25,8 @@ export const Question: React.FC<QuestionProps> = (props) => {
             if (!submitted && ['1', '2', '3', '4'].includes(event.key)) {
                 const index = parseInt(event.key) - 1;
                 if (index < props.data.options.length) {
-                    setAnswer(props.data.options[index]);
-                    submitAnswer(props.data.options[index]);
+                    setSelectedIndex(index);
+                    submitAnswer(index);
                 }
             }
         };
@@ -36,57 +38,60 @@ export const Question: React.FC<QuestionProps> = (props) => {
         };
     }, [submitted, props.data.options]);
 
-    const submitAnswer = (selectedAnswer: string) => {
-        setAnswer(selectedAnswer);
+    const submitAnswer = (index: number) => {
+        setSelectedIndex(index);
         setSubmitted(true);
         setTimeout(() => {
-            const isCorrect = selectedAnswer === props.data.correctAnswer
-            props.save(selectedAnswer, isCorrect, props.data.cardId, props.data.cardScore);
+            const isCorrect = index === props.data.correctIndex
+            props.save(index, isCorrect, props.data.cardId, props.data.cardScore);
         }, 1000); 
     }
 
-    const checkAnswer = (val: any) => {
-        if (val === answer && val === props.data.correctAnswer) {
+    const checkAnswer = (index: number) => {
+        if (index === selectedIndex && index === props.data.correctIndex) {
             return true;
         }
-        if (val === answer && val !== props.data.correctAnswer) {
+        if (index === selectedIndex && index !== props.data.correctIndex) {
             return false;
         }
-        if (val !== answer && val === props.data.correctAnswer) {
+        if (index !== selectedIndex && index === props.data.correctIndex) {
             return true;
         }
+        return undefined
     }
 
     return (
-        <div className="flex flex-col space-y-4" data-testid="question-box">
+        <div className="flex flex-col space-y-6 w-full max-w-3xl mx-auto" data-testid="question-box">
             <div>
-                <Label className="text-2xl sm:text-3xl font-bold">{props.data.userLangCard}</Label>
+                <Label className="text-3xl sm:text-4xl md:text-5xl font-bold block text-center mb-6">
+                    {props.data.userLangCard}
+                </Label>
             </div>
-            <div>
-                <Label>Choose matching term</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            <div className="w-full">
+                <Label className="text-xl sm:text-2xl mb-4 block">Choose matching term</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {props.data.options.map((option: string, index: number) => (
                         <Button 
                             key={index} 
-                            variant={answer === option ? "default" : "outline"}
-                            className="justify-between"
-                            onClick={() => !submitted && submitAnswer(option)}
+                            variant={selectedIndex === index ? "default" : "outline"}
+                            className="justify-between text-lg sm:text-xl py-6 px-6"
+                            onClick={() => !submitted && submitAnswer(index)}
                             disabled={submitted}
                             data-testid="answer-test"
                         >
                             <span>{index + 1}. {option}</span>
-                            {submitted && checkAnswer(option) === true && <FaCheckCircle size={20} color="#0cde0c" />}
-                            {submitted && checkAnswer(option) === false && <FaTimesCircle size={20} color="#de3c3c" />}
+                            {submitted && checkAnswer(index) === true && <FaCheckCircle size={24} color="#0cde0c" />}
+                            {submitted && checkAnswer(index) === false && <FaTimesCircle size={24} color="#de3c3c" />}
                         </Button>
                     ))}
                 </div>
             </div>
             {!submitted && (
-                <Button variant="link" className="w-full" onClick={() => submitAnswer('')}>
+                <Button variant="link" className="w-full text-lg" onClick={() => submitAnswer(-1)}>
                     Don't know?
                 </Button>
             )}
-            {submitted && <div className="mt-1">Moving to next question...</div>}
+            {submitted && <div className="mt-4 text-center text-xl">Moving to next question...</div>}
         </div>
     )
 }

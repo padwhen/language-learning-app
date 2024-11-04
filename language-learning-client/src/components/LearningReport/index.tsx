@@ -59,7 +59,7 @@ export const QuizReport = () => {
                     hoveredCard={hoveredCard}
                     setHoveredCard={setHoveredCard}
                 />
-                <NextQuizCard quizData={quizData} averageTime={averageTime} />
+                <NextQuizCard quizData={quizData} averageTime={averageTime} id={id} />
             </div>
         </div>
     )

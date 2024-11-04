@@ -18,13 +18,14 @@ router.use(verifyToken)
 
 router.post('/learning-history/save-quiz-result', async (req, res) => {
     try {
-        const { userId, deckId, cardsStudied, correctAnswers, quizType, quizDetails } = req.body
-        const { userData } = req
+        const { userId, deckId, cardsStudied, correctAnswers, quizType, quizDetails } = req.body;
+        const { userData } = req;
 
         if (userId !== userData.id) {
-            return res.status(403).json({ message: "Forbidden" })
+            return res.status(403).json({ message: "Forbidden" });
         }
-        const nextQuizDate = determineNextQuizDate(cardsStudied, correctAnswers)
+
+        const nextQuizDate = determineNextQuizDate(quizType, cardsStudied, correctAnswers);
 
         const processedQuizDetails = quizDetails.map(card => ({
             question: card.engCard,
@@ -34,18 +35,58 @@ router.post('/learning-history/save-quiz-result', async (req, res) => {
             cardId: card._id,
             cardScore: card.cardScore,
             timeTaken: card.timeTaken
-        }))
+        }));
+
+        let randomName;
+        let originalLearningSession;
+        let reviewNumber = 0;
+
+        if (quizType === 'learn') {
+            // For "learn" sessions, create a new random name
+            randomName = createRandomName();
+            originalLearningSession = null;
+        } else {
+            // For "review" sessions, find the latest "learn" session
+            originalLearningSession = await LearningHistory.findOne({
+                userId,
+                deckId,
+                quizType: 'learn'
+            }).sort({ date: -1 });
+
+            if (!originalLearningSession) {
+                return res.status(400).json({ message: 'No learn session found for review' });
+            }
+
+            reviewNumber = originalLearningSession.reviewSessions.length + 1;
+            randomName = `${originalLearningSession.randomName}_Review${String(reviewNumber).padStart(2, '0')}`;
+        }
 
         const history = new LearningHistory({
-            userId, deckId, cardsStudied, correctAnswers, quizType, nextQuizDate,
-            randomName: createRandomName(), quizDetails: processedQuizDetails
-        })
-        await history.save()
-        res.status(201).json({ message: 'Quiz results saved succesfully', history })
+            userId,
+            deckId,
+            cardsStudied,
+            correctAnswers,
+            quizType,
+            nextQuizDate,
+            randomName,
+            quizDetails: processedQuizDetails,
+            originalLearningSession: originalLearningSession ? originalLearningSession._id : null,
+            reviewNumber
+        });
+
+        if (originalLearningSession) {
+            // Add this review session to the reviewSessions array of the original learn session
+            originalLearningSession.reviewSessions.push(history._id);
+            await originalLearningSession.save();
+        }
+
+        await history.save();
+        res.status(201).json({ message: 'Quiz results saved successfully', history });
     } catch (error) {
-        res.status(500).json({ message: 'Error saving quiz result', error: error.message })
+        res.status(500).json({ message: 'Error saving quiz result', error: error.message });
     }
-})
+});
+
 
 router.get('/learning-history/:userId/:deckId', async (req, res) => {
     try {
@@ -129,21 +170,22 @@ router.get('/learning-history/:learningHistoryId', async (req, res) => {
     }
 })
 
-function determineNextQuizDate(cardsStudied, correctAnswers) {
-    const performance = correctAnswers / cardsStudied
-    let daysUntilNextQuiz;
+function determineNextQuizDate(quizType, cardsStudied, correctAnswers) {
+    const performance = correctAnswers / cardsStudied;
+    let daysUntilNextQuiz = 1; // default for learn
 
-    if (performance > 0.8) {
-        daysUntilNextQuiz = 7;
-    } else if (performance > 0.6) {
-        daysUntilNextQuiz = 3
-    } else { 
-        daysUntilNextQuiz = 1
+    if (quizType === 'review') {
+        if (performance >= 0.8) {
+            daysUntilNextQuiz = Math.round(daysUntilNextQuiz * 2);
+        } else if (performance < 0.6) {
+            daysUntilNextQuiz = Math.max(1, Math.round(daysUntilNextQuiz * 0.5));
+        }
+        daysUntilNextQuiz = Math.min(30, daysUntilNextQuiz);
     }
 
-    const nextQuizDate = new Date()
-    nextQuizDate.setDate(nextQuizDate.getDate() + daysUntilNextQuiz)
-    return nextQuizDate
+    const nextQuizDate = new Date();
+    nextQuizDate.setDate(nextQuizDate.getDate() + daysUntilNextQuiz);
+    return nextQuizDate;
 }
 
 module.exports = router
