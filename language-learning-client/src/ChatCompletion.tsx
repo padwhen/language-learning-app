@@ -69,6 +69,7 @@ export const createTest = async (data: any) => {
         messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${jsonString} <--- ${PROMPT_4}`}]
     })
     let aiResponse = completion.choices[0].message.content
+    console.log(aiResponse)
     const jsonRegex = /{(.|\n)*}/; 
     const match = aiResponse?.match(jsonRegex);
     if (match) {

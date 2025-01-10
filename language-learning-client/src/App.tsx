@@ -18,8 +18,10 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
+import { OnboardingModal } from './OnboardingModal'
+import { onboardingConfig } from './onboardingConfig'
 
-axios.defaults.baseURL = 'http://localhost:2323/api/'
+axios.defaults.baseURL = 'https://padwhen-learningapp.fly.dev/api/'
 axios.defaults.withCredentials = true
 
 function App() {
@@ -34,6 +36,7 @@ function App() {
     <UserContextProvider>
       <DeckContextProvider>
         {location.pathname.startsWith('/') && <Header />}
+        <OnboardingModal config={onboardingConfig.allDecks} />
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />

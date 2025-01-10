@@ -24,7 +24,7 @@ mongoose.connect(config.MONGODB_URI)
 
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173'
+    origin: 'https://padwhen-learningapp.fly.dev/'
 }));
 
 app.use(cookieParser());
