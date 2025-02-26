@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
-import { CreatorBar } from "./components/DeckDetailsComponents/Creator";
+import { CreatorBar } from "../components/DeckDetailsComponents/Creator";
 import { useParams } from "react-router-dom";
-import { organizeCardsByScore } from "./composables/SortCard";
-import { NoCard } from "./components/FlashCardComponents/NoCard";
-import { CardCategory } from "./components/DeckDetailsComponents/CardCategory";
-import { moveLeft, moveRight } from "./utils/cardNavigation";
-import { useKeyboardNavigation } from "./utils/useKeyboardNavigation";
-import { LearningHistory } from "./components/DeckDetailsComponents/LearningHistory";
-import { useUpdateFavorite } from "./state/hooks/useUpdateFavorite";
-import useFetchDeck from "./state/hooks/useFetchDeck";
-import { useHint } from "./state/hooks/useHint";
-import { useAutoPlay } from "./state/hooks/useAutoPlay";
-import { DeckControls, DeckLinks, DeckNavigation, FlashCard } from "./components/DeckDetailsComponents/DeckDetailsComponents";
+import { organizeCardsByScore } from "../composables/SortCard";
+import { NoCard } from "../components/FlashCardComponents/NoCard";
+import { CardCategory } from "../components/DeckDetailsComponents/CardCategory";
+import { moveLeft, moveRight } from "../utils/cardNavigation";
+import { useKeyboardNavigation } from "../utils/useKeyboardNavigation";
+import { LearningHistory } from "../components/DeckDetailsComponents/LearningHistory";
+import { useUpdateFavorite } from "../state/hooks/useUpdateFavorite";
+import useFetchDeck from "../state/hooks/useFetchDeck";
+import { useHint } from "../state/hooks/useHint";
+import { useAutoPlay } from "../state/hooks/useAutoPlay";
+import { DeckControls, DeckLinks, DeckNavigation, FlashCard } from "../components/DeckDetailsComponents/DeckDetailsComponents";
 import { AnimatePresence } from "framer-motion";
-import { Input } from "./components/ui/input";
+import { Input } from "../components/ui/input";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Card } from "./types";
+import { Card } from "../types";
 
 export const DeckDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();

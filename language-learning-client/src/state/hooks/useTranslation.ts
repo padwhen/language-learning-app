@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { chatCompletion } from "@/ChatCompletion";
+import { chatCompletion } from "@/chatcompletion/ChatCompletion";
 import { v4 as uuidv4 } from 'uuid'
 import jsonData from '../../../words.json'
 

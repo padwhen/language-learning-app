@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./components/ui/dialog"
-import { Button } from "./components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../components/ui/dialog"
+import { Button } from "../components/ui/button";
 
 type Step = {
     title: string;
@@ -35,7 +35,13 @@ export const OnboardingModal = ({ config }: OnboardingModalProps) => {
     const isMultiStep = steps.length > 1
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog 
+            open={isOpen} 
+            onOpenChange={(open) => {
+                if (!open) handleClose()
+                else setIsOpen(true)
+            }}
+        >
             <DialogContent className="max-w-xl">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold text-center">

@@ -1,8 +1,8 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { AllDecks } from './AllDecksPage'
+import { AllDecks } from './pages/AllDecksPage'
 import './App.css'
-import { DeckDetailsPage } from './DeckDetailsPage'
-import { IndexPage } from './IndexPage'
+import { DeckDetailsPage } from './pages/DeckDetailsPage'
+import { IndexPage } from './pages/IndexPage'
 import axios from 'axios'
 import { UserContextProvider } from './UserContext'
 import { DeckContextProvider } from './DeckContext'
@@ -18,10 +18,10 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
-import { OnboardingModal } from './OnboardingModal'
-import { onboardingConfig } from './onboardingConfig'
+import { OnboardingModal } from './modals/OnboardingModal'
+import { onboardingConfig } from './modals/onboardingConfig'
 
-axios.defaults.baseURL = 'https://padwhen-learningapp.fly.dev/api/'
+axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
 
 function App() {

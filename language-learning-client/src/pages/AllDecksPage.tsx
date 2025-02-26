@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom"
-import { DockCardLarge } from "./components/DockCardLarge"
+import { DockCardLarge } from "../components/AllDeckPagesComponents/DockCardLarge"
 import { useContext, useState} from "react";
-import { UserContext } from "./UserContext";
-import { DeckContext } from "./DeckContext";
-import { sortAndFilterDecks } from "./utils/sortAndFilterDecks";
-import SortableSelect from "./components/SortableSelect";
+import { UserContext } from "../UserContext";
+import { DeckContext } from "../DeckContext";
+import { sortAndFilterDecks } from "../utils/sortAndFilterDecks";
+import { SortableSelect } from "@/components/AllDeckPagesComponents/SortableSelect";
 
 export const AllDecks = () => {
     const { user } = useContext(UserContext);

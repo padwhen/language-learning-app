@@ -1,5 +1,5 @@
 import React from "react";
-import { Progress } from "./ui/progress";
+import { Progress } from "../ui/progress";
 import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 
 export const DockCardLarge: React.FC<{

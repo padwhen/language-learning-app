@@ -1,4 +1,4 @@
-import { textToSpeech } from "@/ChatCompletion";
+import { textToSpeech } from "@/chatcompletion/ChatCompletion";
 import { useState, useEffect } from "react";
 
 interface InputBarProps {

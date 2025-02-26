@@ -1,6 +1,7 @@
 // src/components/SortableSelect.tsx
 import React from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../ui/select';
+
 
 interface SortableSelectProps {
     sortBy: string;
@@ -8,7 +9,7 @@ interface SortableSelectProps {
     allLanguages: string[];
 }
 
-const SortableSelect: React.FC<SortableSelectProps> = ({ setSortBy, allLanguages }) => {
+export const SortableSelect: React.FC<SortableSelectProps> = ({ setSortBy, allLanguages }) => {
     return (
         <Select onValueChange={value => setSortBy(value)}>
             <SelectTrigger className="text-lg mt-1 border rounded-md bg-gray-200 text-gray-700 px-4" data-testid="sort-select-trigger">
@@ -35,4 +36,3 @@ const SortableSelect: React.FC<SortableSelectProps> = ({ setSortBy, allLanguages
     );
 };
 
-export default SortableSelect;

@@ -1,10 +1,10 @@
-import { TranslationBar } from "./components/IndexPage/TranslationBar";
-import { InputBar } from "./components/IndexPage/InputBar";
-import { Translation } from "./components/IndexPage/Translation";
-import { WordDetails } from "./components/IndexPage/Details";
-import { User } from "./components/IndexPage/User";
-import { DeckInfo } from "./components/IndexPage/DeckInfo";
-import useTranslation from "./state/hooks/useTranslation";
+import { TranslationBar } from "../components/IndexPage/TranslationBar";
+import { InputBar } from "../components/IndexPage/InputBar";
+import { Translation } from "../components/IndexPage/Translation";
+import { WordDetails } from "../components/IndexPage/Details";
+import { User } from "../components/IndexPage/User";
+import { DeckInfo } from "../components/IndexPage/DeckInfo";
+import useTranslation from "../state/hooks/useTranslation";
 
 
 export const IndexPage = () => {

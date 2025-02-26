@@ -3,7 +3,7 @@ import useFetchDeck from "./useFetchDeck";
 import { Card as CardType } from "@/types";
 import { extractExplanation } from "@/utils/extractExplanation";
 import { getDictionarySuggestion } from "@/utils/getDictionarySuggestion";
-import { vocabulariesTailor } from "@/ChatCompletion";
+import { vocabulariesTailor } from "@/chatcompletion/ChatCompletion";
 
 interface ExtendedCard extends CardType {
   chosen?: boolean;
@@ -27,7 +27,6 @@ const useModifiedCards = (id: string) => {
         try {
           const cardsString = JSON.stringify(cards);
           const modifiedCardsData = await vocabulariesTailor(cardsString);
-          console.log(modifiedCardsData)
           const modifiedCards = JSON.parse(modifiedCardsData);
           const modifiedCardsPromises = modifiedCards.filter((card: ExtendedCard) =>
             cards.some(originalCard => originalCard._id === card._id)
