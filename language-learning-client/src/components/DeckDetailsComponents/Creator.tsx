@@ -3,7 +3,7 @@ import { ToolTip } from "../../composables/ToolTip"
 import { Delete, Download, Pencil } from "lucide-react"
 import { MdAutoFixHigh } from "react-icons/md";
 import { useContext, useState } from "react"
-import { UserContext } from "@/UserContext"
+import { UserContext } from "@/contexts/UserContext"
 import { formatDistance } from "date-fns";
 import { getTimeStamp } from "@/utils/getTimestamp"
 import { Link } from "react-router-dom"

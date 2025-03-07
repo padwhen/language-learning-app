@@ -13,7 +13,7 @@ import useFetchDeck from '@/state/hooks/useFetchDeck';
 import { ImportCards } from './ImportCards';
 import { useFindDuplicates } from '@/state/hooks/useFindDuplicates';
 import { DuplicateWarningsButton } from './DuplicateWarningsButton';
-import { DeckContext } from '@/DeckContext';
+import { DeckContext } from '@/contexts/DeckContext';
 
 export const EditPage = () => {
     const { id } = useParams<{ id: string }>();

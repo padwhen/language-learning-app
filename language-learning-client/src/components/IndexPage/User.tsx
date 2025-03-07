@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import axios from "axios";
 import { LoginPage } from "../UsersComponents/LoginPage";
-import { UserContext } from "@/UserContext";
+import { UserContext } from "@/contexts/UserContext";
 import { Avatar, AvatarImage } from "../ui/avatar";
 
 const UserLoggedIn = ({ user, handleLogout }: {

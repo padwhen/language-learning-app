@@ -1,4 +1,4 @@
-import { useDeckContext } from "@/DeckContext";
+import { useDeckContext } from "@/contexts/DeckContext";
 import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";

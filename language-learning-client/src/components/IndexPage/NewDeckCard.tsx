@@ -7,7 +7,7 @@ import { ChangeEvent, useState } from "react"
 import { BadgeComponent } from "../../composables/Badge"
 import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
-import { useDeckContext } from "@/DeckContext"
+import { useDeckContext } from "@/contexts/DeckContext"
 
 export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = ({setOpenNewDeck}) => {
   const [name, setName] = useState<string>('');

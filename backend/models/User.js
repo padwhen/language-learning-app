@@ -15,6 +15,8 @@ const UserSchema = new Schema({
     maxStreak: { type: Number, default: 0 }, 
     lastActiveDate: { type: Date, default: null }, 
     streakFreezes: { type: Number, default: 0 }, 
+    xpMultiplier: { type: Number, default: 1.0 }, // Default multiplier is 1x (no boost)
+    xpMultiplierExpiration: { type: Date, default: null }, // When the multiplier expires
 
     // Achievements and Badges
     achievements: [{

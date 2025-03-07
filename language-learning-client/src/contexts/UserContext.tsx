@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-import { hasToken } from "./utils/cookies";
+import { hasToken } from "../utils/cookies";
 
 interface Achievement {
     name: string;
@@ -14,7 +14,7 @@ interface Badge {
     dateEarned: Date;
 }
 
-interface User {
+export interface User {
     _id: string;
     username: string;
     name: string;
@@ -23,11 +23,12 @@ interface User {
     // New Gamification Fields
     level?: number;
     xp?: number;
-    currentStreak?: number;
+    currentStreak: number;
     maxStreak?: number;
     streakFreezes?: number;
     achievements?: Achievement[]
-    badges?: Badge[]
+    badges?: Badge[];
+    lastActiveDate: Date;
 }
 
 interface UserContextType {

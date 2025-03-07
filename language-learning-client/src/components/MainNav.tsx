@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from "./ui/breadcrumb";
 import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react"; // Import relevant icons
 import { useContext } from "react";
-import { UserContext } from "@/UserContext";
+import { UserContext } from "@/contexts/UserContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage } from "./ui/avatar";

@@ -1,4 +1,4 @@
-import { DeckContext } from "@/DeckContext"
+import { DeckContext } from "@/contexts/DeckContext"
 import { useContext, useEffect, useState } from "react"
 import { ScrollArea } from "../ui/scroll-area"
 import { Card, CardContent, CardHeader } from "../ui/card"
