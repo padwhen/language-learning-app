@@ -4,15 +4,13 @@ import { Flame } from "lucide-react";
 
 interface StreakDisplayProps {
     currentStreak: number;
-    lastActiveDate: Date;
+    lastActiveDate: Date | null;
 }
 
 export const StreakDisplay: React.FC<StreakDisplayProps> = ({ currentStreak, lastActiveDate }) => {
     const today = new Date()
     const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     const currentDayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1
-
-    console.log(lastActiveDate)
 
     const streakDays = Array(7).fill(false)
     if (lastActiveDate) {
@@ -40,14 +38,14 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({ currentStreak, las
             {weekDays.map((day, index) => (
                 <div
                     key={index}
-                    className={`w-10 h-10 flex items-center justify-center rounded-md border ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-md border ${
                         streakDays[index]
                         ? "bg-orange-100 text-orange-800"
                         : "bg-gray-100 text-gray-500"
                     }`}
                 >
                     {index === currentDayIndex && streakDays[index] ? (
-                        <Lottie options={fireOptions} height={30} width={30} />
+                        <Lottie options={fireOptions} height={24} width={24} />
                     ) : (
                         day[0]
                     )}

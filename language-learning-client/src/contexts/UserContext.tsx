@@ -1,6 +1,8 @@
+// src/contexts/UserContext.js
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { hasToken } from "../utils/cookies";
+import { useGamification } from "@/gamification/useGamification";
 
 interface Achievement {
     name: string;
@@ -10,7 +12,7 @@ interface Achievement {
 
 interface Badge {
     name: string;
-    tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'
+    tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
     dateEarned: Date;
 }
 
@@ -18,17 +20,17 @@ export interface User {
     _id: string;
     username: string;
     name: string;
-    avatarUrl?: string
-
-    // New Gamification Fields
+    avatarUrl?: string;
     level?: number;
     xp?: number;
-    currentStreak: number;
+    currentStreak?: number;
     maxStreak?: number;
     streakFreezes?: number;
-    achievements?: Achievement[]
+    lastActiveDate?: Date;
+    xpMultiplier?: number;
+    xpMultiplierExpiration?: Date | null;
+    achievements?: Achievement[];
     badges?: Badge[];
-    lastActiveDate: Date;
 }
 
 interface UserContextType {
@@ -45,74 +47,55 @@ export const UserContext = createContext<UserContextType>({
     refreshUserStats: async () => {}
 });
 
-export const UserContextProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
     const refreshUserStats = async () => {
         try {
-            const { data: gamificationStats } = await axios.get('/gamification/stats')
-            setUser(prevUser => prevUser ? {
-                ...prevUser,
-                level: gamificationStats.level,
-                xp: gamificationStats.xp,
-                currentStreak: gamificationStats.currentStreak,
-                maxStreak: gamificationStats.maxStreak,
-                streakFreezes: gamificationStats.streakFreezes,
-                achievements: gamificationStats.achievements,
-                badges: gamificationStats.badges
-            } : null)
+            const { data } = await axios.get('/profile'); // Use /profile instead of /gamification/stats
+            setUser(prevUser => prevUser ? { ...prevUser, ...data } : data);
         } catch (error) {
-            console.error('Error refreshing user stats: ', error)
+            console.error('Error refreshing user stats: ', error);
         }
-    }
+    };
+
+    const { hasAwardedXpToday, awardDailyLoginXp } = useGamification(user, refreshUserStats);
+
+    const fetchUserProfile = async () => {
+        try {
+            const tokenExists = hasToken();
+            if (tokenExists) {
+                setIsAuthenticated(true);
+                const { data } = await axios.get<User>('/profile');
+                const defaultAvatarUrl = "https://github.com/shadcn.png";
+
+                data.avatarUrl = defaultAvatarUrl || defaultAvatarUrl;
+                setUser(data);
+                localStorage.setItem('userId', data._id);
+
+                if (!hasAwardedXpToday) {
+                    await awardDailyLoginXp()
+                }
+                
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
+                localStorage.removeItem('userId');
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setIsAuthenticated(false);
+            setUser(null);
+            localStorage.removeItem('userId');
+        }
+    };
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const tokenExists = hasToken()
-                if (tokenExists) {
-                    setIsAuthenticated(true)
-                    const { data } = await axios.get<User>('/profile');
-                    const defaultAvatarUrl = "https://github.com/shadcn.png";
-
-                    if (!data.avatarUrl) {
-                        data.avatarUrl = defaultAvatarUrl;
-                    }
-
-                    // Fetch gamification stats
-                    try {
-                        const { data: gamificationStats } = await axios.get('/gamification/stats')
-                        Object.assign(data, {
-                            level: gamificationStats.level,
-                            xp: gamificationStats.xp,
-                            currentStreak: gamificationStats.currentStreak,
-                            maxStreak: gamificationStats.maxStreak,
-                            streakFreezes: gamificationStats.streakFreezes,
-                            achievements: gamificationStats.achievements,
-                            badges: gamificationStats.badges
-                        });
-                    } catch (error) {
-                        console.error('Error fetching gamification stats: ', error)
-                    }
-                    setUser(data);
-                    localStorage.setItem('userId', data._id)                   
-                } else {
-                    setIsAuthenticated(false);
-                    setUser(null)
-                    localStorage.removeItem('userId')
-                }
-            } catch (error) {
-                console.error('Error fetching user profile:', error);
-                setIsAuthenticated(false)
-                localStorage.removeItem('userId')
-            }
-        };
-
         if (!user) {
             fetchUserProfile();
         }
-    }, [user]);
+    }, []);
 
     return (
         <UserContext.Provider value={{ user, setUser, isAuthenticated, refreshUserStats }}>
