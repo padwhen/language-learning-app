@@ -1,4 +1,4 @@
-import { useDeckContext } from "@/DeckContext";
+import { useDeckContext } from "@/contexts/DeckContext";
 import { calculateCompletePercentage } from "@/utils/calculatePercentage";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -7,7 +7,7 @@ import { getTimeStamp } from "@/utils/getTimestamp";
 import { formatDistance } from "date-fns";
 import { sortAndFilterDecks } from "@/utils/sortAndFilterDecks";
 import { Deck } from "@/types";
-import SortableSelect from "../SortableSelect";
+import { SortableSelect } from "../AllDeckPagesComponents/SortableSelect";
 
 export const DeckInfo = () => {
     const { decks } = useDeckContext();

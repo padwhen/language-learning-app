@@ -1,4 +1,4 @@
-import { createTest } from "@/ChatCompletion"
+import { createTest } from "@/chatcompletion/ChatCompletion"
 import { Card, Question } from "@/types";
 import { generateSynonymMatchingQuestions, generateWordScrambleQuestions, subsetCards } from "@/utils/testUtils"
 

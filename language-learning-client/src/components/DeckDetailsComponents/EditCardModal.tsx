@@ -20,7 +20,6 @@ export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
     const { toast } = useToast()
 
     const handleSubmit = async (event: React.FormEvent) => {
-        console.log('clicked')
         event.preventDefault()
         try {
             await axios.put(`/decks/update-card/${deckId}/${cardId}`, {

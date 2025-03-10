@@ -1,15 +1,15 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { AllDecks } from './AllDecksPage'
+import { AllDecks } from './pages/AllDecksPage'
 import './App.css'
-import { DeckDetailsPage } from './DeckDetailsPage'
-import { IndexPage } from './IndexPage'
+import { DeckDetailsPage } from './pages/DeckDetailsPage'
+import { IndexPage } from './pages/IndexPage'
 import axios from 'axios'
-import { UserContextProvider } from './UserContext'
-import { DeckContextProvider } from './DeckContext'
+import { UserContextProvider } from './contexts/UserContext'
+import { DeckContextProvider } from './contexts/DeckContext'
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
-import { SettingPage } from './components/settings/settings'
+import { SettingPage } from './components/SettingsPage'
 import { QuizReport } from './components/LearningReport'
 import { FlashcardPage } from './components/DeckDetailsComponents/FlashCardPage'
 import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
@@ -18,6 +18,8 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
+import { OnboardingModal } from './modals/OnboardingModal'
+import { onboardingConfig } from './modals/onboardingConfig'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -34,6 +36,7 @@ function App() {
     <UserContextProvider>
       <DeckContextProvider>
         {location.pathname.startsWith('/') && <Header />}
+        <OnboardingModal config={onboardingConfig.allDecks} />
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />

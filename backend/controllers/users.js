@@ -9,7 +9,10 @@ usersRouter.post('/register', async (request, response) => {
     const { name, username, pin } = request.body
     try {
         const userDoc = await User.create({
-            name, username, pin: bcrypt.hashSync(pin, BCRYPT_SALT)
+            name, 
+            username, 
+            pin: bcrypt.hashSync(pin, BCRYPT_SALT),
+            lastActiveDate: null, 
         })
         response.json(userDoc)
     } catch (error) {
@@ -52,8 +55,7 @@ usersRouter.get('/profile', async (request, response) => {
             if (!user) {
                 return response.status(500).json({ error: 'User not found' })
             }
-            const { username, name, _id, avatarUrl } = user
-            response.json({ username, name, _id, avatarUrl })
+            response.json(user.toJSON())
         })
     } catch (error) {
         console.error('Error in /profile: ', error)

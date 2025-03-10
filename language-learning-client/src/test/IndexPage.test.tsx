@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { IndexPage } from "@/IndexPage";
+import { IndexPage } from "@/pages/IndexPage";
 
 describe('IndexPage', () => {
     // Test Local Storage Interaction

@@ -88,14 +88,9 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
             map.current[cardId]--
         }      
 
-        console.log("Initial cards:", JSON.stringify(cards, null, 2));
-        console.log("Current question:", question);
-        console.log("Current card ID:", cardId);
-
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
-                console.log(`Updating card with ID ${cardId}`);
                 let newScore = card.cardScore
                 let scoreUpdated = false
 
@@ -143,7 +138,6 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
         })
         
         setCards(updatedCards);
-        console.log(JSON.stringify(updatedCards, null, 2));
 
         const newAnswer: Answer = {
             question: question,

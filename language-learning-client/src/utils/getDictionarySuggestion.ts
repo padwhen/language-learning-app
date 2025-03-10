@@ -1,4 +1,4 @@
-import { test } from "@/ChatCompletion";
+import { test } from "@/chatcompletion/ChatCompletion";
 
 export const getDictionarySuggestion = async (userLangCard: string): Promise<string> => {
     try {
