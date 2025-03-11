@@ -1,18 +1,30 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const geoip = require('geoip-lite')
 const usersRouter = express.Router()
 const User = require('../models/User')
 const { JWT_SECRET, BCRYPT_SALT } = require('../utils/config')
 
+// Helper function to get city from IP
+const getRegionFromIP = (ip) => {
+    const isLocalhost = ip === '::1' || ip === '127.0.0.1' || ip === 'localhost'
+    const lookupIp = isLocalhost ? '193.166.13.253' : ip // Use Finnish IP for testing
+    const geo = geoip.lookup(lookupIp)
+    return geo ? geo.city : null    
+}
+
 usersRouter.post('/register', async (request, response) => {
     const { name, username, pin } = request.body
     try {
+        const ip = request.ip || request.connection.remoteAddress
+        const region = getRegionFromIP(ip)
         const userDoc = await User.create({
             name, 
             username, 
             pin: bcrypt.hashSync(pin, BCRYPT_SALT),
             lastActiveDate: null, 
+            region
         })
         response.json(userDoc)
     } catch (error) {
@@ -22,20 +34,28 @@ usersRouter.post('/register', async (request, response) => {
 
 usersRouter.post('/login', async (request, response) => {
     const { username, pin } = request.body
-    const userDoc = await User.findOne({username})
-    if (userDoc) {
-        const passOk = bcrypt.compareSync(pin, userDoc.pin)
-        if (passOk) {
-            jwt.sign({ email: userDoc.email, id: userDoc._id }, JWT_SECRET, {}, (error, token) => {
-                if (error) throw error;
-                response.cookie('token', token).json(userDoc)
-            })
-        } else {
-            response.status(422).json('Password incorrect. Please try again.')
-        }
-    } else {
-        response.status(422).json('Username not found. Please try again.')
+    const userDoc = await User.findOne({ username })
+    if (!userDoc) {
+        return response.status(422).json('Username not found. Please try again.')
     }
+
+    const passOk = bcrypt.compareSync(pin, userDoc.pin)
+    if (!passOk) {
+        return response.status(422).json('Password incorrect. Please try again.')
+    }
+    if (!userDoc.region) {
+        const ip = request.ip || request.connection.remoteAddress
+        const region = getRegionFromIP(ip)
+        if (region) {
+            userDoc.region = region
+            await userDoc.save()
+        }
+    }
+
+    jwt.sign({ id: userDoc._id }, JWT_SECRET, {}, (error, token) => {
+        if (error) throw error
+        response.cookie('token', token).json(userDoc)
+    })
 })
 
 usersRouter.get('/profile', async (request, response) => {
@@ -55,6 +75,17 @@ usersRouter.get('/profile', async (request, response) => {
             if (!user) {
                 return response.status(500).json({ error: 'User not found' })
             }
+            if (!user.region) {
+                const ip = request.ip || request.connection.remoteAddress
+                console.log(ip)
+                const region = getRegionFromIP(ip)
+                console.log(region)
+                if (region) {
+                    user.region = region
+                    await user.save()
+                }
+            }
+
             response.json(user.toJSON())
         })
     } catch (error) {

@@ -42,6 +42,7 @@ gamificationRouter.post('/award-xp', async (request, response) => {
         // Add XP
         const adjustedXp = applyXPMultiplier(user, xpAmount);
         user.xp += adjustedXp;
+        user.weeklyXP += adjustedXp
 
         // Calculate new level
         const newLevel = calculateLevel(user.xp);

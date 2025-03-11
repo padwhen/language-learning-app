@@ -29,6 +29,7 @@ export const useGamification = (
                 activity: 'daily_login',
             });
             const data = response.data;
+            console.log(data)
             // Show toasts based on backend response
             if (data.streakIncreased || data.streakStarted) {
                 showStreakToast(data.currentStreak, user?.lastActiveDate ?? null);

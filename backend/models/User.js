@@ -28,7 +28,18 @@ const UserSchema = new Schema({
         name: { type: String, required: true },
         tier: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], required: true },
         dateEarned: { type: Date, default: Date.now }
-    }]
+    }],
+
+    weeklyXP: { type: Number, default: 0 }, // XP earned in current week
+    weeklyXPHistory: [{
+        week: { type: String, required: true }, // Format: "YYYY-WW" (e.g., "2025-10")
+        xp: { type: Number, required: true }, 
+        rank: { type: Number },
+        percentile: { type: Number }, 
+        tier: { type: String, enum: ['Emerald', 'Diamond', 'Ruby', 'None'] },
+        region: { type: String }
+    }],
+    region: { type: String, default: null }
 })
 
 const UserModel = mongoose.model('User', UserSchema)
