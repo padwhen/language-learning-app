@@ -90,9 +90,21 @@ https://github.com/padwhen/language-learning-app/assets/123895854/b792e278-7f0f-
 * Built with Node.js v20 and MongoDB, deployed on Fly.io
 
 ## New Update & Modification
+* Gamification: Streak, Toast - Ongoing
+* Onboarding Models: 10.01.2025
+* Create Review Page: 23.10.2024
+* App now can detect duplications in deck details page: 13.09.2024
+* Vocabulary Page: 27.08.2024
+* Allowing users to search for terms/definitions in Deck Details Page: 23.08.2024
+* Mock exam page: 29.07.2024
+* Allowing user to mark a card as favorite: 17.07.2024
+* Flashcard Flipping Page: 16.07.2024
+* Match Game Page: 16.07.2024
+* Learning History Report: 13.07.2024
+* Fully responsive in both mobile and large screen devices: 09.07.2024
 * Add new Header for Mobile App: 01.07.2024
 * Import Card by Copy/Paste: 29.06.2024
-* Add history of learning, reminder of next quiz: 28.06
+* Add history of learning, reminder of next quiz: 28.06.2024
 * Allowing user to press 1,2,3,4 in addition to clicking in Learning Page: 27.06.2024
 * Add options in learning page: 27.06.2024
 * Tailor decks with AI: 10.06.2024
