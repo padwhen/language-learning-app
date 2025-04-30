@@ -9,40 +9,37 @@ export const useGamification = (
     } | null,
     refreshUserStats: () => Promise<void>
 ) => {
-    console.log(user)
-    const [hasAwardedXpToday, setHasAwardedXpToday] = useState(() => {
-        const lastAwardDate = localStorage.getItem('lastXpAwardDate')
-        const today = new Date().toDateString()
-        return lastAwardDate === today // True if XP was already awarded today
-    })
     const [isAwarding, setIsAwarding] = useState(false) 
     const { showStreakToast, showXpToast, showMultiplierToast, showErrorToast } = useToastManager()
 
     const awardDailyLoginXp = async () => {
-        if (hasAwardedXpToday || isAwarding) return;
-
+        if (isAwarding) return;
         setIsAwarding(true)
-        const today = new Date();
+
         try {
             const response = await axios.post("/gamification/award-xp", {
                 xpAmount: 1, // Base XP for login, adjusted by streak on backend
                 activity: 'daily_login',
             });
             const data = response.data;
-            console.log(data)
+            console.log("Backend Response: ", data)
+
             // Show toasts based on backend response
+            // Only show XP toast if XP was actually gained
+            if (data.adjustedXpGained > 0) {
+                showXpToast(data.adjustedXpGained)
+            }
+
             if (data.streakIncreased || data.streakStarted) {
-                showStreakToast(data.currentStreak, user?.lastActiveDate ?? null);
-            }
-            showXpToast(data.adjustedXpGained);
-
-            if (data.streakReward?.type === 'xp_multiplier' && data.streakReward.multiplier && data.streakReward.expires) {
-                showMultiplierToast(data.streakReward.multiplier, data.streakReward.expires);
+                // Use streak count from response data, not potentially stale user state
+                showStreakToast(data.currentStreak, data.lastActiveDate)
             }
 
-            localStorage.setItem('lastXpAwardDate', today.toDateString());
-            setHasAwardedXpToday(true);
-            await refreshUserStats();
+            if (data.streakReward?.type === 'xp_multiplier' /* ... */) {
+                // ...multiplier toast logic...
+            }
+
+            await refreshUserStats()
         } catch (error) {
             console.error("Error awarding XP: ", error);
             showErrorToast("Failed to award XP. Please try again.");
@@ -51,5 +48,5 @@ export const useGamification = (
         }
     };
 
-    return { hasAwardedXpToday, awardDailyLoginXp };
+    return { awardDailyLoginXp };
 }

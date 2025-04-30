@@ -26,46 +26,38 @@ function applyXPMultiplier(user, xpAmount) {
 gamificationRouter.post('/award-xp', async (request, response) => {
     try {
         const { token } = request.cookies;
-        const { xpAmount, activity } = request.body;
+        const xpAmount = Number(request.body.xpAmount) || 0
+        const { activity } = request.body;
+
         const userData = jwt.verify(token, JWT_SECRET);
+        if (!userData || !userData.id) {
+            return response.status(401).json({ error: 'Invalid token data' })
+        }
 
         const user = await User.findById(userData.id);
         if (!user) {
             return response.status(404).json({ error: 'User not found' });
         }
 
-        console.log("Before updates:", {
-            lastActiveDate: user.lastActiveDate,
-            currentStreak: user.currentStreak,
-        });
-
         // Add XP
         const adjustedXp = applyXPMultiplier(user, xpAmount);
         user.xp += adjustedXp;
         user.weeklyXP += adjustedXp
 
-        // Calculate new level
-        const newLevel = calculateLevel(user.xp);
-
-        // Level up logic
-        if (newLevel > user.level) {
-            user.level = newLevel;
-            if (newLevel <= 10) {
-                user.streakFreezes += 1;
-            } else if (newLevel <= 20) {
-                // Unlock advanced features like adding pictures to flashcards
-            } else if (newLevel <= 30) {
-                // Unlock audio pronunciation
-            }
-        }
-
         // Track daily streak
         const today = new Date();
-        const responseData = {};
+        const responseData = {
+            adjustedXpGained: 0
+        };
 
+        // --- Streak Logic (Determine streak changes before deciding on XP) ---
+        let dayDifference = 0
         if (user.lastActiveDate) {
             const lastActive = new Date(user.lastActiveDate);
-            const dayDifference = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
+
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const lastActiveStart = new Date(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
+            dayDifference = Math.round((todayStart.getTime() - lastActiveStart.getTime()) / (1000 * 60 * 60 * 24));
 
             if (dayDifference === 1) {
                 // Consecutive day, increase streak
@@ -81,9 +73,6 @@ gamificationRouter.post('/award-xp', async (request, response) => {
                     user.currentStreak = 0;
                     responseData.streakBroken = true;
                 }
-            } else if (dayDifference === 0) {
-                // Same day, no streak change
-                responseData.streakUnchanged = true;
             }
         } else {
             // First activity ever
@@ -92,15 +81,57 @@ gamificationRouter.post('/award-xp', async (request, response) => {
             responseData.streakStarted = true;
         }
 
-        // Always update lastActiveDate
-        user.lastActiveDate = today;
+        // --- Daily Login XP Check ---
+        let alreadyRewardDailyLoginToday = false;
+        if (activity === 'daily_login' && user.lastActiveDate) {
+            const lastActive = new Date(user.lastActiveDate)
+            // Check if the last active date is the same calendar day as today
+            if (lastActive.toDateString() === today.toDateString()) {
+                alreadyRewardDailyLoginToday = true;
+                console.log("Daily login XP already rewarded today")
+            }
+        }
 
-        // Streak rewards
-        if (user.currentStreak === 3) {
+        // --- Award XP (conditionally for daily login) ---
+        if (activity !== 'daily_login' || (activity === 'daily_login' && !alreadyRewardDailyLoginToday)) {
+            // Award XP if it's not a daily login OR if it is the first daily login today
+            const adjustedXp = applyXPMultiplier(user, xpAmount)
+            if (adjustedXp > 0) { // Only add if there's actually XP to add
+                user.xp += adjustedXp
+                user.weeklyXP += adjustedXp
+                responseData.adjustedXpGained = adjustedXp
+                console.log(`Awarded ${adjustedXp} XP for activity: ${activity}`)
+            }
+        }
+
+        // --- Always update lastActiveDate ---
+        // Do this *after* comparing with 'today' but before saving
+        user.lastActiveDate = today
+
+        // --- Post-XP Award Logic ---
+
+        // Calculate new level (based on potentially updated XP)
+        const newLevel = calculateLevel(user.xp)
+
+        // Level up logic
+        if (newLevel > user.level) {
+            const levelsGained = newLevel - user.level
+            user.level = newLevel
+            // Award level-up bonuses based on the *new* level reached
+            if (newLevel <= 10) {
+                user.streakFreezes += levelsGained // Add freezes for each level gained up to 10
+                // TODO: Add response flag for level up?
+            }
+            // ...other level up rewards...
+        }
+
+        // Streak rewards (check if streak *just* reached the milestone)
+        if (user.currentStreak === 3 && responseData.streakIncreased) {
             const bonusXp = applyXPMultiplier(user, 50);
             user.xp += bonusXp;
             responseData.streakReward = { type: 'xp_boost', amount: bonusXp };
-        } else if (user.currentStreak === 7) {
+            responseData.adjustedXpGained += bonusXp
+        } else if (user.currentStreak === 7 && responseData.streakIncreased) {
             user.xpMultiplier = 1.2;
             user.xpMultiplierExpiration = new Date(today.getTime() + 24 * 60 * 60 * 1000);
             user.streakFreezes += 1;
@@ -110,13 +141,17 @@ gamificationRouter.post('/award-xp', async (request, response) => {
                 expires: user.xpMultiplierExpiration,
                 extra: { type: 'streak_freeze', amount: 1 }
             };
-        } else if (user.currentStreak === 30) {
-            user.achievements.push({
-                name: '30-Day streak',
-                description: 'Maintained a 30-day streak'
-            });
+        } else if (user.currentStreak === 30 && responseData.streakIncreased) {
+            const achievementName = '30-Day Streak'
+            if (!user.achievements.some(a => a.name === achievementName)) {
+                user.achievements.push({
+                    name: achievementName,
+                    description: 'Maintained a 30-day streak'
+                })
+            }
             responseData.streakReward = { type: 'achievement', name: '30-Day Streak' };
-        }
+        } 
+        // Add other streak rewards here....
 
         // Add achievements based on activities
         const achievementMap = {
@@ -127,22 +162,19 @@ gamificationRouter.post('/award-xp', async (request, response) => {
 
         if (achievementMap[activity]) {
             const achievement = achievementMap[activity];
+            const alreadyHasAchievement = user.achievements.some(a => a.name === achievement.name)
+
+            // Award 'Daily Visitor' only if it's the first successful login today
             if (achievement.name === 'Daily Visitor') {
-                // Award "Daily Visitor" only if it's the first activity today
-                if (!user.achievements.some(a => a.name === achievement.name) && 
-                    (!user.lastActiveDate || new Date(user.lastActiveDate).toDateString() !== today.toDateString())) {
-                    user.achievements.push({
-                        name: achievement.name,
-                        description: achievement.description,
-                    });
+                if (!alreadyHasAchievement && !alreadyRewardDailyLoginToday) {
+                    user.achievements.push({ name: achievement.name, description: achievement.description })
+                    // TODO: Add achievement flag to responseData?
                 }
-            } else if (!user.achievements.some(a => a.name === achievement.name)) {
-                user.achievements.push({
-                    name: achievement.name,
-                    description: achievement.description,
-                });
+            } else if (!alreadyHasAchievement) {
+                // Award other achievements only once
+                user.achievements.push({ name: achievement.name, description: achievement.description })
+                // TODO: Add achievement flag to responseData?
             }
-        }
 
         // Add badges for XP milestones
         const badgeMilestones = [
@@ -158,6 +190,7 @@ gamificationRouter.post('/award-xp', async (request, response) => {
                     name: milestone.name,
                     tier: milestone.tier
                 });
+                // TODO: Add badge flag to responseData?
             }
         });
 
@@ -178,6 +211,7 @@ gamificationRouter.post('/award-xp', async (request, response) => {
             adjustedXpGained: adjustedXp,
             ...responseData
         });
+    }
     } catch (error) {
         console.error('Error awarding XP:', error);
         response.status(500).json({ error: 'Internal Server Error' });

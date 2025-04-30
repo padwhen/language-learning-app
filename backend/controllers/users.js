@@ -77,9 +77,7 @@ usersRouter.get('/profile', async (request, response) => {
             }
             if (!user.region) {
                 const ip = request.ip || request.connection.remoteAddress
-                console.log(ip)
                 const region = getRegionFromIP(ip)
-                console.log(region)
                 if (region) {
                     user.region = region
                     await user.save()
