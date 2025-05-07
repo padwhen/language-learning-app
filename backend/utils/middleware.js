@@ -40,6 +40,23 @@ const verifyToken = (req, res, next) => {
     }
 }
 
+const isAdmin = (request, response, next) => {
+    // Ensure verifyToken has already run and attached user to request
+    if (!request.userData) {
+        console.error('isAdmin middleware error: request.userData not found. Is verifyToken running first?')
+        return response.status(500).json({ error: 'User data not available for admin check.'})
+    }
+
+    if (!request.userData.isAdmin) {
+        console.log(`Admin access denied for user: ${request.userData.username || request.userData.id}`)
+        return response.status(403).json({ error: 'Forbidden: Admin access required'})
+    }
+
+    // If user is admin, proceed to the next middleware/route handler
+    console.log(`Admin access granted for user: ${request.userData.username || request.userData.id}`)
+    next()
+}
+
 module.exports = {
-    requestLogger, unknownEndpoint, errorHandler, verifyToken
+    requestLogger, unknownEndpoint, errorHandler, verifyToken, isAdmin  
 }

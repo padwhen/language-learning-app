@@ -26,7 +26,11 @@ usersRouter.post('/login', async (request, response) => {
     if (userDoc) {
         const passOk = bcrypt.compareSync(pin, userDoc.pin)
         if (passOk) {
-            jwt.sign({ email: userDoc.email, id: userDoc._id }, JWT_SECRET, {}, (error, token) => {
+            jwt.sign({ 
+                id: userDoc._id,
+                username: userDoc.username,
+                isAdmin: userDoc.isAdmin 
+            }, JWT_SECRET, {}, (error, token) => {
                 if (error) throw error;
                 response.cookie('token', token).json(userDoc)
             })

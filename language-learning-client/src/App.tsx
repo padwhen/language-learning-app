@@ -20,6 +20,7 @@ import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
 import { OnboardingModal } from './modals/OnboardingModal'
 import { onboardingConfig } from './modals/onboardingConfig'
+import AdminPage from './pages/AdminPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -50,6 +51,7 @@ function App() {
           <Route path='/testpage/:id' element={<TestPage />} />
           <Route path='/vocabulary' element={<VocabularyPage />} />
           <Route path='/review-page/:id' element={<ReviewPage />} />
+          <Route path='/admin' element={<AdminPage />} />
         </Routes>              
         <Toaster />
       </DeckContextProvider>

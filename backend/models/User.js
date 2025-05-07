@@ -7,6 +7,7 @@ const UserSchema = new Schema({
     pin: { type: String, required: true },
     deckIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Deck' }],
     avatarUrl: { type: String, default: 'https://github.com/shadcn.png'},
+    isAdmin: { type: Boolean, default: false },
 
     // Gamification Features
     level: { type: Number, default: 1 },
