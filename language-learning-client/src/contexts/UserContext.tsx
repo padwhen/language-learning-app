@@ -73,8 +73,9 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 data.avatarUrl = defaultAvatarUrl || defaultAvatarUrl;
                 setUser(data);
                 localStorage.setItem('userId', data._id);
-
                 
+                // Award XP for daily login
+                await awardDailyLoginXp();
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
