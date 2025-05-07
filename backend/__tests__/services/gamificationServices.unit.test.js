@@ -44,7 +44,28 @@ describe('Gamification Service - Unit Tests', () => {
         // save: jest.fn().mockResolvedValue(true),
         ...initialData, 
     });
-
-
-
+    //--------------------------------------------------------------------------
+    // 1. Testing calculateLevel(xp)
+    //--------------------------------------------------------------------------
+    describe('calculateLevel', () => {
+        it('should return level 1 for 0 XP', () => {
+            expect(calculateLevel(0)).toBe(1)
+        })
+        it('should return level 1 for XP less than 100 (e.g., 99XP)', () => {
+            expect(calculateLevel(99)).toBe(1)
+        })
+        it('should return level 2 for 100XP', () => {
+            expect(calculateLevel(100)).toBe(2)
+        })
+        it('should return level 2 for 399xp, but level3 for 400xp', () => {
+            expect(calculateLevel(399)).toBe(2)
+            expect(calculateLevel(400)).toBe(3)
+        })
+        it('edge cases/large numbers', () => {
+            expect(calculateLevel(1000)).toBe(4) // 1000/100 = 10 sqrt(10) = 3.1 + 1 = 4
+            expect(calculateLevel(150000)).toBe(39)  // 150000 / 100 = 1500 sqrt(1500) = 38.7 + 1 = 39
+            expect(calculateLevel(99999999999)).toBe(31623) // 99999999999/100 = 999999999.99 sqrt(999999999.99) = 31622.7 + 1 = 31623
+        })
+    })
+    
 })
