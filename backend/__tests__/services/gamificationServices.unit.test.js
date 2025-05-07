@@ -67,5 +67,53 @@ describe('Gamification Service - Unit Tests', () => {
             expect(calculateLevel(99999999999)).toBe(31623) // 99999999999/100 = 999999999.99 sqrt(999999999.99) = 31622.7 + 1 = 31623
         })
     })
-    
+    //--------------------------------------------------------------------------
+    // 2. Testing applyXPMultiplier(user, xpAmount)
+    //--------------------------------------------------------------------------
+    describe('applyXPMultiplier', () => {
+        let mockUser;
+
+        beforeEach(() => {
+            mockUser = createMockUser()
+        })
+
+        it('with no active multiplier', () => {
+            mockUser.xpMultiplier = 1.0
+            expect(applyXPMultiplier(mockUser, 100)).toBe(100)
+        })
+        it('with active multiplier', () => {
+            mockUser.xpMultiplier = 1.2
+            mockUser.xpMultiplierExpiration = new Date(Date.now() + 1000 * 60 * 60);
+            expect(applyXPMultiplier(mockUser, 100)).toBe(120)
+        })
+        it('should round the result to the nearest integer', () => {
+            mockUser.xpMultiplier = 1.2
+            mockUser.xpMultiplierExpiration = new Date(Date.now() + 1000 * 60 * 60);
+            expect(applyXPMultiplier(mockUser, 11)).toBe(13) // 11 * 1.2 = 13.2
+            expect(applyXPMultiplier(mockUser, 1281204)).toBe(1537445) // 1281204 * 1.2 = 1537444,8
+        })
+        it('should reset an expired multiplier and apply 1x', () => {
+            mockUser.xpMultiplier = 2.0;
+            mockUser.xpMultiplierExpiration = new Date(Date.now() - 1000 * 60 * 60);
+
+            const awardedXp = applyXPMultiplier(mockUser, 100)
+            expect(awardedXp).toBe(100)
+            expect(mockUser.xpMultiplier).toBe(1.0)
+            expect(mockUser.xpMultiplierExpiration).toBeNull()
+        })
+        it('should handle xpAmount = 0 correctly', () => {
+            mockUser.xpMultiplier = 1.5
+            expect(applyXPMultiplier(mockUser, 0)).toBe(0)
+        })
+        it('should handle numeric string xpAmount', () => {
+            mockUser.xpMultiplier = 1.5
+            expect(applyXPMultiplier(mockUser, "10")).toBe(15)
+        })
+        it('should handle when xpAmount is NaN', () => {
+            mockUser.xpMultiplier = 30
+            expect(applyXPMultiplier(mockUser, "abcxyz")).toBe(0)
+            expect(applyXPMultiplier(mockUser, null)).toBe(0)
+            expect(applyXPMultiplier(mockUser, undefined)).toBe(0)
+        })
+    })
 })
