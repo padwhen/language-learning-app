@@ -78,6 +78,10 @@ function updateStreak(user, today) {
         responseFlags.streakStarted = true;
         console.log("Streak started.");
     }
+    
+    // Update lastActiveDate after processing streak
+    user.lastActiveDate = today;
+    
     return responseFlags;
 }
 
