@@ -265,4 +265,124 @@ describe('Gamification Service - Unit Tests', () => {
             expect(mockUser.maxStreak).toBe(100)
         })
     })
+    //--------------------------------------------------------------------------
+    // 4. Testing awardExperience(user, xpAmount, activity, today)
+    //--------------------------------------------------------------------------
+    describe('4 -- awardExperience', () => {
+        let mockUser;
+        let today;
+        let xpAmount;
+
+        beforeEach(() => {
+            mockUser = createMockUser()
+            today = new Date()
+            xpAmount = 50
+        })
+        it('should award XP for first daily login of the day', () => {
+            const flags = awardExperience(mockUser, xpAmount, 'daily_login', today)
+            expect(flags.xpAwarded).toBe(50)
+            expect(flags.alreadyAwardedDailyLoginToday).toBe(false)
+            expect(mockUser.xp).toBe(50)
+            expect(mockUser.weeklyXP).toBe(50)
+        })
+        it('should not award XP for subsequent daily logins on same day', () => {
+            today.setHours(0, 0, 0, 0);
+            // First login
+            const firstResult = awardExperience(mockUser, xpAmount, 'daily_login', today);
+            expect(firstResult.xpAwarded).toBe(50);
+            expect(firstResult.alreadyAwardedDailyLoginToday).toBe(false);
+            
+            mockUser.lastActiveDate = new Date(today);
+            // Set time to later in the same day
+            today.setHours(14, 0, 0, 0); // Set to 2:00 PM same day
+            // Second login
+            const secondResult = awardExperience(mockUser, xpAmount, 'daily_login', today);
+            // Assertions
+            expect(secondResult.xpAwarded).toBe(0);
+            expect(secondResult.alreadyAwardedDailyLoginToday).toBe(true);
+            expect(mockUser.xp).toBe(50); // Should still be 50 from first login
+            expect(mockUser.weeklyXP).toBe(50);
+        })
+        it('should award XP for non-daily login activities', () => {
+            xpAmount = 100;
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(100)
+            expect(flags.alreadyAwardedDailyLoginToday).toBe(false)
+            expect(mockUser.xp).toBe(100)
+            expect(mockUser.weeklyXP).toBe(100)
+        })
+        it('should apply XP multiplier when available', () => {
+            mockUser.xpMultiplier = 1.5;
+            mockUser.xpMultiplierExpiration = new Date(today.getTime() + 3600000); // 1 hour from now
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today);
+            expect(flags.xpAwarded).toBe(75); // 50 * 1.5 = 75
+            expect(mockUser.xp).toBe(75);
+            expect(mockUser.weeklyXP).toBe(75);
+        })
+        it('should not apply expired XP multiplier', () => {
+            mockUser.xpMultiplier = 2.0
+            mockUser.xpMultiplierExpiration = new Date(today.getTime() - 3600000); // 1 hour ago
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(50)
+            expect(mockUser.xpMultiplier).toBe(1.0)
+            expect(mockUser.xpMultiplierExpiration).toBeNull()
+        })
+        it('should handle zero XP amount correctly', () => {
+            xpAmount = 0
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(0)
+            expect(mockUser.xp).toBe(0)
+            expect(mockUser.weeklyXP).toBe(0)
+        })
+        it('should handle negative XP amount gracefully', () => {
+            xpAmount = -50
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(0)
+            expect(mockUser.xp).toBe(0)
+            expect(mockUser.weeklyXP).toBe(0)
+        })
+        it('should handle invalid activity type gracefully', () => {
+            xpAmount = 100
+            const flags = awardExperience(mockUser, xpAmount, 'invalid_activity', today)
+            expect(flags.xpAwarded).toBe(100)
+            expect(mockUser.xp).toBe(100)
+            expect(mockUser.weeklyXP).toBe(100)
+        })
+        it('should handle null/undefined parameters gracefully', () => {
+            // Test null xpAmount
+            const flag1 = awardExperience(mockUser, null, 'quiz_complete', today)
+            expect(flag1.xpAwarded).toBe(0)
+            // Test undefined activity
+            const flag2 = awardExperience(mockUser, 100, undefined, today)
+            expect(flag2.xpAwarded).toBe(100)
+            // Test null today
+            const flag3 = awardExperience(mockUser, 100, 'quiz_complete', null)
+            expect(flag3.xpAwarded).toBe(100)
+        })
+        it('should handle string XP amount correctly', () => {
+            const flags = awardExperience(mockUser, '100', 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(100)
+            expect(mockUser.xp).toBe(100)
+            expect(mockUser.weeklyXP).toBe(100)
+        })
+        it('should handle multiple different activities in same day', () => {
+            const flag1 = awardExperience(mockUser, 50, 'daily_login', today)
+            const flag2 = awardExperience(mockUser, 100, 'quiz_complete', today)
+            const flag3 = awardExperience(mockUser, 75, 'translation', today)   
+
+            expect(flag1.xpAwarded).toBe(50)
+            expect(flag2.xpAwarded).toBe(100)
+            expect(flag3.xpAwarded).toBe(75)
+            expect(mockUser.xp).toBe(225)
+            expect(mockUser.weeklyXP).toBe(225)
+        })
+        it('should handle very large XP amounts correctly', () => {
+            const xpAmount = 9999999999999
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(9999999999999)
+            expect(mockUser.xp).toBe(9999999999999)
+            expect(mockUser.weeklyXP).toBe(9999999999999)
+        })
+    })
+    
 })
