@@ -384,5 +384,144 @@ describe('Gamification Service - Unit Tests', () => {
             expect(mockUser.weeklyXP).toBe(9999999999999)
         })
     })
-    
+    //--------------------------------------------------------------------------
+    // 5. Testing checkAndApplyLevelUp(user)
+    //--------------------------------------------------------------------------
+    describe('5 -- checkAndApplyLevelUp', () => {
+        let mockUser;
+
+        beforeEach(() => {
+            mockUser = createMockUser({
+                level: 1,
+                xp: 0,
+                streakFreezes: 0
+            });
+        });
+
+        it('should not level up when XP is insufficient', () => {
+            mockUser.xp = 99; // Not enough for level 2
+            const flags = checkAndApplyLevelUp(mockUser)
+
+            expect(flags).toBeNull()
+            expect(mockUser.level).toBe(1)
+            expect(mockUser.streakFreezes).toBe(0)
+        })
+        it('should level up once and award freeze when XP reaches next level threshold', () => {
+            mockUser.xp = 100; // Exactly enough for level 2
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toEqual({
+                freezesAwarded: 1,
+                leveledUp: true,
+                levelsGained: 1,
+                newLevel: 2
+            })
+            expect(mockUser.level).toBe(2)
+            expect(mockUser.streakFreezes).toBe(1)
+        })
+        it('should handle multiple level ups and award correct number of freezes', () => {
+            mockUser.xp = 400
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toEqual({ 
+                leveledUp: true,
+                newLevel: 3,
+                levelsGained: 2, 
+                freezesAwarded: 2
+            })
+            expect(mockUser.level).toBe(3)
+            expect(mockUser.streakFreezes).toBe(2)
+        })
+        it('should not award freezes for levels above 10', () => {
+            mockUser.level = 9
+            mockUser.xp = 12100
+            const flags = checkAndApplyLevelUp(mockUser)
+
+            expect(flags).toEqual({
+                leveledUp: true,
+                newLevel: 12,
+                levelsGained: 3,
+                freezesAwarded: 1
+            })
+            expect(mockUser.level).toBe(12)
+            expect(mockUser.streakFreezes).toBe(1)
+        })
+        it('should handle edge case at level 10 exactly', () => {
+            mockUser.level = 9;
+            mockUser.xp = 8100
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toEqual({
+                leveledUp: true,
+                newLevel: 10,
+                levelsGained: 1,
+                freezesAwarded: 1
+            })
+            expect(mockUser.level).toBe(10)
+            expect(mockUser.streakFreezes).toBe(1)
+        })
+        it('should handle very high levels correctly', () => {
+            mockUser.level = 99
+            mockUser.xp = 1000000
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toEqual({
+                leveledUp: true,
+                newLevel: 101,
+                levelsGained: 2,
+                freezesAwarded: 0
+            })
+            expect(mockUser.level).toBe(101)
+            expect(mockUser.streakFreezes).toBe(0)
+        })
+        it('should handle zero XP correctly', () => {
+            mockUser.xp = 0
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toBeNull()
+            expect(mockUser.level).toBe(1)
+            expect(mockUser.streakFreezes).toBe(0)
+        })
+        it('should handle negative XP gracefully', () => {
+            mockUser.xp = -100
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toBeNull()
+            expect(mockUser.level).toBe(1)
+            expect(mockUser.streakFreezes).toBe(0)
+        })
+        it('should preserve existing streak freezes when leveling up', () => {
+            mockUser.streakFreezes = 2
+            mockUser.xp = 100
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags.freezesAwarded).toBe(1)
+            expect(mockUser.streakFreezes).toBe(3)
+        })
+        it('should handle maximum level boundary correctly', () => {
+            mockUser.level = Number.MAX_SAFE_INTEGER
+            mockUser.xp = Number.MAX_SAFE_INTEGER
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(mockUser.level).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER)
+        })
+        it('should handle decimal XP values correctly', () => {
+            mockUser.xp = 99.9
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags).toBeNull()
+            expect(mockUser.level).toBe(1)
+        })
+        it('should handle string XP values correctly', () => {
+            mockUser.xp = "100"
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags.newLevel).toBe(2)
+            expect(mockUser.level).toBe(2)
+        })
+        it('should handle level 0 correctly', () => {
+            mockUser.level = 0
+            mockUser.xp = 100;
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags.newLevel).toBe(2)
+            expect(mockUser.level).toBe(2)
+        })
+        it('should handle multiple level ups with existing freezes correctly', () => {
+            mockUser.streakFreezes = 1
+            mockUser.xp = 400
+            const flags = checkAndApplyLevelUp(mockUser)
+            expect(flags.freezesAwarded).toBe(2)
+            expect(mockUser.streakFreezes).toBe(3)
+        })
+    })
 })
