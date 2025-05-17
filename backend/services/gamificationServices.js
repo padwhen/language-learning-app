@@ -157,17 +157,28 @@ function checkAndApplyLevelUp(user) {
   * @returns {object|null} - Object describing the reward or null.
   */
 function checkAndApplyStreakRewards(user, streakIncreased, today) {
-    let streakRewardData = null;
+    // First check if we already gave a reward today for this streak level
+    if (user.lastStreakRewardDate && 
+        new Date(user.lastStreakRewardDate).toDateString() === today.toDateString() &&
+        user.lastStreakRewardLevel === user.currentStreak) {
+        console.log(`Already awarded streak reward for ${user.currentStreak} days today.`);
+        return null;
+    }
 
     if (!streakIncreased) {
         return null; // Only award on the day the streak increases
     }
 
+    let streakRewardData = null;
+
     if (user.currentStreak === 3) {
-        const bonusXp = applyXPMultiplier(user, 50); // Apply multiplier here too
+        const bonusXp = applyXPMultiplier(user, 50);
         user.xp += bonusXp;
         user.weeklyXP += bonusXp;
         streakRewardData = { streakReward: { type: 'xp_boost', amount: bonusXp } };
+        // Track that we gave a reward for this streak level
+        user.lastStreakRewardDate = today;
+        user.lastStreakRewardLevel = user.currentStreak;
         console.log(`Awarded ${bonusXp} bonus XP for 3-day streak.`);
     } else if (user.currentStreak === 7) {
         user.xpMultiplier = 1.2;
@@ -181,6 +192,9 @@ function checkAndApplyStreakRewards(user, streakIncreased, today) {
                 extra: { type: 'streak_freeze', amount: 1 }
             }
         };
+        // Track that we gave a reward for this streak level
+        user.lastStreakRewardDate = today;
+        user.lastStreakRewardLevel = user.currentStreak;
         console.log("Awarded 1.2x XP multiplier and 1 freeze for 7-day streak.");
     } else if (user.currentStreak === 30) {
         const achievementName = '30-Day Streak';
@@ -190,6 +204,9 @@ function checkAndApplyStreakRewards(user, streakIncreased, today) {
                 description: 'Maintained a 30-day streak'
             });
             streakRewardData = { streakReward: { type: 'achievement', name: achievementName } };
+            // Track that we gave a reward for this streak level
+            user.lastStreakRewardDate = today;
+            user.lastStreakRewardLevel = user.currentStreak;
             console.log("Awarded 30-Day Streak achievement.");
         }
     }

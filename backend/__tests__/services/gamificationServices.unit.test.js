@@ -524,4 +524,219 @@ describe('Gamification Service - Unit Tests', () => {
             expect(mockUser.streakFreezes).toBe(3)
         })
     })
+    //--------------------------------------------------------------------------
+    // 6. Testing checkAndApplyStreakRewards(user, streakIncreased, today)
+    //--------------------------------------------------------------------------
+    describe('6 -- checkAndApplyStreakRewards', () => {
+        let mockUser;
+        let today;
+
+        beforeEach(() => {
+            mockUser = createMockUser()
+            today = new Date()
+        })
+
+        it('should return null when streakIncreased is false', () => {
+            mockUser.currentStreak = 3
+            mockUser.xp = 100
+            const flags = checkAndApplyStreakRewards(mockUser, false, today)
+            expect(flags).toBeNull()
+            expect(mockUser.xp).toBe(100)
+            expect(mockUser.xpMultiplier).toBe(1.0)
+        })
+        it('should apply 3-day streak reward when streak hits 3', () => {
+            mockUser.currentStreak = 3
+            mockUser.xp = 100
+            const flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toEqual({
+                streakReward: {
+                    type: 'xp_boost',
+                    amount: 50
+                }
+            })
+            expect(mockUser.xp).toBe(150)
+            expect(mockUser.weeklyXP).toBe(50)
+        })
+        it('should apply 7-day streak reward when streak hits 7', () => {
+            mockUser.currentStreak = 7
+            const flags = checkAndApplyStreakRewards(mockUser, true, today) 
+            expect(flags).toEqual({
+                streakReward: {
+                    type: 'xp_multiplier', 
+                    multiplier: 1.2,
+                    expires: expect.any(Date),
+                    extra: {
+                        type: 'streak_freeze',
+                        amount: 1
+                    }
+                }
+            })
+
+            expect(mockUser.xpMultiplier).toBe(1.2)
+            expect(mockUser.xpMultiplierExpiration).toBeInstanceOf(Date)
+            expect(mockUser.streakFreezes).toBe(1)
+
+            const expectedExpiration = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            expect(mockUser.xpMultiplierExpiration.getTime()).toBe(expectedExpiration.getTime());
+        })
+        it('should award 30-day streak achievement when streak hits 30', () => {
+            mockUser.currentStreak = 30
+            const flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toEqual({ 
+                streakReward: {
+                    type: 'achievement',
+                    name: '30-Day Streak'
+                }
+            })
+            expect(mockUser.achievements).toEqual([
+                {
+                    name: '30-Day Streak',
+                    description: 'Maintained a 30-day streak'
+                }
+            ]);
+        })
+        it('should not award achievement if already achieved', () => {
+            mockUser.achievements.push({
+                name: '30-Day Streak', 
+                description: 'Maintained a 30-day streak'
+            })
+            mockUser.currentStreak = 30
+            const flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toBeNull()
+            expect(mockUser.achievements).toHaveLength(1)
+        })
+        it('should not award rewards when already at milestone', () => {
+            mockUser.currentStreak = 7
+            const flags = checkAndApplyStreakRewards(mockUser, false, today)
+            expect(flags).toBeNull()
+            expect(mockUser.xpMultiplier).toBe(1.0)
+            expect(mockUser.streakFreezes).toBe(0)
+        })
+        it('should handle multiple streak milestones in sequence', () => {
+            // Test going from 2 to 3 days
+            mockUser.currentStreak = 2
+            let flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toBeNull()
+
+            // Test going from 3 to 4 days
+            mockUser.currentStreak = 3
+            flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toEqual({
+                streakReward: {
+                    type: 'xp_boost',
+                    amount: 50
+                }
+            })
+
+            // Test going from 6 to 7 days
+            mockUser.currentStreak = 7
+            flags = checkAndApplyStreakRewards(mockUser, true, today)
+            expect(flags).toEqual({
+                streakReward: {
+                    type: 'xp_multiplier',
+                    multiplier: 1.2,
+                    expires: expect.any(Date),
+                    extra: { type: 'streak_freeze', amount: 1 }
+                }
+            })
+        })
+        it('should handle existing XP multiplier when awarding new one', () => {
+            mockUser.xpMultiplier = 1.5;
+            mockUser.xpMultiplierExpiration = new Date(today.getTime() + 12 * 60 * 60 * 1000); // 12 hours from now
+            
+            mockUser.currentStreak = 7;
+            const flags = checkAndApplyStreakRewards(mockUser, true, today);
+            
+            expect(mockUser.xpMultiplier).toBe(1.2);
+            expect(mockUser.xpMultiplierExpiration.getTime()).toBe(
+                new Date(today.getTime() + 24 * 60 * 60 * 1000).getTime()
+            );
+        })
+        it('should handle multiple streak freezes accumulation', () => {
+            mockUser.currentStreak = 7;
+            let flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(mockUser.streakFreezes).toBe(1);
+            mockUser.currentStreak = 0;
+            mockUser.currentStreak = 7;
+            flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(mockUser.streakFreezes).toBe(1);
+        });
+        it('should handle invalid streak values', () => {
+            mockUser.xp = 100
+            mockUser.currentStreak = -1;
+            const flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(flags).toBeNull();
+            expect(mockUser.xp).toBe(100); 
+            expect(mockUser.xpMultiplier).toBe(1.0);
+        });
+    
+        it('should handle very long streaks', () => {
+            mockUser.currentStreak = 31;
+            const flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(flags).toBeNull(); 
+            expect(mockUser.achievements).toHaveLength(0); 
+        })
+        it('should handle multiple achievements in user history', () => {
+            mockUser.achievements = [
+                { name: 'First Login', description: 'Logged in for the first time' },
+                { name: '30-Day Streak', description: 'Maintained a 30-day streak' }
+            ];
+            mockUser.currentStreak = 30;
+            const flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(flags).toBeNull(); 
+            expect(mockUser.achievements).toHaveLength(2);
+        });
+        it('should handle timezone edge cases for multiplier expiration', () => {
+            const endOfDay = new Date('2024-03-20T23:59:59.999Z');
+            mockUser.currentStreak = 7;
+            const flags = checkAndApplyStreakRewards(mockUser, true, endOfDay);
+            const expectedExpiration = new Date(endOfDay.getTime() + 24 * 60 * 60 * 1000);
+            expect(mockUser.xpMultiplierExpiration.getTime()).toBe(expectedExpiration.getTime());
+        })
+        it('should handle concurrent streak rewards', () => {
+            mockUser.currentStreak = 3;
+            const flag1 = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(flag1).toEqual({
+                streakReward: {
+                    amount: 50,
+                    type: 'xp_boost'
+                }
+            })
+            const flag2 = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(flag2).toBeNull(); 
+        });
+        it('should not award duplicate streak rewards when reaching same milestone after streak break', () => {
+            // First time reaching 7 days
+            mockUser.currentStreak = 7;
+            let flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(mockUser.streakFreezes).toBe(1);
+            expect(flags).not.toBeNull();
+            
+            // Simulate streak break and rebuild
+            mockUser.currentStreak = 0;
+            mockUser.lastStreakRewardDate = null;  // Reset reward tracking
+            mockUser.lastStreakRewardLevel = null;
+            
+            // Simulate building streak back up to 7 days
+            // Note: In real scenario, this would happen over 7 days
+            mockUser.currentStreak = 7;
+            flags = checkAndApplyStreakRewards(mockUser, true, today);
+            
+            // Should get reward again because it's a new streak progression
+            expect(mockUser.streakFreezes).toBe(2);
+            expect(flags).not.toBeNull();
+        });
+        it('should not award duplicate streak rewards on same day', () => {
+            // First time reaching 7 days
+            mockUser.currentStreak = 7;
+            let flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(mockUser.streakFreezes).toBe(1);
+            expect(flags).not.toBeNull();
+            
+            // Try to get reward again on same day
+            flags = checkAndApplyStreakRewards(mockUser, true, today);
+            expect(mockUser.streakFreezes).toBe(1);  // Should not increase
+            expect(flags).toBeNull();  // Should not get reward
+        });
+    })
 })
