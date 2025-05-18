@@ -15,6 +15,7 @@ const {
 jest.mock('../../config/achievements', () => ({
     'daily_login': { name: 'Daily Visitor', description: 'Mocked: Log in for the first time today!' },
     'translate': { name: 'First Step', description: 'Mocked: Translate your first phrase!' },
+    'quiz_complete': { name: 'Quiz Champion', description: 'Mocked: Complete a quiz'}
     // Others
 }), { virtual: true }); // virtual: true is useful if the file doesn't actually exist yet or for full control
 
@@ -738,5 +739,90 @@ describe('Gamification Service - Unit Tests', () => {
             expect(mockUser.streakFreezes).toBe(1);  // Should not increase
             expect(flags).toBeNull();  // Should not get reward
         });
+    })
+    //--------------------------------------------------------------------------
+    // 7. Testing checkActivityAchievements(user, activity, alreadyAwardedDailyLoginToday)
+    //--------------------------------------------------------------------------
+    describe('7 -- checkActivityAchievements', () => {
+        let mockUser;
+        const today = new Date()
+
+        beforeEach(() => {
+            mockUser = {
+                achievements: []
+            }
+        })
+
+        it('should award new achievement for valid activity', () => {
+            const flags = checkActivityAchievements(mockUser, 'translate', false)
+            expect(flags).toEqual({ 
+                achievementAwarded: {
+                    name: 'First Step',
+                    description: 'Mocked: Translate your first phrase!'
+                }
+            })
+            expect(mockUser.achievements).toHaveLength(1)
+            expect(mockUser.achievements[0]).toEqual({ 
+                name: 'First Step',
+                description: 'Mocked: Translate your first phrase!'
+            })
+        })
+        it('should not award duplicate achievements', () => {
+            checkActivityAchievements(mockUser, 'translate', false)
+            const initialLength = mockUser.achievements.length
+
+            const flags = checkActivityAchievements(mockUser, 'translate', false)
+            expect(flags).toBeNull()
+            expect(mockUser.achievements).toHaveLength(initialLength)
+        })
+        it('should award Daily Visitor achievement only on first login of day', () => {
+            const result1 = checkActivityAchievements(mockUser, 'daily_login', false)
+            expect(result1).toEqual({
+                achievementAwarded: {
+                    name: 'Daily Visitor', 
+                    description: 'Mocked: Log in for the first time today!'
+                }
+            })
+            expect(mockUser.achievements).toHaveLength(1)
+            // Try to award again on the same day
+            const result2 = checkActivityAchievements(mockUser, 'daily_login', true)
+            expect(result2).toBeNull()
+            expect(mockUser.achievements).toHaveLength(1)
+        })
+        it('should not award Daily Visitor if already owned', () => {
+            mockUser.achievements.push({
+                name: 'Daily Visitor', 
+                description: 'Mocked: Log in for the first time today!'
+            })
+            const flags = checkActivityAchievements(mockUser, 'daily_login', false)
+            expect(flags).toBe(null)
+            expect(mockUser.achievements).toHaveLength(1)
+        })
+        it('should return null for invalid activity', () => {
+            const flags = checkActivityAchievements(mockUser, 'invalid_activity', false)
+            expect(flags).toBeNull()
+            expect(mockUser.achievements).toHaveLength(0)
+        })
+        it('should handle multiple different achievements', () => {
+            // Award first achievement
+            checkActivityAchievements(mockUser, 'translate', false);
+            
+            // Award second achievement
+            const result = checkActivityAchievements(mockUser, 'quiz_complete', false);
+            
+            expect(result).toEqual({
+                achievementAwarded: {
+                    name: 'Quiz Champion',
+                    description: 'Mocked: Complete a quiz'
+                }
+            });
+            expect(mockUser.achievements).toHaveLength(2);
+            expect(mockUser.achievements).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ name: 'First Step' }),
+                    expect.objectContaining({ name: 'Quiz Champion' })
+                ])
+            );
+        })
     })
 })
