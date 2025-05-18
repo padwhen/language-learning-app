@@ -20,7 +20,7 @@ import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
 import { OnboardingModal } from './modals/OnboardingModal'
 import { onboardingConfig } from './modals/onboardingConfig'
-import AdminPage from './pages/AdminPage'
+import AdminPage from './pages/admin/AdminPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
