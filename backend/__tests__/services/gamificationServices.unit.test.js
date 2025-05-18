@@ -22,6 +22,8 @@ jest.mock('../../config/achievements', () => ({
 jest.mock('../../config/badges', () => ([
     { xp: 100, name: 'Mock Bronze XP', tier: 'Bronze' }, // Using smaller XP for easier testing
     { xp: 500, name: 'Mock Silver XP', tier: 'Silver' },
+    { xp: 1000, name: 'Mock Gold XP', tier: 'Gold' },
+    { xp: 5000, name: 'Mock Platinum XP', tier: 'Platinum' },
     // Add other mock badges as needed
 ]), { virtual: true });
 
@@ -823,6 +825,113 @@ describe('Gamification Service - Unit Tests', () => {
                     expect.objectContaining({ name: 'Quiz Champion' })
                 ])
             );
+        })
+    })
+    //--------------------------------------------------------------------------
+    // 8. Testing checkXpBadges(user)
+    //--------------------------------------------------------------------------
+    describe('8 -- checkXpBadges', () => {
+        let mockUser;
+
+        beforeEach(() => {
+            mockUser = {
+                xp: 0,
+                badges: []
+            }
+        })
+        it('should award badge when XP crosses milestone', () => {
+            mockUser.xp = 100
+            const flags = checkXpBadges(mockUser)
+            expect(flags).toEqual({
+                badgeAwarded: {
+                    name: 'Mock Bronze XP',
+                    tier: 'Bronze'
+                }
+            })
+            expect(mockUser.badges).toHaveLength(1)
+            expect(mockUser.badges[0]).toEqual({
+                name: 'Mock Bronze XP', 
+                tier: 'Bronze'
+            })
+        })
+        it('should not award badge when XP is below milestone', () => {
+            mockUser.xp = 99
+            const flags = checkXpBadges(mockUser)
+            expect(flags).toBeNull()
+            expect(mockUser.badges).toHaveLength(0)
+        })
+        it('should not award duplicate badges', () => {
+            mockUser.xp = 100
+            checkXpBadges(mockUser)
+            const initialLength = mockUser.badges.length
+
+            const flags = checkXpBadges(mockUser)
+            expect(flags).toBeNull()
+            expect(mockUser.badges).toHaveLength(initialLength)
+        })
+        it('should award multiple badges when crossing multiple milestones', () => {
+            // Set XP above Silver milestone
+            mockUser.xp = 501 
+            const flags = checkXpBadges(mockUser)
+            expect(mockUser.badges).toHaveLength(2)
+            expect(mockUser.badges).toEqual(
+                expect.arrayContaining([                
+                    expect.objectContaining({ name: 'Mock Bronze XP', tier: 'Bronze' }),
+                    expect.objectContaining({ name: 'Mock Silver XP', tier: 'Silver' })
+                ])
+            )
+            // Result should contain the highest tier badge awarded
+            expect(flags).toEqual({
+                badgeAwarded: {
+                    name: 'Mock Silver XP',
+                    tier: 'Silver'
+                }
+            });
+        })
+        it('should award all badges up to current XP level', () => {
+            mockUser.xp = 99999
+            const flags = checkXpBadges(mockUser)
+            expect(mockUser.badges).toHaveLength(4)
+            expect(mockUser.badges).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ name: 'Mock Bronze XP', tier: 'Bronze' }),
+                    expect.objectContaining({ name: 'Mock Silver XP', tier: 'Silver' }),
+                    expect.objectContaining({ name: 'Mock Gold XP', tier: 'Gold' }),
+                    expect.objectContaining({ name: 'Mock Platinum XP', tier: 'Platinum' })
+                ])
+            )
+            expect(flags).toEqual({
+                badgeAwarded: {
+                    name: 'Mock Platinum XP',
+                    tier: 'Platinum'
+                }
+            })
+        })
+        it('should handle edge case at exact milestone XP', () => {
+            mockUser.xp = 1000
+            const flags = checkXpBadges(mockUser)
+            expect(flags).toEqual({
+                badgeAwarded: {
+                    name: 'Mock Gold XP', 
+                    tier: 'Gold'
+                }
+            })
+            expect(mockUser.badges).toHaveLength(3)
+        })
+        it('should maintain existing badges when checking for new ones', () => {
+            mockUser.badges.push({
+                name: 'Mock Bronze XP', 
+                tier: 'Bronze'
+            })
+            mockUser.xp = 500
+            const flags = checkXpBadges(mockUser)
+            expect(mockUser.badges).toHaveLength(2)
+            expect(mockUser.badges).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ name: 'Mock Bronze XP', tier: 'Bronze' }),
+                    expect.objectContaining({ name: 'Mock Silver XP', tier: 'Silver' })
+                ])
+            )
         })
     })
 })
