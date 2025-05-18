@@ -60,7 +60,7 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
     };
 
-    const { hasAwardedXpToday, awardDailyLoginXp } = useGamification(user, refreshUserStats);
+    const { awardDailyLoginXp } = useGamification(user, refreshUserStats);
 
     const fetchUserProfile = async () => {
         try {
@@ -73,11 +73,9 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 data.avatarUrl = defaultAvatarUrl || defaultAvatarUrl;
                 setUser(data);
                 localStorage.setItem('userId', data._id);
-
-                if (!hasAwardedXpToday) {
-                    await awardDailyLoginXp()
-                }
                 
+                // Award XP for daily login
+                await awardDailyLoginXp();
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
