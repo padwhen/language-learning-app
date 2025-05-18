@@ -2,32 +2,9 @@ import { describe, it, expect} from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { Card, Deck } from '@/types'
 import { useFindDuplicates } from '@/state/hooks/useFindDuplicates'
+import { mockCards, mockDecks } from '@/test/__mocks__/data/mockDecks'
 
 describe('useFindDuplicates', () => {
-    const mockCards: Card[] = [
-        { _id: '1', engCard: 'Hello', userLangCard: 'Bonjour', cardScore: 0 },
-        { _id: '2', engCard: 'Goodbye', userLangCard: 'Au revoir', cardScore: 0 }
-    ]
-
-    const mockDecks: Deck[] = [
-        {
-          _id: '1',
-          deckName: 'French Basics',
-          deckTags: ['French'],
-          cards: [
-            { _id: '1', engCard: 'Hello', userLangCard: 'Bonjour', cardScore: 0 },
-            { _id: '3', engCard: 'Good morning', userLangCard: 'Bonjour', cardScore: 0 },
-          ],
-        },
-        {
-          _id: '2',
-          deckName: 'French Advanced',
-          deckTags: ['French'],
-          cards: [
-            { _id: '4', engCard: 'Goodbye', userLangCard: 'Au revoir', cardScore: 0 },
-          ],
-        },
-    ]
 
     it('should find duplicates correctly', async () => {
         const { result } = renderHook(() => useFindDuplicates(mockCards, mockDecks, 'French Basics', 'French'))

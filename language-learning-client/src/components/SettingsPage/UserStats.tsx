@@ -17,15 +17,13 @@ import {
 // Import Lottie animations (you'll need to install these or create custom animations)
 import levelUpAnimation from '@/assets/lottie/level-up.json';
 import achievementAnimation from '@/assets/lottie/achievement.json';
-import streakAnimation from '@/assets/lottie/streak.json';
 import { User } from '@/contexts/UserContext';
 
 interface UserStatsProps {
     user: User;
-    refreshUserStats: () => Promise<void>;
 }
 
-export const UserStats: React.FC<UserStatsProps> = ({ user, refreshUserStats }) => {
+export const UserStats: React.FC<UserStatsProps> = ({ user }) => {
     const [showLevelUpAnimation, setShowLevelUpAnimation] = useState(false);
     const [showAchievementAnimation, setShowAchievementAnimation] = useState(false);
 

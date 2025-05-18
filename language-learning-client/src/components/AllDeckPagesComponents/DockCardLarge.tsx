@@ -18,7 +18,9 @@ export const DockCardLarge: React.FC<{
     const tagsStyle = "px-2 py-1 bg-blue-500 text-white rounded-full inline-block min-w-[80px] text-sm flex items-center justify-center"
 
     return (
-        <div className="w-full max-w-[600px] h-auto min-h-[150px] border-2 md:border-4 rounded-xl md:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300 hover:border-b-2 hover:border-blue-500">
+        <div 
+            data-testid="deck-card-container"
+            className="w-full max-w-[600px] h-auto min-h-[150px] border-2 md:border-4 rounded-xl md:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300 hover:border-b-2 hover:border-blue-500">
             <div className="p-3 md:p-4">
                 <h1 className="text-xl md:text-2xl font-semibold">{deckName}</h1>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5 mt-2">
