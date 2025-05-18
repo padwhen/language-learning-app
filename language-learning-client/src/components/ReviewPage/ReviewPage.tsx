@@ -28,7 +28,7 @@ export const ReviewPage = () => {
     const cardCountMap = useMemo(() => {
         const map: Record<string, number> = {}
         for (let i = 0; i < shuffledArray.length; i++) {
-            let card = shuffledArray[i].cardId
+            const card = shuffledArray[i].cardId
             map[card] = (map[card] || 0) + 1
         }
         return map

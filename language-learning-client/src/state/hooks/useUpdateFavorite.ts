@@ -16,7 +16,7 @@ export const useUpdateFavorite = () => {
                 { favorite },
                 { withCredentials: true }
             )
-            ('Card favorite status updated:', response.data)
+            console.log('Card favorite status updated:', response.data)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred while updating favorite status');
         } finally {

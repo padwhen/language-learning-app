@@ -76,11 +76,16 @@ export const DeckControls: React.FC<DeckControlsProps> = ({
     const handleResetProgress = async () => {
         try {
             await axios.put(`/decks/${id}/reset-progress`)
-        } catch (error) {
-
-        } finally {
             toast({
-                title: 'Deck progress is now reset.'
+                title: 'Success',
+                description: 'Deck progress has been reset successfully.',
+                variant: 'default'
+            })
+        } catch (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to reset deck progress. Please try again.',
+                variant: 'destructive'
             })
         }
     }

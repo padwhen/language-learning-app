@@ -12,7 +12,7 @@ const ProfilePicture = ({ selectedAvatar, setSelectedAvatar }: ProfilePicturePro
   };
 
   const getCharacterName = (avatarUrl: string) => {
-    const characterName = Object.entries(jsonData).find(([_key, value]) => value === avatarUrl)?.[0];
+    const characterName = Object.entries(jsonData).find(([, value]) => value === avatarUrl)?.[0];
     return characterName?.replace(/_/g, " ");
   };
 
