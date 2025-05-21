@@ -117,19 +117,26 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                     )}
                 </CardContent>
             </Card>
-            {nextQuizDate && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Next Quiz</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Calendar mode="single" selected={nextQuizDate} className="rounded-md border" />
-                        <p className="mt-2 text-center">
-                            Next quiz scheduled for: {format(nextQuizDate, 'dd.MM.yyyy (EEEE)')}
-                        </p>
-                    </CardContent>
-                </Card>                
-            )}
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle>Next Quiz</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {nextQuizDate ? (
+                        <>
+                            <Calendar mode="single" selected={nextQuizDate} className="rounded-md border" />
+                            <p className="mt-2 text-center text-gray-600">
+                                Next quiz scheduled for: {format(nextQuizDate, 'dd.MM.yyyy (EEEE)')}
+                            </p>
+                        </>
+                    ) : (
+                        <div className="text-center py-6 text-gray-600">
+                            <p className="text-lg">There's no upcoming quiz scheduled</p>
+                            <p className="mt-2">You can start a new quiz whenever you're ready.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </>
     )
 }
