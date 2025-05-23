@@ -11,6 +11,7 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
     const userId = localStorage.getItem('userId')
     const { history, fetchHistory } = useFetchHistory(userId, deckId)
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, deckId)
+    const today = new Date()
     useEffect(() => {
         if (userId && deckId) {
             fetchHistory()
@@ -122,7 +123,7 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                     <CardTitle>Next Quiz</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {nextQuizDate ? (
+                    {nextQuizDate && nextQuizDate > today ? (
                         <>
                             <Calendar mode="single" selected={nextQuizDate} className="rounded-md border" />
                             <p className="mt-2 text-center text-gray-600">
