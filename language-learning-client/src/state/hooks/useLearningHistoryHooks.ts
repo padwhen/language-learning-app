@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Card } from "@/types";
 
-interface HistoryItem {
+export interface HistoryItem {
     id: string;
     correctAnswers?: number;
     date: string;

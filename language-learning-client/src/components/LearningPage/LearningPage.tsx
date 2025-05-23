@@ -41,7 +41,7 @@ export const LearningPage: React.FC = () => {
     } = useQuizOptions(cards)
 
     const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
-    const { question, quizdone, score, saveAnswer } = useQuizLogic(quiz, id)
+    const { question, quizdone, score, saveAnswer, nextQuizDate: quizNextDate } = useQuizLogic(quiz, id)
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
 
     useEffect(() => {
@@ -57,8 +57,10 @@ export const LearningPage: React.FC = () => {
     ])
 
     useEffect(() => {
-        fetchNextQuizDate()
-    }, [id])
+        if (userId && id) {
+            fetchNextQuizDate()
+        }
+    }, [id, quizdone])
     
     if (filteredAndSortedCards.length === 0) {
         return (
@@ -143,9 +145,13 @@ export const LearningPage: React.FC = () => {
                     {quizdone ? (
                         <div className='grid gap-6 place-items-center'>
                             <span className='text-3xl sm:text-4xl md:text-5xl font-bold text-center'>{score}/{quiz.length} Questions are correct!</span>
-                            {nextQuizDate && (
-                                <span className='text-xl sm:text-2xl text-center'>Next quiz scheduled for: {nextQuizDate.toLocaleDateString()}</span>
-                            )}
+                            <div className='text-xl sm:text-2xl text-center text-gray-600' data-testid="next-quiz-date">
+                                {nextQuizDate || quizNextDate ? (
+                                    <>Next quiz scheduled for: {(nextQuizDate || quizNextDate)?.toLocaleDateString()}</>
+                                ) : (
+                                    <>No upcoming quiz scheduled. You can start a new quiz whenever you're ready!</>
+                                )}
+                            </div>
                             <Link to={`/view-decks/${id}`}>
                                 <Button className='mt-4 sm:mt-6 text-xl py-6 px-8'>Back to Home</Button>
                             </Link>
