@@ -10,7 +10,7 @@ export const useGamification = (
     refreshUserStats: () => Promise<void>
 ) => {
     const [isAwarding, setIsAwarding] = useState(false) 
-    const { showStreakToast, showXpToast, showMultiplierToast, showErrorToast } = useToastManager()
+    const { showStreakToast, showXpToast, showErrorToast } = useToastManager()
 
     const awardDailyLoginXp = async () => {
         if (isAwarding) return;

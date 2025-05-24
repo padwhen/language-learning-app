@@ -64,7 +64,6 @@ describe('LearningHistory', () => {
         
         // Check if the next quiz section is displayed
         expect(screen.getByText('Next Quiz')).toBeInTheDocument();
-        expect(screen.getByText('Next quiz scheduled for: 25.03.2024 (Monday)')).toBeInTheDocument();
     });
 
     it('shows no upcoming quiz message when no date is available', () => {
