@@ -20,7 +20,7 @@ export const DeckInfo = () => {
     }
     return (
         <div className="w-full max-w-md mx-auto px-4">
-            <div className="flex flex-col items-center mb-4">
+            <div className="flex flex-col items-center my-4">
                 <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />
             </div>
             <div className="space-y-4">
