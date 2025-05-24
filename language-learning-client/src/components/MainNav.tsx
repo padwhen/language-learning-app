@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from "./ui/breadcrumb";
-import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react"; // Import relevant icons
+import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "@/contexts/UserContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -9,52 +9,17 @@ import { Avatar, AvatarImage } from "./ui/avatar";
 import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { LoginPage } from "./UsersComponents/LoginPage";
-
-const breadcrumbPaths = [
-    { path: '/settings', label: 'Settings', icon: <Settings /> },
-    { path: '/vocabulary', label: 'Vocabulary', icon: <BookOpen /> },
-    { path: '/view-all-decks', label: 'Your decks', fallback: true, icon: <Library /> },
-    { path: '/view-decks', label: 'Deck Details', icon: <BookOpen /> },
-    { path: '/learn-decks', label: 'Deck Learning', icon: <BookOpen /> },
-    { path: '/edit-deck', label: 'Edit deck', icon: <Edit3 /> },
-    { path: '/view-decks/:deckId/learning-report', label: 'Learning Report', icon: <Library /> },
-    { path: '/flashcards', label: 'Flashcards Review', icon: <Library /> },
-    { path: '/matchgame', label: 'Match Game', icon: <Library /> },
-    { path: '/testpage', label: 'Test', icon: <Library /> },
-];
+import { motion, AnimatePresence } from "framer-motion";
 
 export const MainNav = () => {
     const location = useLocation();
-    const deckId = location.pathname.split('/')[2];
     const { user, setUser } = useContext(UserContext)
-
+    const isPage = (path: string): boolean => location.pathname.startsWith(path)
+    const deckId = location.pathname.split('/')[2];
     const getLinkClassName = (path: string): string =>
-        `text-base md:text-lg ${location.pathname === path || location.pathname.startsWith(path) ? 'border-b-2 border-blue-500' : ''}`;
-
-    const getBreadcrumbs = () => {
-        const pathSegments = location.pathname.split('/').filter(Boolean);
-        const breadcrumbs = [];
-    
-        if (pathSegments[0] === 'view-decks' && pathSegments[2] === 'learning-report') {
-            breadcrumbs.push(
-                { path: '/view-all-decks', label: 'Your decks', icon: <Library /> },
-                { path: `/view-decks/${pathSegments[1]}`, label: 'Deck Details', icon: <BookOpen /> },
-                { path: location.pathname, label: 'Learning Report', icon: <Library /> }
-            );
-        } else {
-            breadcrumbPaths.forEach(({ path, label, icon, fallback }) => {
-                if (location.pathname.startsWith(path) || (fallback && !breadcrumbs.length)) {
-                    breadcrumbs.push({ 
-                        path: path.includes(':deckId') ? path.replace(':deckId', deckId) : path, 
-                        label, 
-                        icon 
-                    });
-                }
-            });
-        }
-
-        return breadcrumbs;
-    };
+        `relative font-medium tracking-wide transition-colors duration-200 px-1 py-0.5 rounded-md ` +
+        (location.pathname === path ? 'text-blue-600' : 'text-gray-700 hover:text-blue-500') +
+        ' text-base md:text-lg';
 
     const handleLogout = async () => {
         try {
@@ -67,33 +32,183 @@ export const MainNav = () => {
         }
     }
 
+    // Animation for underline
+    const Underline = () => (
+        <motion.div
+            layoutId="underline"
+            className="absolute left-0 right-0 bottom-0 h-[2.5px] bg-blue-500 rounded"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+    );
+
     return (
-        <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-6 md:gap-12 flex-grow">
+        <div className="flex items-center justify-between w-full px-2 md:px-0">
+            <div className="flex items-center gap-4 md:gap-12 flex-grow min-w-0">
                 <Link to={'/'}>
-                    <h1 className="text-2xl md:text-2xl font-bold text-blue-600 cursor-pointer">Frassitsanakirja</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-blue-600 cursor-pointer tracking-tight whitespace-nowrap">Frassitsanakirja</h1>
                 </Link>
-                <div className="hidden md:flex flex-wrap items-center gap-4 md:gap-6">
-                    <Button variant="ghost">
-                        <Link to={'/'} className="flex gap-2 items-center">
+                <div className="hidden md:flex flex-wrap items-center gap-2 md:gap-6 mt-2 md:mt-[5px] min-w-0">
+                    <Button variant="ghost" className="p-0 m-0 bg-transparent">
+                        <Link to={'/'} className="flex gap-2 items-center relative">
                             <Home className="w-4 h-4" />
-                            <h2 className="text-base md:text-lg">Translate</h2>
-                        </Link>                        
+                            <span className={getLinkClassName('/') + ' flex items-center'}>
+                                Translate
+                                <AnimatePresence>
+                                    {location.pathname === '/' && <Underline key="underline-translate" />}
+                                </AnimatePresence>
+                            </span>
+                        </Link>
                     </Button>
                     <Breadcrumb>
-                        <BreadcrumbList>
-                            {getBreadcrumbs().map((breadcrumb, index) => (
-                                <Button variant="ghost" className="p-3" key={breadcrumb.path}>
+                        <BreadcrumbList className="flex flex-wrap gap-1 md:gap-2">
+                            <BreadcrumbItem>
+                                {isPage('/settings') && (
+                                    <Link to={'/settings'} className="flex gap-1 items-center relative">
+                                        <Settings className="w-4 h-4" />
+                                        <span className={getLinkClassName('/settings') + ' flex items-center'}>
+                                            Settings
+                                            <AnimatePresence>
+                                                {location.pathname === '/settings' && <Underline key="underline-settings" />}
+                                            </AnimatePresence>
+                                        </span>
+                                    </Link>  
+                                )}
+                                {isPage('/vocabulary') && (
+                                    <Link to={'/vocabulary'} className="flex gap-1 items-center relative">
+                                        <Library className="w-4 h-4" />
+                                        <span className={getLinkClassName('/vocabulary') + ' flex items-center'}>
+                                            Vocabulary
+                                            <AnimatePresence>
+                                                {location.pathname === '/vocabulary' && <Underline key="underline-vocab" />}
+                                            </AnimatePresence>
+                                        </span>
+                                    </Link>  
+                                )}
+                                {!isPage('/settings') && !isPage('/vocabulary') && (
+                                    <Link to={'/view-all-decks'} className="flex gap-1 items-center relative">
+                                        <Library className="w-4 h-4" />
+                                        <span className={getLinkClassName('/view-all-decks') + ' flex items-center'}>
+                                            Your decks
+                                            <AnimatePresence>
+                                                {location.pathname === '/view-all-decks' && <Underline key="underline-decks" />}
+                                            </AnimatePresence>
+                                        </span>
+                                    </Link>   
+                                )}
+                            </BreadcrumbItem>
+                            {(isPage('/view-decks') || isPage('/learn-decks') || isPage('/matchgame') || isPage(`/view-decks/${deckId}`) || isPage('/flashcards') || isPage('/testpage') || isPage('/edit-deck')) &&  (
+                                <>
+                                    <BreadcrumbSeparator />
                                     <BreadcrumbItem>
-                                        {index > 0 && <BreadcrumbSeparator />}
-                                        <Link to={breadcrumb.path} className="ml-1 flex items-center gap-1">
-                                            {breadcrumb.icon && breadcrumb.icon} 
-                                            <h2 className={getLinkClassName(breadcrumb.path)}>{breadcrumb.label}</h2>
+                                        <Link to={`/view-decks/${deckId}`} className="ml-1 flex gap-1 items-center relative">
+                                            <BookOpen className="w-4 h-4" />
+                                            <span className={getLinkClassName(`/view-decks/${deckId}`) + ' flex items-center'}>
+                                                Deck Details
+                                                <AnimatePresence>
+                                                    {location.pathname === `/view-decks/${deckId}` && <Underline key="underline-details" />}
+                                                </AnimatePresence>
+                                            </span>
                                         </Link>
                                     </BreadcrumbItem>
-                                </Button>
-                            ))}
-                        </BreadcrumbList>
+                                </>
+                            )}
+                            {isPage('/learn-decks') && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <BookOpen className="w-4 h-4" />
+                                            <span className={getLinkClassName('/learn-decks') + ' flex items-center'}>
+                                                Deck Learning
+                                                <AnimatePresence>
+                                                    {isPage('/learn-decks') && <Underline key="underline-learning" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            {isPage('/edit-deck') && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <Edit3 className="w-4 h-4" />
+                                            <span className={getLinkClassName('/edit-deck') + ' flex items-center'}>
+                                                Edit deck
+                                                <AnimatePresence>
+                                                    {isPage('/edit-deck') && <Underline key="underline-edit" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            {isPage(`/view-decks/${deckId}/learning-report`) && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <Library className="w-4 h-4" />
+                                            <span className={getLinkClassName(`/view-decks/${deckId}/learning-report`) + ' flex items-center'}>
+                                                Learning Report
+                                                <AnimatePresence>
+                                                    {isPage(`/view-decks/${deckId}/learning-report`) && <Underline key="underline-report" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            {isPage('/flashcards') && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <Library className="w-4 h-4" />
+                                            <span className={getLinkClassName('/flashcards') + ' flex items-center'}>
+                                                Flashcards Review
+                                                <AnimatePresence>
+                                                    {isPage('/flashcards') && <Underline key="underline-flashcards" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            {isPage('/matchgame') && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <Library className="w-4 h-4" />
+                                            <span className={getLinkClassName('/matchgame') + ' flex items-center'}>
+                                                Match Game
+                                                <AnimatePresence>
+                                                    {isPage('/matchgame') && <Underline key="underline-matchgame" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            {isPage('/testpage') && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <Link to={`${location.pathname}`} className="ml-1 flex gap-1 items-center relative">
+                                            <Library className="w-4 h-4" />
+                                            <span className={getLinkClassName('/testpage') + ' flex items-center'}>
+                                                Test
+                                                <AnimatePresence>
+                                                    {isPage('/testpage') && <Underline key="underline-test" />}
+                                                </AnimatePresence>
+                                            </span>
+                                        </Link>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                        </BreadcrumbList>                        
                     </Breadcrumb>
                 </div>
             </div>
@@ -103,9 +218,9 @@ export const MainNav = () => {
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" className="flex items-center gap-2">
                                 <Avatar className="rounded-3xl my-2 border-black">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                    <AvatarImage aria-label="avatar" src={user.avatarUrl} alt={user.name} />
                                 </Avatar>
-                                <span className="text-blue-700">{user.name}</span>
+                                <span className="text-blue-700 font-semibold">{user.name}</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
