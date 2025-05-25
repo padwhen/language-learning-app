@@ -7,12 +7,14 @@ const middleware = require('./utils/middleware');
 const cookieParser = require('cookie-parser');
 const logger = require('./utils/logger');
 const mongoose = require('mongoose');
+
 const usersRouter = require('./controllers/users');
 const cardRouter = require('./controllers/cards');
 const deckRouter = require('./controllers/decks');
 const learningHistoryRouter = require('./controllers/learningHistory');
 const gamificationRouter = require('./controllers/gamification');
 const weeklyRouter = require('./controllers/weeklyRanking')
+const savedQuizProgressRoutes = require('./controllers/saveQuizProgress')
 
 logger.info('connecting to', config.MONGODB_URI);
 
@@ -44,6 +46,7 @@ app.use('/api', deckRouter);
 app.use('/api', learningHistoryRouter)
 app.use('/api/gamification', gamificationRouter)
 app.use('/api', weeklyRouter)
+app.use('/api/saved-progress', savedQuizProgressRoutes)
 
 // Test route to check if API is working
 app.get('/api/test', (request, response) => {
