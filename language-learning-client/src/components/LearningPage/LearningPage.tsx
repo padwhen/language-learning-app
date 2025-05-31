@@ -20,6 +20,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import { Input } from '../ui/input';
 import { QuizItem } from '@/types';
 import { useToast } from "@/components/ui/use-toast";
+import { IntroStep } from './Step/IntroStep';
 
 type LearningStep = 'intro' | 'settings' | 'preview' | 'quiz' | 'complete';
 
@@ -143,25 +144,7 @@ export const LearningPage: React.FC = () => {
         switch (currentStep) {
             case 'intro':
                 return (
-                    <div className="space-y-6 p-6">
-                        <h1 className="text-3xl font-bold">Welcome to {deckName} Learning Session</h1>
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold">How it works:</h2>
-                            <ul className="list-disc pl-6 space-y-2">
-                                <li>First, you'll set up your learning preferences</li>
-                                <li>Preview the cards you'll be learning</li>
-                                <li>Complete the quiz at your own pace</li>
-                                <li>Your progress is automatically saved every 5 minutes</li>
-                                <li>You can pause and continue later</li>
-                            </ul>
-                        </div>
-                        <Button 
-                            className="w-full"
-                            onClick={() => setCurrentStep('settings')}
-                        >
-                            Start Setup
-                        </Button>
-                    </div>
+                    <IntroStep deckName={deckName} onContinue={() => setCurrentStep('settings')} animationClass='' />
                 )
 
             case 'settings':
