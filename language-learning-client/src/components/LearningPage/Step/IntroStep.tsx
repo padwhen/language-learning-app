@@ -1,21 +1,23 @@
 import { BookOpen, Target, TrendingUp, Zap } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { LearningStep } from "../LearningPage";
 
 interface IntroStepProps {
     deckName: string;
-    onContinue: () => void;
-    animationClass: string;
+    animationClass?: string;
     showIntroAgain: boolean;
-    setShowIntroAgain: (value: boolean) => void;
+    setShowIntroAgain: (value: boolean) => void
+    nextStep: (step: LearningStep) => void
 }
 
 export const IntroStep: React.FC<IntroStepProps> = ({
     deckName,
-    onContinue,
-    animationClass,
+    animationClass = '',
     showIntroAgain,
     setShowIntroAgain,
+    nextStep
 }) => {
     return (
         <div className={`max-w-4xl mx-auto p-2 sm:p-4 lg:p-8 space-y-6 sm:space-y-8 lg:space-y-10 ${animationClass}`}>
@@ -69,11 +71,10 @@ export const IntroStep: React.FC<IntroStepProps> = ({
             </div>
             {/* Checkbox section */}
             <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 p-4 sm:p-6 bg-gray-50 rounded-xl sm:rounded-2xl">
-                <input
-                    type="checkbox"
+                <Checkbox
                     id="showIntroAgain"
-                    checked={!showIntroAgain}
-                    onChange={(e) => setShowIntroAgain(!e)}
+                    checked={showIntroAgain}
+                    onCheckedChange={(checked) => setShowIntroAgain(checked as boolean)}
                     className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 sm:mt-0 rounded border-gray-300 text-black focus:ring-black focus:ring-2 flex-shrink-0"
                 />
                 <label htmlFor="showIntroAgain" className="text-sm sm:text-base text-gray-700 font-medium leading-relaxed">
@@ -81,7 +82,7 @@ export const IntroStep: React.FC<IntroStepProps> = ({
                 </label>
             </div>
             <div className="flex justify-center pt-2">
-                <Button size="lg" className="w-full sm:w-auto" onClick={onContinue}>
+                <Button size="lg" className="w-full sm:w-auto" onClick={() => nextStep('settings')}>
                     Continue
                 </Button>
             </div>
