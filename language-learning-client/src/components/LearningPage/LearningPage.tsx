@@ -1,23 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card as CardUI, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Question } from './Question';
-import { Progress } from "@/components/ui/progress"
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator"
-import ConfettiExplosion from 'react-confetti-explosion';
+import { Card as CardUI } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useFetchDeck from '@/state/hooks/useFetchDeck';
 import { generateQuiz } from '@/utils/generateQuiz';
 import useQuizLogic from '@/state/hooks/useQuizLogic';
 import useQuizOptions from '@/state/hooks/useQuizOptions';
 import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
-import { Settings, Save, AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Checkbox } from '../ui/checkbox';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { Input } from '../ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Save, AlertTriangle } from 'lucide-react';
 import { QuizItem } from '@/types';
 import { useToast } from "@/components/ui/use-toast";
 import { IntroStep } from './Step/IntroStep';
@@ -25,8 +16,8 @@ import { NoCardNotifications } from './NoCardsNotification';
 import { SettingsIntroPage } from './Step/SettingsIntroPage';
 import { LearningStep } from './types';
 import { PreviewPage } from './Step/PreviewPage';
+import { QuizPage } from './Step/QuizPage';
 
-const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
 
 export const LearningPage: React.FC = () => {
     const { id } = useParams<{ id: string }>()
@@ -189,105 +180,23 @@ export const LearningPage: React.FC = () => {
 
             case 'quiz':
                 return (
-                    <>
-                        <CardHeader className='relative flex-shrink-0'>
-                            {quizdone ? (
-                                <>
-                                    <Label className='text-3xl sm:text-4xl md:text-5xl font-bold'>Quiz Result</Label>
-                                    <Separator className='my-4' />
-                                    <ConfettiExplosion {...confettiOptions} />
-                                </>
-                            ) : (
-                                <>
-                                    <Progress className='h-2 mb-6 opacity-70' value={question * 100 / quiz.length} />
-                                    <CardTitle className='text-2xl sm:text-3xl md:text-4xl font-bold'>
-                                        Question {question}/{quiz.length}
-                                    </CardTitle>
-                                </>
-                            )}
-                            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                                <DialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className='absolute top-4 right-4'>
-                                        <Settings className='w-6 h-6' />
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Quiz Options</DialogTitle>
-                                        <DialogDescription>
-                                            Adjust your quiz settings or save progress
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className='space-y-4'>
-                                        <div className='flex items-center space-x-2'>
-                                            <Checkbox 
-                                                id='shuffleCards' 
-                                                checked={shuffleCards}
-                                                onCheckedChange={(checked) => setShuffleCards(checked as boolean)}
-                                            />
-                                            <label htmlFor='shuffleCards'>Shuffle remaining cards</label>
-                                        </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button 
-                                            variant="outline" 
-                                            onClick={() => setIsSettingsOpen(false)}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button 
-                                            onClick={handleSaveAndExit}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Save className="w-4 h-4" />
-                                            Save & Exit
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </CardHeader>
-                        <CardContent className='flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8'>
-                            {quizdone ? (
-                                <div className='grid gap-6 place-items-center'>
-                                    <span className='text-3xl sm:text-4xl md:text-5xl font-bold text-center'>
-                                        {score}/{quiz.length} Questions are correct!
-                                    </span>
-                                    <div className='text-xl sm:text-2xl text-center text-gray-600'>
-                                        {nextQuizDate || quizNextDate ? (
-                                            <>Next quiz scheduled for: {(nextQuizDate || quizNextDate)?.toLocaleDateString()}</>
-                                        ) : (
-                                            <>No upcoming quiz scheduled. You can start a new quiz whenever you're ready!</>
-                                        )}
-                                    </div>
-                                    <Link to={`/view-decks/${id}`}>
-                                        <Button className='mt-4 sm:mt-6 text-xl py-6 px-8'>Back to Home</Button>
-                                    </Link>
-                                </div>
-                            ) : (
-                                <>
-                                    {quiz.map((quizItem, index) => (
-                                        index + 1 === question && (
-                                            <Question 
-                                                key={index} 
-                                                data={quizItem} 
-                                                save={(answerIndex: number, correct: boolean, cardId: string) => 
-                                                    saveAnswer(answerIndex, correct, cardId)
-                                                } 
-                                                isReviewMode={false}
-                                            />
-                                        )
-                                    ))}
-                                    <Button
-                                        variant="ghost"
-                                        className="absolute top-4 left-4"
-                                        onClick={() => setIsExitDialogOpen(true)}
-                                    >
-                                        Exit
-                                    </Button>
-                                </>
-                            )}
-                        </CardContent>
-                    </>
+                    <QuizPage
+                        quizdone={quizdone}
+                        setIsExitDialogOpen={setIsExitDialogOpen}
+                        question={question}
+                        quiz={quiz}
+                        isSettingsOpen={isSettingsOpen}
+                        setIsSettingOpens={setIsSettingsOpen}
+                        shuffleCards={shuffleCards}
+                        setShuffleCards={setShuffleCards}
+                        handleSaveAndExit={handleSaveAndExit}
+                        score={score}
+                        animationClass="animate-slideIn"
+                        saveAnswer={saveAnswer}
+                        nextQuizDate={nextQuizDate}
+                        quizNextDate={quizNextDate}
+                        id={id}
+                    />
                 )
 
             default:
@@ -300,7 +209,7 @@ export const LearningPage: React.FC = () => {
             <CardUI className='w-full max-w-4xl h-full min-h-[80vh] flex flex-col'>
                 {renderStep()}
             </CardUI>
-
+            {/** There should be case where user exit the page it out of nowhere => some kinds of notifications */}
             <Dialog open={isExitDialogOpen} onOpenChange={setIsExitDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
