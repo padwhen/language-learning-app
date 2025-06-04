@@ -24,6 +24,7 @@ import { IntroStep } from './Step/IntroStep';
 import { NoCardNotifications } from './NoCardsNotification';
 import { SettingsIntroPage } from './Step/SettingsIntroPage';
 import { LearningStep } from './types';
+import { PreviewPage } from './Step/PreviewPage';
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
 
@@ -178,38 +179,12 @@ export const LearningPage: React.FC = () => {
 
             case 'preview':
                 return (
-                    <div className="space-y-6 p-6">
-                        <h2 className="text-2xl font-bold">Preview Your Cards</h2>
-                        <div className="space-y-4">
-                            <p>You will be learning {filteredAndSortedCards.length} cards:</p>
-                            <div className="grid gap-4">
-                                {filteredAndSortedCards.slice(0, 5).map((card) => (
-                                    <CardUI key={card._id} className="p-4">
-                                        <p className="font-semibold">{card.userLangCard}</p>
-                                        <p className="text-gray-600">{card.engCard}</p>
-                                    </CardUI>
-                                ))}
-                                {filteredAndSortedCards.length > 5 && (
-                                    <p className="text-center text-gray-600">
-                                        ... and {filteredAndSortedCards.length - 5} more cards
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex justify-between pt-4">
-                            <Button 
-                                variant="outline" 
-                                onClick={() => setCurrentStep('settings')}
-                            >
-                                Back to Settings
-                            </Button>
-                            <Button 
-                                onClick={handleStartQuiz}
-                            >
-                                Start Learning
-                            </Button>
-                        </div>
-                    </div>
+                    <PreviewPage 
+                        animationClass={''}
+                        filteredAndSortedCards={filteredAndSortedCards}
+                        handleStartQuiz={handleStartQuiz}
+                        nextStep={nextStep}
+                    />
                 )
 
             case 'quiz':
