@@ -21,8 +21,9 @@ import { Input } from '../ui/input';
 import { QuizItem } from '@/types';
 import { useToast } from "@/components/ui/use-toast";
 import { IntroStep } from './Step/IntroStep';
-
-type LearningStep = 'intro' | 'settings' | 'preview' | 'quiz' | 'complete';
+import { NoCardNotifications } from './NoCardsNotification';
+import { SettingsIntroPage } from './Step/SettingsIntroPage';
+import { LearningStep } from './types';
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
 
@@ -35,12 +36,14 @@ export const LearningPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState<LearningStep>('intro')
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [isExitDialogOpen, setIsExitDialogOpen] = useState(false)
+    const [showIntroAgain, setShowIntroAgain] = useState(true)
     const [quiz, setQuiz] = useState<QuizItem[]>([])
     const [savedProgress, setSavedProgress] = useState<{
         currentQuestion: number;
         answers: any[];
         score: number;
     } | null>(null)
+    const [animationClass, setAnimationClass] = useState('')
 
     // Quiz settings
     const {
@@ -52,6 +55,7 @@ export const LearningPage: React.FC = () => {
         shuffleCards,
         setShuffleCards,
         filterCards,
+        cardTypeToLearn
     } = useQuizOptions(cards)
 
     const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
@@ -63,7 +67,16 @@ export const LearningPage: React.FC = () => {
             [savedProgress.currentQuestion.toString()]: savedProgress.score
         } : undefined
     )
+
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
+
+
+    // Animation helper
+    const triggerAnimation = (animation: string) => {
+        setAnimationClass(animation)
+        setTimeout(() => setAnimationClass(''), 500)
+    }
+
 
     // Save progress periodically
     useEffect(() => {
@@ -99,7 +112,8 @@ export const LearningPage: React.FC = () => {
     }, [id, quizdone])
 
     const handleStartQuiz = () => {
-        setCurrentStep('quiz')
+        triggerAnimation('animate-bounce')
+        setTimeout(() => setCurrentStep('quiz'), 200)
     }
 
     const handleSaveAndExit = () => {
@@ -115,28 +129,20 @@ export const LearningPage: React.FC = () => {
         navigate(`/view-decks/${id}`)
     }
 
+    // Maybe an alert like "Are you sure to leave something something"
     const handleExitWithoutSaving = () => {
         setSavedProgress(null)
         navigate(`/view-decks/${id}`)
     }
 
+    const nextStep = (step: LearningStep) => {
+        triggerAnimation('animate-slide')
+        setTimeout(() => setCurrentStep(step), 100)
+    }
+
     if (filteredAndSortedCards.length === 0 && currentStep !== 'intro') {
         return (
-            <div className="flex justify-center items-center min-h-screen p-4">
-                <Alert className="w-full max-w-2xl">
-                    <AlertTitle className="text-xl font-bold">No Cards Available</AlertTitle>
-                    <AlertDescription className="text-lg">
-                        All cards in this deck are currently being learned or have been completed. 
-                        Check back later or adjust your quiz options to include more cards.
-                    </AlertDescription>
-                    <Button 
-                        className="mt-4"
-                        onClick={() => setCurrentStep('settings')}
-                    >
-                        Adjust Settings
-                    </Button>
-                </Alert>
-            </div>
+            <NoCardNotifications setCurrentStep={setCurrentStep} />
         )
     }
 
@@ -144,70 +150,29 @@ export const LearningPage: React.FC = () => {
         switch (currentStep) {
             case 'intro':
                 return (
-                    <IntroStep deckName={deckName} onContinue={() => setCurrentStep('settings')} animationClass='' />
+                    <IntroStep 
+                        deckName={deckName} 
+                        showIntroAgain={showIntroAgain} 
+                        setShowIntroAgain={setShowIntroAgain} 
+                        nextStep={nextStep} 
+                    />
                 )
 
             case 'settings':
                 return (
-                    <div className="space-y-6 p-6">
-                        <h2 className="text-2xl font-bold">Quiz Settings</h2>
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                    id='includeCompleted' 
-                                    checked={includeCompletedCards} 
-                                    onCheckedChange={(checked) => setIncludeCompletedCards(checked as boolean)}
-                                    data-testid="include-completed-checkbox"
-                                />
-                                <label htmlFor='includeCompleted'>Include completed cards</label>
-                            </div>
-                            <div>
-                                <Label htmlFor='cardsToLearn'>Number of cards to learn</Label>
-                                <Input 
-                                    id='cardsToLearn' 
-                                    type='number' 
-                                    min={4} 
-                                    value={cardsToLearn} 
-                                    onChange={(e) => {
-                                        const value = Math.min(Math.max(4, Number(e.target.value)), cards.length)
-                                        setCardsToLearn(value)
-                                    }}
-                                    max={cards.length}
-                                    data-testid="cards-to-learn-input" 
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor='cardType'>Card type to learn</Label>
-                                <Select 
-                                    onValueChange={(value: 'All' | 'Not studied' | 'Learning' | 'Completed') => 
-                                        setCardTypeToLearn(value)
-                                    }
-                                >
-                                    <SelectTrigger data-testid="card-type-select">
-                                        <SelectValue placeholder='Select card type' />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value='All'>All Cards</SelectItem>
-                                        <SelectItem value='Not studied'>Not Studied</SelectItem>
-                                        <SelectItem value='Learning'>Learning</SelectItem>
-                                        <SelectItem value='Completed'>Completed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="flex justify-between pt-4">
-                            <Button 
-                                variant="outline" 
-                                onClick={() => setCurrentStep('intro')}
-                            >
-                                Back
-                            </Button>
-                            <Button 
-                                onClick={() => setCurrentStep('preview')}
-                            >
-                                Preview Cards
-                            </Button>
-                        </div>
+                    <div>
+                        <SettingsIntroPage 
+                            animationClass={''} 
+                            cards={cards} 
+                            cardsToLearn={cardsToLearn}
+                            setCardsToLearn={setCardsToLearn}
+                            cardTypeToLearn={cardTypeToLearn}
+                            setCardTypeToLearn={setCardTypeToLearn} 
+                            includeCompletedCards={includeCompletedCards}
+                            setIncludeCompletedCards={setIncludeCompletedCards} 
+                            triggerAnimation={triggerAnimation} 
+                            nextStep={nextStep}
+                        />
                     </div>
                 )
 
@@ -356,7 +321,7 @@ export const LearningPage: React.FC = () => {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen p-2 sm:p-4">
+        <div className="flex justify-center min-h-screen pt-4 sm:pt-8 lg:pt-12 p-2 sm:p-4">
             <CardUI className='w-full max-w-4xl h-full min-h-[80vh] flex flex-col'>
                 {renderStep()}
             </CardUI>

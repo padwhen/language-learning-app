@@ -2,7 +2,7 @@ import { BookOpen, Target, TrendingUp, Zap } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LearningStep } from "../LearningPage";
+import { LearningStep } from "../types";
 
 interface IntroStepProps {
     deckName: string;

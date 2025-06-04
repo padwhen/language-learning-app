@@ -1,6 +1,6 @@
 import { Button } from "../ui/button"
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert"
-import { LearningStep } from "./LearningPage";
+import { LearningStep } from "./types"
 
 interface NoCardNotificationsProps {
     setCurrentStep: (step: LearningStep) => void;
