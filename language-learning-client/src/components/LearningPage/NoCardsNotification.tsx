@@ -9,6 +9,7 @@ interface NoCardNotificationsProps {
 export const NoCardNotifications: React.FC<NoCardNotificationsProps> = ({ setCurrentStep }) => {
     return (
         <div className="flex justify-center items-center min-h-screen p-4">
+            <div className="animate-fadeIn">
                 <Alert className="w-full max-w-2xl">
                     <AlertTitle className="text-xl font-bold">No Cards Available</AlertTitle>
                     <AlertDescription className="text-lg">
@@ -22,6 +23,7 @@ export const NoCardNotifications: React.FC<NoCardNotificationsProps> = ({ setCur
                         Adjust Settings
                     </Button>
                 </Alert>
+            </div>
         </div>
     )
 }

@@ -17,7 +17,7 @@ export const PreviewPage: React.FC<PreviewPageProps> = ({
     nextStep
 }) => {
     return (
-        <div className={`space-y-8 p-8 animate-fadeIn ${animationClass}`}>
+        <div className={`space-y-8 p-8 ${animationClass}`}>
             <div className="text-center space-y-2">
                 <h2 className="text-3xl font-bold text-gray-800">Your Learning Sessions</h2>
                 <p className="text-gray-600">Here's what you'll be practicing today</p>

@@ -91,6 +91,24 @@ export const LearningPage: React.FC = () => {
     }, [currentStep, quizdone, question, answers, score])
 
     useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (currentStep === 'quiz' && !quizdone) {
+                event.preventDefault()
+                event.returnValue = ''
+                setIsExitDialogOpen(true)
+            }
+        }
+
+        if (currentStep === 'quiz' && !quizdone) {
+            window.addEventListener('beforeunload', handleBeforeUnload)
+        }
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, [currentStep, quizdone, setIsExitDialogOpen])
+
+    useEffect(() => {
         if (filteredAndSortedCards.length > 0 && currentStep === 'preview') {
             const newQuiz = generateQuiz(filteredAndSortedCards)
             setQuiz(newQuiz)
@@ -154,7 +172,7 @@ export const LearningPage: React.FC = () => {
                 return (
                     <div>
                         <SettingsIntroPage 
-                            animationClass={''} 
+                            animationClass={animationClass} 
                             cards={cards} 
                             cardsToLearn={cardsToLearn}
                             setCardsToLearn={setCardsToLearn}
@@ -171,7 +189,7 @@ export const LearningPage: React.FC = () => {
             case 'preview':
                 return (
                     <PreviewPage 
-                        animationClass={''}
+                        animationClass={animationClass}
                         filteredAndSortedCards={filteredAndSortedCards}
                         handleStartQuiz={handleStartQuiz}
                         nextStep={nextStep}
