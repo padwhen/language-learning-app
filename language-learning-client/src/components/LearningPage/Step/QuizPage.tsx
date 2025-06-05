@@ -253,7 +253,19 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                     </motion.div>
                 </div>
             ) : (
-                <div className={`w-full ${animationClass}`}>
+                <motion.div 
+                    className={`w-full ${animationClass}`}
+                    key={question} 
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 25,
+                        duration: 0.5
+                    }}
+                >
                     {quiz.map((quizItem, index) => (
                         index + 1 === question && (
                             <Question
@@ -266,7 +278,7 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                             />
                         )
                     ))}
-                </div>
+                </motion.div>
             )}
         </CardContent>
         </>
