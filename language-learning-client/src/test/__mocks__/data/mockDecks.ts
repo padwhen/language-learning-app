@@ -28,6 +28,19 @@ export const mockDecks: Deck[] = [
     },
 ];
 
+export const mockModifiedCards = [
+    { 
+      _id: '1', 
+      engCard: 'Hello (modified)', 
+      explanation_string: 'A greeting used when meeting someone' 
+    },
+    { 
+      _id: '2', 
+      engCard: 'Goodbye (modified)', 
+      explanation_string: 'A farewell expression'
+    }
+  ]
+
 export const createMockDeck = (overrides: Partial<Deck>): Deck => ({
     _id: '1',
     deckName: 'French Basics',
