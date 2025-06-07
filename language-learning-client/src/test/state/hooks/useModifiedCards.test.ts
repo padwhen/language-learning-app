@@ -28,7 +28,7 @@ describe('useModifiedCards', () => {
     vi.resetAllMocks()
     
     // Mock useFetchDeck to return mockCards
-    const useFetchDeckDefault = useFetchDeckModule.default as jest.Mock
+    const useFetchDeckDefault = useFetchDeckModule.default as vi.Mock
     useFetchDeckDefault.mockReturnValue({ 
       cards: mockCards, 
       deck: null,
