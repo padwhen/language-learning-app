@@ -9,7 +9,8 @@ router.use(verifyToken);
 // Save current quiz progress
 router.post('/:userId/:deckId', async (req, res) => {
     try {
-        const { userId, deckId } = req.params
+        const { deckId, userId } = req.params
+        const { userData } = req
         const {
             currentQuestion,
             answers,
@@ -17,11 +18,12 @@ router.post('/:userId/:deckId', async (req, res) => {
             quizItems,
             settings
         } = req.body
-        const { userData } = req
         if (userId !== userData.id) {
             return res.status(403).json({ message: 'Forbidden' })
         }
-        const deck = await Deck.findOne({ _id: deckId, userId })    
+        console.log({ deckId })
+        console.log({ userId })
+        const deck = await Deck.findOne({ _id: deckId })     
         if (!deck) {
             return res.status(404).json({ message: 'Deck not found' })
         }

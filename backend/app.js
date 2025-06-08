@@ -46,7 +46,7 @@ app.use('/api', deckRouter);
 app.use('/api', learningHistoryRouter)
 app.use('/api/gamification', gamificationRouter)
 app.use('/api', weeklyRouter)
-app.use('/api/saved-progress', savedQuizProgressRoutes)
+app.use('/api/save-quiz-progress', savedQuizProgressRoutes)
 
 // Test route to check if API is working
 app.get('/api/test', (request, response) => {

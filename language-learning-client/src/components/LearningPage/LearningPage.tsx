@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Card as CardUI } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { useParams, useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ import useQuizLogic from '@/state/hooks/useQuizLogic';
 import useQuizOptions from '@/state/hooks/useQuizOptions';
 import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
-import { Save, AlertTriangle } from 'lucide-react';
+import { Save, AlertTriangle, Play } from 'lucide-react';
 import { QuizItem } from '@/types';
 import { useToast } from "@/components/ui/use-toast";
 import { IntroStep } from './Step/IntroStep';
@@ -17,6 +17,7 @@ import { SettingsIntroPage } from './Step/SettingsIntroPage';
 import { LearningStep } from './types';
 import { PreviewPage } from './Step/PreviewPage';
 import { QuizPage } from './Step/QuizPage';
+import { useQuizProgress } from '@/state/hooks/useQuizProgress';
 
 
 export const LearningPage: React.FC = () => {
@@ -25,17 +26,18 @@ export const LearningPage: React.FC = () => {
     const userId = localStorage.getItem('userId')
     const navigate = useNavigate()
     const { toast } = useToast()
+
     const [currentStep, setCurrentStep] = useState<LearningStep>('intro')
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [isExitDialogOpen, setIsExitDialogOpen] = useState(false)
     const [showIntroAgain, setShowIntroAgain] = useState(true)
     const [quiz, setQuiz] = useState<QuizItem[]>([])
-    const [savedProgress, setSavedProgress] = useState<{
-        currentQuestion: number;
-        answers: any[];
-        score: number;
-    } | null>(null)
     const [animationClass, setAnimationClass] = useState('')
+    const [hasLoadedSavedProgress, setHasLoadedSavedProgress] = useState(false)
+    const [showResumeDialog, setShowResumeDialog] = useState(false)
+    const [progressLoadingComplete, setProgressLoadingComplete] = useState(false)
+
+    const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     // Quiz settings
     const {
@@ -50,6 +52,16 @@ export const LearningPage: React.FC = () => {
         cardTypeToLearn
     } = useQuizOptions(cards)
 
+    const {
+        savedProgress,
+        saveProgress,
+        loadProgress,
+        deleteProgress,
+    } = useQuizProgress(userId || '', id || '')
+
+    console.log("userId: ", userId)
+    console.log("deckId: ", id)
+
     const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
     const { question, quizdone, score, saveAnswer, nextQuizDate: quizNextDate, answers } = useQuizLogic(
         quiz, 
@@ -62,40 +74,66 @@ export const LearningPage: React.FC = () => {
 
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
 
-
     // Animation helper
     const triggerAnimation = (animation: string) => {
         setAnimationClass(animation)
         setTimeout(() => setAnimationClass(''), 500)
     }
 
-
-    // Save progress periodically
+    // Load saved progress on component mount
     useEffect(() => {
-        if (currentStep === 'quiz' && !quizdone) {
-            const saveInterval = setInterval(() => {
-                setSavedProgress({
+        if (userId && id && !hasLoadedSavedProgress) {
+            loadProgress().then(() => {
+                setHasLoadedSavedProgress(true)
+                setProgressLoadingComplete(true)
+            })
+        }
+    }, [userId, id, hasLoadedSavedProgress, loadProgress])
+
+    // Show resume dialog if saved progress exists (after loading is complete)
+    useEffect(() => {
+        if (progressLoadingComplete && savedProgress && !showResumeDialog) {
+            setShowResumeDialog(true)
+        }
+    }, [progressLoadingComplete, savedProgress, showResumeDialog])
+
+    // Auto-save progress every 5 seconds when in quiz mode
+    useEffect(() => {
+        if (currentStep === 'quiz' && !quizdone && quiz.length > 0) {
+            if (autoSaveIntervalRef.current) {
+                clearInterval(autoSaveIntervalRef.current)
+            }
+
+            autoSaveIntervalRef.current = setInterval(() => {
+                const progressData = {
                     currentQuestion: question,
                     answers: answers,
-                    score: score
-                })
-                toast({
-                    title: "Progress saved",
-                    description: "Your progress has been automatically saved.",
-                    duration: 2000,
-                })
-            }, 300000) // Save every 5 minutes
-
-            return () => clearInterval(saveInterval)
+                    score: score,
+                    quizItems: quiz,
+                    settings: {
+                        includeCompletedCards,
+                        cardsToLearn,
+                        cardTypeToLearn,
+                        shuffleCards
+                    }
+                }
+                saveProgress(progressData)
+            }, 5000)
         }
-    }, [currentStep, quizdone, question, answers, score])
 
+        return () => {
+            if (autoSaveIntervalRef.current) {
+                clearInterval(autoSaveIntervalRef.current)
+            }
+        }
+    }, [currentStep, quizdone, question, answers, score, quiz, includeCompletedCards, cardsToLearn, cardTypeToLearn, shuffleCards, saveProgress])
+
+    // Handle browser refresh/close
     useEffect(() => {
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             if (currentStep === 'quiz' && !quizdone) {
                 event.preventDefault()
                 event.returnValue = ''
-                setIsExitDialogOpen(true)
             }
         }
 
@@ -106,7 +144,7 @@ export const LearningPage: React.FC = () => {
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
         }
-    }, [currentStep, quizdone, setIsExitDialogOpen])
+    }, [currentStep, quizdone])
 
     useEffect(() => {
         if (filteredAndSortedCards.length > 0 && currentStep === 'preview') {
@@ -121,28 +159,64 @@ export const LearningPage: React.FC = () => {
         }
     }, [id, quizdone])
 
+    // Clean up saved progress when quiz is completed
+    useEffect(() => {
+        if (quizdone && savedProgress) {
+            deleteProgress()
+        }
+    }, [quizdone, savedProgress, deleteProgress])
+
     const handleStartQuiz = () => {
         triggerAnimation('animate-bounce')
         setTimeout(() => setCurrentStep('quiz'), 200)
     }
 
-    const handleSaveAndExit = () => {
-        setSavedProgress({
+    const handleSaveAndExit = async () => {
+        const progressData = {
             currentQuestion: question,
             answers: answers,
-            score: score
-        })
-        toast({
-            title: "Progress saved",
-            description: "You can continue later from where you left off.",
-        })
+            score: score,
+            quizItems: quiz,
+            settings: {
+                includeCompletedCards,
+                cardsToLearn,
+                cardTypeToLearn,
+                shuffleCards
+            }
+        }
+        await saveProgress(progressData)
         navigate(`/view-decks/${id}`)
     }
 
-    // Maybe an alert like "Are you sure to leave something something"
-    const handleExitWithoutSaving = () => {
-        setSavedProgress(null)
+    const handleExitWithoutSaving = async () => {
+        await deleteProgress()
         navigate(`/view-decks/${id}`)
+    }
+
+    const handleResumeQuiz = () => {
+        if (savedProgress) {
+            // Restore settings
+            setIncludeCompletedCards(savedProgress.settings.includeCompletedCards)
+            setCardsToLearn(savedProgress.settings.cardsToLearn)
+            setCardTypeToLearn(savedProgress.settings.cardTypeToLearn)
+            setShuffleCards(savedProgress.settings.shuffleCards)
+
+            setQuiz(savedProgress.quizItems)
+
+            setCurrentStep('quiz')
+            setShowResumeDialog(false)
+
+            toast({
+                title: "Quiz resumed", 
+                description: `Continuing from question ${savedProgress.currentQuestion}`,
+                duration: 3000
+            })
+        }
+    }
+
+    const handleStartNewQuiz = async () => {
+        await deleteProgress()
+        setShowResumeDialog(false)
     }
 
     const nextStep = (step: LearningStep) => {
@@ -227,7 +301,27 @@ export const LearningPage: React.FC = () => {
             <CardUI className='w-full max-w-4xl h-full min-h-[80vh] flex flex-col'>
                 {renderStep()}
             </CardUI>
-            {/** There should be case where user exit the page it out of nowhere => some kinds of notifications */}
+            <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className='flex items-center gap-2'>
+                            <Play className='w-5 h-5 text-blue-500' />
+                            Resume Previous Quiz?
+                        </DialogTitle>
+                        <DialogDescription>
+                            We found a saved quiz in progress. You were on question {savedProgress?.currentQuestion} with a score of {savedProgress?.score}
+                        </DialogDescription>
+                        <DialogFooter>
+                            <Button variant={'outline'} onClick={handleStartNewQuiz}>
+                                Start New Quiz
+                            </Button>
+                            <Button onClick={handleResumeQuiz} className='flex items-center gap-2'>
+                                <Play className='w-4 h-4' /> Resume Quiz
+                            </Button>
+                        </DialogFooter>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
             <Dialog open={isExitDialogOpen} onOpenChange={setIsExitDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
