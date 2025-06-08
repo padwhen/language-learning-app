@@ -275,6 +275,8 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                                     saveAnswer(answerIndex, correct, cardId)
                                 } 
                                 isReviewMode={false}
+                                currentQuestionIndex={question}
+                                totalQuestions={quiz.length}
                             />
                         )
                     ))}

@@ -14,7 +14,9 @@ interface QuestionProps {
         cardScore: number;
     };
     save: (answerIndex: number, correct: boolean, cardId: string, cardScore: number) => void;
-    isReviewMode: boolean
+    isReviewMode: boolean;
+    currentQuestionIndex?: number;
+    totalQuestions?: number;
 }
 
 // Sparkle component for correct answers
@@ -81,6 +83,9 @@ export const Question: React.FC<QuestionProps> = (props) => {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [submitted, setSubmitted] = useState(false)
     const [showEffects, setShowEffects] = useState(false)
+    
+    // Check if this is a resume mode and if current question was already answered
+    const isCurrentQuestionAnswered = props.currentQuestionIndex && props.currentQuestionIndex <= (props.totalQuestions || 0)
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {

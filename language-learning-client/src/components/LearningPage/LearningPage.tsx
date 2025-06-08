@@ -18,6 +18,7 @@ import { LearningStep } from './types';
 import { PreviewPage } from './Step/PreviewPage';
 import { QuizPage } from './Step/QuizPage';
 import { useQuizProgress } from '@/state/hooks/useQuizProgress';
+import { ResumeAnswerReview } from './ResumeAnswerReview';
 
 
 export const LearningPage: React.FC = () => {
@@ -69,7 +70,14 @@ export const LearningPage: React.FC = () => {
         false, 
         savedProgress ? {
             [savedProgress.currentQuestion.toString()]: savedProgress.score
-        } : undefined
+        } : undefined,
+        !!savedProgress, // isResumeMode - true if we have saved progress
+        savedProgress ? {
+            currentQuestion: savedProgress.currentQuestion,
+            answers: savedProgress.answers,
+            score: savedProgress.score
+        } : undefined,
+        savedProgress?.quizItems // originalQuizItems for resume mode
     )
 
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
@@ -95,7 +103,7 @@ export const LearningPage: React.FC = () => {
         if (progressLoadingComplete && savedProgress && !showResumeDialog) {
             setShowResumeDialog(true)
         }
-    }, [progressLoadingComplete, savedProgress, showResumeDialog])
+    }, [])
 
     // Auto-save progress every 5 seconds when in quiz mode
     useEffect(() => {
@@ -106,10 +114,10 @@ export const LearningPage: React.FC = () => {
 
             autoSaveIntervalRef.current = setInterval(() => {
                 const progressData = {
-                    currentQuestion: question,
+                    currentQuestion: question + (savedProgress?.answers.length || 0), // Adjust for resumed sessions
                     answers: answers,
                     score: score,
-                    quizItems: quiz,
+                    quizItems: savedProgress?.quizItems || quiz, // Use original quiz items for resume context
                     settings: {
                         includeCompletedCards,
                         cardsToLearn,
@@ -173,10 +181,10 @@ export const LearningPage: React.FC = () => {
 
     const handleSaveAndExit = async () => {
         const progressData = {
-            currentQuestion: question,
+            currentQuestion: question + (savedProgress?.answers.length || 0),
             answers: answers,
             score: score,
-            quizItems: quiz,
+            quizItems: savedProgress?.quizItems || quiz,
             settings: {
                 includeCompletedCards,
                 cardsToLearn,
@@ -201,14 +209,23 @@ export const LearningPage: React.FC = () => {
             setCardTypeToLearn(savedProgress.settings.cardTypeToLearn)
             setShuffleCards(savedProgress.settings.shuffleCards)
 
-            setQuiz(savedProgress.quizItems)
+            // Filter out already answered questions from the quiz
+            const answeredCardIds = new Set(savedProgress.answers.map(answer => answer.cardId))
+            const remainingQuizItems = savedProgress.quizItems.filter(item => !answeredCardIds.has(item.cardId))
+            
+            setQuiz(remainingQuizItems)
 
-            setCurrentStep('quiz')
+            // Show resume review first if there are previous answers
+            if (savedProgress.answers && savedProgress.answers.length > 0) {
+                setCurrentStep('resume-review')
+            } else {
+                setCurrentStep('quiz')
+            }
             setShowResumeDialog(false)
 
             toast({
                 title: "Quiz resumed", 
-                description: `Continuing from question ${savedProgress.currentQuestion}`,
+                description: `Continuing with ${remainingQuizItems.length} remaining questions`,
                 duration: 3000
             })
         }
@@ -269,6 +286,16 @@ export const LearningPage: React.FC = () => {
                         nextStep={nextStep}
                     />
                 )
+
+            case 'resume-review':
+                return savedProgress ? (
+                    <ResumeAnswerReview
+                        previousAnswers={savedProgress.answers}
+                        quizItems={savedProgress.quizItems}
+                        remainingQuestions={quiz.length}
+                        onContinue={() => setCurrentStep('quiz')}
+                    />
+                ) : null
 
             case 'quiz':
                 return (

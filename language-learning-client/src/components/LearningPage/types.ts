@@ -1,4 +1,4 @@
-export type LearningStep = 'intro' | 'settings' | 'preview' | 'quiz' | 'complete'
+export type LearningStep = 'intro' | 'settings' | 'preview' | 'quiz' | 'resume-review' | 'complete'
 
 export interface SavedProgress {
     currentQuestion: number;
