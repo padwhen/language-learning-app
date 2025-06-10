@@ -4,13 +4,14 @@ import React from 'react';
 export const TranslationBar: React.FC<{
     fromLanguage: string;
     setFromLanguage: (language: string) => void;
-}> = ({ fromLanguage, setFromLanguage }) => {
+    highlighted?: boolean;
+}> = ({ fromLanguage, setFromLanguage, highlighted }) => {
     const languages = ['Finnish', 'Korean', 'Chinese', 'Vietnamese', 'Greek'];
     const handleLanguageChange = (language: string) => {
         setFromLanguage(language);
     }
     return (
-        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 lg:gap-8 w-full md:w-auto mt-4 p-2 rounded-lg">
+        <div className={`flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 lg:gap-8 w-full md:w-auto mt-4 p-2 rounded-lg transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''}`}>
             <div className="relative inline-flex w-full md:w-auto">
                 <div className="w-full md:w-64 lg:w-80">
                     <DropdownMenu>

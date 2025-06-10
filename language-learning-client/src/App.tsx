@@ -35,7 +35,7 @@ function App() {
   return (
     <UserContextProvider>
       <DeckContextProvider>
-        {location.pathname.startsWith('/') && <Header />}
+        {location.pathname !== '/' && <Header />}
         <OnboardingModal config={onboardingConfig.allDecks} />
         <Routes>
           <Route index element={<IndexPage />} />

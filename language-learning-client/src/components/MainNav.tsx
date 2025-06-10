@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from "./ui/breadcrumb";
-import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react";
+import { Home, LogOut, Settings, Library, BookOpen, Edit3, Info } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "@/contexts/UserContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -11,7 +11,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { motion, AnimatePresence } from "framer-motion";
 
-export const MainNav = () => {
+export const MainNav = ({ onStartTour }: { onStartTour?: () => void }) => {
     const location = useLocation();
     const { user, setUser } = useContext(UserContext)
     const isPage = (path: string): boolean => location.pathname.startsWith(path)
@@ -212,7 +212,18 @@ export const MainNav = () => {
                     </Breadcrumb>
                 </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+                {location.pathname === '/' && onStartTour && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={onStartTour}
+                        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                        <Info className="w-4 h-4" />
+                        <span className="text-sm">Take Tour</span>
+                    </Button>
+                )}
                 {user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
