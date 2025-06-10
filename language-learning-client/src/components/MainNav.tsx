@@ -10,6 +10,7 @@ import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { motion, AnimatePresence } from "framer-motion";
+import { LLAnguageLogo } from "./Logo";
 
 export const MainNav = () => {
     const location = useLocation();
@@ -45,7 +46,7 @@ export const MainNav = () => {
         <div className="flex items-center justify-between w-full px-2 md:px-0">
             <div className="flex items-center gap-4 md:gap-12 flex-grow min-w-0">
                 <Link to={'/'}>
-                    <h1 className="text-xl md:text-2xl font-bold text-blue-600 cursor-pointer tracking-tight whitespace-nowrap">Frassitsanakirja</h1>
+                    <LLAnguageLogo />
                 </Link>
                 <div className="hidden md:flex flex-wrap items-center gap-2 md:gap-6 mt-2 md:mt-[5px] min-w-0">
                     <Button variant="ghost" className="p-0 m-0 bg-transparent">

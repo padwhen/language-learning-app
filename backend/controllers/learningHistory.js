@@ -45,6 +45,20 @@ router.post('/learning-history/save-quiz-result', async (req, res) => {
             // For "learn" sessions, create a new random name
             randomName = createRandomName();
             originalLearningSession = null;
+        } else if (quizType === 'resume') {
+            // For "resume" sessions, find the most recent learn session and use its name
+            originalLearningSession = await LearningHistory.findOne({
+                userId,
+                deckId,
+                quizType: 'learn'
+            }).sort({ date: -1 });
+
+            if (!originalLearningSession) {
+                return res.status(400).json({ message: 'No learn session found for resume' });
+            }
+
+            // Use the same name as the original learn session
+            randomName = originalLearningSession.randomName;
         } else {
             // For "review" sessions, find the latest "learn" session
             originalLearningSession = await LearningHistory.findOne({
@@ -172,7 +186,7 @@ router.get('/learning-history/:learningHistoryId', async (req, res) => {
 
 function determineNextQuizDate(quizType, cardsStudied, correctAnswers) {
     const performance = correctAnswers / cardsStudied;
-    let daysUntilNextQuiz = 1; // default for learn
+    let daysUntilNextQuiz = 1; // default for learn and resume
 
     if (quizType === 'review') {
         if (performance >= 0.8) {
@@ -182,6 +196,7 @@ function determineNextQuizDate(quizType, cardsStudied, correctAnswers) {
         }
         daysUntilNextQuiz = Math.min(30, daysUntilNextQuiz);
     }
+    // Resume sessions use the same logic as learn sessions (1 day default)
 
     const nextQuizDate = new Date();
     nextQuizDate.setDate(nextQuizDate.getDate() + daysUntilNextQuiz);

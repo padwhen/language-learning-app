@@ -16,7 +16,7 @@ const LearningHistorySchema = new mongoose.Schema({
     date: { type: Date, default: Date.now },
     cardsStudied: { type: Number, required: true },
     correctAnswers: { type: Number, required: true },
-    quizType: { type: String, enum: ['learn', 'review'], required: true },
+    quizType: { type: String, enum: ['learn', 'review', 'resume'], required: true },
     nextQuizDate: { type: Date, required: true },
     // Reference to the original learning session if this is a review
     originalLearningSession: {

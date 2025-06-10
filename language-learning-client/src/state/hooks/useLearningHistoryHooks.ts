@@ -7,7 +7,7 @@ export interface HistoryItem {
     correctAnswers?: number;
     date: string;
     cardsStudied: number;
-    quizType: 'learn' | 'review';
+    quizType: 'learn' | 'review' | 'resume';
     randomName: string;
 }
 
