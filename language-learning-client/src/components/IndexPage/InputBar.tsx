@@ -6,9 +6,10 @@ interface InputBarProps {
     setInputText: (text: string) => void;
     handleTranslation: () => void;
     ready: boolean;
+    highlighted?: boolean;
 }
 
-export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, handleTranslation, ready }) => {
+export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, handleTranslation, ready, highlighted }) => {
     const [countdown, setCountdown] = useState(60);
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
     const [loadingTTS, setLoadingTTS] = useState(false)
@@ -48,7 +49,7 @@ export const InputBar: React.FC<InputBarProps> = ({ inputText, setInputText, han
     }, [audioUrl])
 
     return (
-        <div className="mt-5 w-full max-w-3xl px-4">
+        <div className={`mt-5 w-full max-w-3xl px-4 transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
             <div className="w-full">
                 <textarea   rows={6}
                             className="placeholder:italic appearance-none block w-full text-base sm:text-lg text-gray-700 border border-gray-200 rounded py-4 px-4 mb-3 leading-relaxed focus:outline-none focus:bg-white focus:border-gray-500"
