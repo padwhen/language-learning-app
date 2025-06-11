@@ -11,7 +11,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { motion, AnimatePresence } from "framer-motion";
 
-export const MainNav = ({ onStartTour }: { onStartTour?: () => void }) => {
+export const MainNav = ({ onStartTour, highlightUser }: { onStartTour?: () => void; highlightUser?: boolean }) => {
     const location = useLocation();
     const { user, setUser } = useContext(UserContext)
     const isPage = (path: string): boolean => location.pathname.startsWith(path)
@@ -227,7 +227,12 @@ export const MainNav = ({ onStartTour }: { onStartTour?: () => void }) => {
                 {user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" className="flex items-center gap-2">
+                            <Button 
+                                variant="secondary" 
+                                className={`flex items-center gap-2 transition-all duration-300 ${
+                                    highlightUser ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''
+                                }`}
+                            >
                                 <Avatar className="rounded-3xl my-2 border-black">
                                     <AvatarImage aria-label="avatar" src={user.avatarUrl} alt={user.name} />
                                 </Avatar>
@@ -258,7 +263,15 @@ export const MainNav = ({ onStartTour }: { onStartTour?: () => void }) => {
                 ) : (
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" size="lg">Log In</Button>
+                            <Button 
+                                variant="outline" 
+                                size="lg"
+                                className={`transition-all duration-300 ${
+                                    highlightUser ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''
+                                }`}
+                            >
+                                Log In
+                            </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                             <DialogHeader>

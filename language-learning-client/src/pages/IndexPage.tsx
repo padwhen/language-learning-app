@@ -2,10 +2,10 @@ import { TranslationBar } from "../components/IndexPage/TranslationBar";
 import { InputBar } from "../components/IndexPage/InputBar";
 import { Translation } from "../components/IndexPage/Translation";
 import { WordDetails } from "../components/IndexPage/Details";
-import { User } from "../components/IndexPage/User";
 import { DeckInfo } from "../components/IndexPage/DeckInfo";
 import { Header } from "../components/Header";
 import CoachMark from "../components/IndexPage/CoachMark";
+import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
 import { useState, useEffect } from "react";
 
@@ -58,7 +58,7 @@ export const IndexPage = () => {
     useEffect(() => {
         const stepHighlights = [
             null, 'translation-bar', 'input-bar', 'translation', 
-            'word-details', 'user-section', 'deck-info', null
+            'word-details', 'user-header', 'deck-info', null
         ];
         setHighlightedElement(stepHighlights[currentStep]);
     }, [currentStep]);
@@ -94,7 +94,10 @@ export const IndexPage = () => {
 
     return (
         <>
-            <Header onStartTour={startOnboarding} />
+            <Header 
+                onStartTour={startOnboarding} 
+                highlightUser={highlightedElement === 'user-header'}
+            />
             <div className="flex flex-col lg:flex-row">
                 <div className="w-full px-4 lg:px-16 flex flex-col items-center">
                     <TranslationBar 
@@ -148,9 +151,6 @@ export const IndexPage = () => {
                     )}
                 </div>
                 <div className="w-full lg:w-1/4 flex flex-col mr-4">
-                    <div className={showOnboarding ? '' : 'md:hidden lg:hidden'}>
-                        <User highlighted={highlightedElement === 'user-section'} />
-                    </div>
                     <div className="mt-2">
                         <DeckInfo 
                             mockData={showOnboarding}
@@ -159,6 +159,9 @@ export const IndexPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Welcome Tour Modal */}
+            <WelcomeTourModal onStartTour={startOnboarding} />
 
             {/* Onboarding Coach Marks */}
             {showOnboarding && (

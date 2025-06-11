@@ -50,12 +50,12 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
     {
       title: "Your Personal Profile Center",
       content: "Register or log in here to unlock the full power of the app. Save your vocabulary, track progress, create custom decks, and sync across devices. Your learning journey starts here!",
-      position: "left",
-      highlight: "user-section"
+      position: "top-center",
+      highlight: "user-header"
     },
     {
       title: "Vocabulary Deck Management",
-      content: "Your flashcard decks live here! See progress percentages, card counts, creation dates, and quick access to detailed views. Perfect for tracking your learning journey across different languages.",
+      content: "Your flashcard decks live here! See progress percentages, card counts, creation dates, and quick access to detailed views. You can sort by most cards, language, or newest. Perfect for tracking your learning journey across different languages.",
       position: "left",
       highlight: "deck-info"
     },
@@ -159,7 +159,10 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
                 Language Learning Tour
               </div>
               <button
-                onClick={onSkip}
+                onClick={() => {
+                  localStorage.setItem('hasSeenLanguageLearningTour', 'skipped');
+                  onSkip();
+                }}
                 className="text-white hover:text-gray-200 transition-colors p-1"
               >
                 <X className="w-5 h-5" />
@@ -191,7 +194,10 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
             {/* Actions */}
             <div className="flex justify-between items-center">
               <button
-                onClick={onSkip}
+                onClick={() => {
+                  localStorage.setItem('hasSeenLanguageLearningTour', 'skipped');
+                  onSkip();
+                }}
                 className="text-gray-500 hover:text-gray-700 font-medium transition-colors px-3 py-2"
               >
                 Skip Tour
@@ -218,7 +224,10 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
                   </button>
                 ) : (
                   <button
-                    onClick={onFinish}
+                    onClick={() => {
+                      localStorage.setItem('hasSeenLanguageLearningTour', 'completed');
+                      onFinish();
+                    }}
                     className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
                   >
                     Start Learning!
