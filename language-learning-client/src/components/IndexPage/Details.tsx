@@ -38,7 +38,7 @@ export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMock
         { title: 'Others', words: words.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
     ]
     return (
-        <div className={`mt-5 w-full max-w-4xl px-4 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
+        <div className={`mt-5 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {categories.map((category, index) => (
                     <WordCategory 

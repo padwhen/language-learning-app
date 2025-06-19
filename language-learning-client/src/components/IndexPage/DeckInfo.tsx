@@ -42,7 +42,7 @@ export const DeckInfo = ({ mockData, highlighted }: { mockData?: boolean; highli
         return null;
     }
     return (
-        <div className={`w-full max-w-md mx-auto px-4 transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
+        <div className={`w-full mx-auto px-0 transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
             {!mockData && (
                 <div className="flex flex-col items-center my-4">
                     <SortableSelect sortBy={sortBy} setSortBy={setSortBy} allLanguages={allLanguages} />

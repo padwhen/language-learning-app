@@ -26,25 +26,25 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
     {
       title: "Language Selection Hub",
       content: "Start here! Click the left dropdown to choose your source language (Finnish, Korean, Chinese, Vietnamese, Greek). The arrow shows translation direction - always ending in English for now.",
-      position: "bottom-center",
+      position: "right-ish",
       highlight: "translation-bar"
     },
     {
       title: "Smart Text Input Area",
       content: "Enter any sentence or phrase here. Pro tip: Complete sentences give better context and more accurate translations. Use the Speak button to hear pronunciation!",
-      position: "top-center",
+      position: "right-ish",
       highlight: "input-bar"
     },
     {
       title: "Beautiful Translation Display",
       content: "Your translated text appears here in an elegant, easy-to-read format. Perfect for quick reference, studying, or sharing with others!",
-      position: "top-center",
+      position: "right-ish",
       highlight: "translation"
     },
     {
       title: "Interactive Word Analysis",
       content: "This is where the magic happens! Every word gets categorized (verbs, nouns, adjectives, etc.). Click any word to see pronunciation, detailed explanations, and save it to your vocabulary deck!",
-      position: "top-center",
+      position: "right-ish",
       highlight: "word-details"
     },
     {
@@ -81,6 +81,8 @@ const CoachMark: React.FC<CoachMarkProps> = ({ step, totalSteps, onNext, onPrev,
         return { x: 32, y: window.innerHeight / 2 - 150 };
       case 'right':
         return { x: window.innerWidth - 400 - 32, y: window.innerHeight / 2 - 150 };
+      case 'right-ish':
+        return { x: window.innerWidth - 500 - 25, y: window.innerHeight / 2 - 50 };
       default:
         return { x: window.innerWidth - 400 - 32, y: 32 };
     }
