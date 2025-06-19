@@ -14,6 +14,34 @@ const getRegionFromIP = (ip) => {
     return geo ? geo.city : null    
 }
 
+const recordLoginDate = async (user) => {
+    const today = new Date()
+    const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const todayDateString = today.toISOString().split('T')[0]
+
+    const alreadyLoggedToday = user.loginDates.some(login => 
+        login.date.toISOString().split('T')[0] === todayDateString
+    );
+
+    if (!alreadyLoggedToday) {
+        user.loginDates.push({
+            date: today,
+            month: currentMonth,
+            year: today.getFullYear()
+        });
+        
+        // Keep only the last 3 months of login data to avoid unbounded growth
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        
+        user.loginDates = user.loginDates.filter(login => 
+            login.date >= threeMonthsAgo
+        );
+        
+        console.log(`Recorded login for ${user.username} on ${todayDateString}`);
+    }
+}
+
 usersRouter.post('/register', async (request, response) => {
     const { name, username, pin } = request.body
     try {
@@ -51,6 +79,9 @@ usersRouter.post('/login', async (request, response) => {
             await userDoc.save()
         }
     }
+
+    await recordLoginDate(userDoc)
+    await userDoc.save()
 
     jwt.sign({ id: userDoc._id }, JWT_SECRET, {}, (error, token) => {
         if (error) throw error

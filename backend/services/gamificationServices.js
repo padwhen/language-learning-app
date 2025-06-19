@@ -1,5 +1,7 @@
 const achievementMap = require('../config/achievements');
 const badgeMilestones = require('../config/badges');
+const XpHistory = require('../models/XpHistory');
+
 
 /**
  * Calculates level based on XP.
@@ -112,6 +114,7 @@ function awardExperience(user, xpAmount, activity, today) {
             user.weeklyXP += adjustedXp;
             adjustedXpGained = adjustedXp;
             console.log(`Awarded ${adjustedXpGained} XP for activity: ${activity}`);
+            recordXpEvent(user._id, adjustedXpGained, activity)
         }
     }
     return { xpAwarded: adjustedXpGained, alreadyAwardedDailyLoginToday };
@@ -180,6 +183,8 @@ function checkAndApplyStreakRewards(user, streakIncreased, today) {
         user.lastStreakRewardDate = today;
         user.lastStreakRewardLevel = user.currentStreak;
         console.log(`Awarded ${bonusXp} bonus XP for 3-day streak.`);
+
+        recordXpEvent(user._id, bonusXp, 'streak_bonus', '3-day streak milestone');
     } else if (user.currentStreak === 7) {
         user.xpMultiplier = 1.2;
         user.xpMultiplierExpiration = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Expires in 24h
@@ -268,6 +273,21 @@ function checkXpBadges(user) {
     return awardedBadge ? { badgeAwarded: awardedBadge } : null;
 }
 
+async function recordXpEvent(userId, xpAmount, eventType, eventDetails = null) {
+    try {
+        await XpHistory.create({
+            userId,
+            xpAmount,
+            eventType,
+            eventDetails,
+            date: new Date()
+        })
+        console.log(`Recorded XP event: ${eventType} (+${xpAmount} XP)`)
+    } catch (error) {
+        console.error('Error recording XP event:', error);
+    }
+}
+
 
 module.exports = {
     calculateLevel,
@@ -278,4 +298,5 @@ module.exports = {
     checkAndApplyStreakRewards,
     checkActivityAchievements,
     checkXpBadges,
+    recordXpEvent
 };
