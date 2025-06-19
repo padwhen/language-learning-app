@@ -72,7 +72,7 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                                                     <Link to={`/view-decks/${deckId}/learning-report/${learningSession?.id}`} className="underline">[Review]</Link>
                                                 </div>
                                                 <div className="text-sm text-gray-600">
-                                                Started: {format(new Date(learningSession!.date), 'dd.MM.yyyy')} • {learningSession!.cardsStudied} cards
+                                                Started: {learningSession?.date ? format(new Date(learningSession.date), 'dd.MM.yyyy') : 'N/A'} • {learningSession?.cardsStudied ?? 0} cards
                                                 </div>
                                             </div>
                                             {reviewSessions.length > 0 && (

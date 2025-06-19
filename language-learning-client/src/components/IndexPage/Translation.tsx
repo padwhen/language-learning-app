@@ -1,6 +1,6 @@
-export const Translation: React.FC<{text: string}> = ({ text }) => {
+export const Translation: React.FC<{text: string; highlighted?: boolean}> = ({ text, highlighted }) => {
     return (
-        <div className="mt-5 w-full max-w-4xl px-4 mx-auto">
+        <div className={`mt-8 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
             <blockquote className="relative">
                 <div className="relative z-10">
                     <p className="text-gray-800">
