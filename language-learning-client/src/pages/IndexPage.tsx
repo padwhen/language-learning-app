@@ -99,7 +99,7 @@ export const IndexPage = () => {
                     onStartTour={startOnboarding} 
                     highlightUser={highlightedElement === 'user-header'}
                 />
-                <div className="flex flex-col lg:flex-row max-w-7xl mx-auto gap-24">
+                <div className="flex flex-col lg:flex-row max-w-7xl mx-auto gap-32">
                     <div className="w-full max-w-4xl px-4 lg:px-7 flex flex-col items-center py-6">
                         <div className="w-full max-w-4xl bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-2xl shadow-sm">
                             <TranslationBar 
@@ -153,7 +153,7 @@ export const IndexPage = () => {
                             )}
                         </div>
                     </div>
-                    <div className="w-full lg:w-1/4 flex flex-col px-4 lg:px-0 py-8">
+                    <div className="w-full lg:w-1/3 flex flex-col px-4 lg:px-0 py-8 lg:ml-8">
                         <div className="lg:sticky lg:top-8">
                             <DeckInfo 
                                 mockData={showOnboarding}
