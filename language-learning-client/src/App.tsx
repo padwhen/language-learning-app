@@ -18,8 +18,6 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
-import { OnboardingModal } from './modals/OnboardingModal'
-import { onboardingConfig } from './modals/onboardingConfig'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -36,7 +34,6 @@ function App() {
     <UserContextProvider>
       <DeckContextProvider>
         {location.pathname !== '/' && <Header />}
-        <OnboardingModal config={onboardingConfig.allDecks} />
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />
