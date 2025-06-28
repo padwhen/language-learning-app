@@ -8,11 +8,16 @@ import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 export const IndexPage = () => {
     const { fromLanguage, setFromLanguage, inputText, setInputText, ready, response, handleTranslation } = useTranslation();
-    const [showOnboarding, setShowOnboarding] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    
+    // Check URL for tour parameter
+    const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
     const [currentStep, setCurrentStep] = useState(0);
     const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
 
@@ -56,12 +61,16 @@ export const IndexPage = () => {
     ];
 
     useEffect(() => {
-        const stepHighlights = [
-            null, 'translation-bar', 'input-bar', 'translation', 
-            'word-details', 'user-header', 'deck-info', null
-        ];
-        setHighlightedElement(stepHighlights[currentStep]);
-    }, [currentStep]);
+        if (isTourActive) {
+            const stepHighlights = [
+                null, 'translation-bar', 'input-bar', 'translation', 
+                'word-details', 'user-header', 'deck-info', null
+            ];
+            setHighlightedElement(stepHighlights[currentStep]);
+        } else {
+            setHighlightedElement(null);
+        }
+    }, [currentStep, isTourActive]);
 
     const handleNext = () => {
         if (currentStep < totalSteps - 1) {
@@ -76,27 +85,27 @@ export const IndexPage = () => {
     };
 
     const handleSkip = () => {
-        setShowOnboarding(false);
+        // Remove tour parameter from URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('tour');
+        navigate(newUrl.pathname);
         setCurrentStep(0);
         setHighlightedElement(null);
     };
 
     const handleFinish = () => {
-        setShowOnboarding(false);
+        // Remove tour parameter from URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('tour');
+        navigate(newUrl.pathname);
         setCurrentStep(0);
         setHighlightedElement(null);
-    };
-
-    const startOnboarding = () => {
-        setShowOnboarding(true);
-        setCurrentStep(0);
     };
 
     return (
         <>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
                 <Header 
-                    onStartTour={startOnboarding} 
                     highlightUser={highlightedElement === 'user-header'}
                 />
                 <div className="flex flex-col lg:flex-row max-w-7xl mx-auto gap-32">
@@ -114,40 +123,40 @@ export const IndexPage = () => {
                                 ready={ready}
                                 highlighted={highlightedElement === 'input-bar'}
                             />
-                            {(response?.sentence || showOnboarding) && (
+                            {(response?.sentence || isTourActive) && (
                                 <div 
                                     className={`transition-all duration-700 ease-out transform ${
-                                        showOnboarding && !response?.sentence 
+                                        isTourActive && !response?.sentence 
                                             ? 'animate-in fade-in slide-in-from-bottom-4' 
                                             : ''
                                     }`}
                                     style={{ 
-                                        animationDelay: showOnboarding && !response?.sentence ? '0.3s' : '0s',
+                                        animationDelay: isTourActive && !response?.sentence ? '0.3s' : '0s',
                                         animationFillMode: 'both'
                                     }}
                                 >
                                     <Translation 
-                                        text={showOnboarding ? mockTranslation : response?.sentence}
+                                        text={isTourActive ? mockTranslation : response?.sentence}
                                         highlighted={highlightedElement === 'translation'}
                                     />
                                 </div>
                             )}
-                            {(response?.words || showOnboarding) && (
+                            {(response?.words || isTourActive) && (
                                 <div 
                                     className={`transition-all duration-700 ease-out transform ${
-                                        showOnboarding && !response?.words 
+                                        isTourActive && !response?.words 
                                             ? 'animate-in fade-in slide-in-from-bottom-4' 
                                             : ''
                                     }`}
                                     style={{ 
-                                        animationDelay: showOnboarding && !response?.words ? '0.6s' : '0s',
+                                        animationDelay: isTourActive && !response?.words ? '0.6s' : '0s',
                                         animationFillMode: 'both'
                                     }}
                                 >
                                     <WordDetails 
-                                        words={showOnboarding ? mockWords : response?.words}
+                                        words={isTourActive ? mockWords : response?.words}
                                         highlighted={highlightedElement === 'word-details'}
-                                        isMockData={showOnboarding && !response?.words}
+                                        isMockData={isTourActive && !response?.words}
                                     />
                                 </div>
                             )}
@@ -156,7 +165,7 @@ export const IndexPage = () => {
                     <div className="w-full lg:w-1/3 flex flex-col px-4 lg:px-0 py-8 lg:ml-8">
                         <div className="lg:sticky lg:top-8">
                             <DeckInfo 
-                                mockData={showOnboarding}
+                                mockData={isTourActive}
                                 highlighted={highlightedElement === 'deck-info'}
                             />
                         </div>
@@ -165,10 +174,14 @@ export const IndexPage = () => {
             </div>
 
             {/* Welcome Tour Modal */}
-            <WelcomeTourModal onStartTour={startOnboarding} />
+            <WelcomeTourModal onStartTour={() => {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('tour', 'true');
+                navigate(newUrl.pathname + newUrl.search);
+            }} />
 
             {/* Onboarding Coach Marks */}
-            {showOnboarding && (
+            {isTourActive && (
                 <CoachMark
                     step={currentStep}
                     totalSteps={totalSteps}

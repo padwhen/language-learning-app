@@ -25,15 +25,19 @@ axios.defaults.withCredentials = true
 function App() {
   const location = useLocation();
   const navigate = useNavigate()
+  
   useEffect(() => {
       const userId = localStorage.getItem('userId')
       if (!userId) navigate('/')
   }, [navigate])
 
+  const handleStartTour = () => {
+  };
+
   return (
     <UserContextProvider>
       <DeckContextProvider>
-        {location.pathname !== '/' && <Header />}
+        {location.pathname !== '/' && <Header onStartTour={handleStartTour} />}
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />

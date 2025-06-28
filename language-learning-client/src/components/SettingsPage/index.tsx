@@ -14,11 +14,14 @@ import { Calendar } from "../ui/calendar";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const SettingPage = () => {
   const { user, setUser, refreshUserStats } = useContext(UserContext);
   const { handleError } = useError();
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const defaultAvatarUrl = "https://github.com/shadcn.png";
   const initialAvatarUrl = user?.avatarUrl ?? defaultAvatarUrl;
@@ -36,10 +39,57 @@ export const SettingPage = () => {
   })
   const [showPassword, setShowPassword] = useState(false)
 
+  const [currentStep, setCurrentStep] = useState(0);
+  const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
+  const totalSteps = 4;
+
+  const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
+
   // --- FETCHED DATA ---
   const [loginHistory, setLoginHistory] = useState<LoginHistoryResponse | null>(null)
   const [xpHistory, setXpHistory] = useState<XpHistoryResponse | null>(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (isTourActive) {
+      const stepHighlights = [
+        'profile-picture', 'user-stats', 'achievements', 'personal-info'
+      ];
+      setHighlightedElement(stepHighlights[currentStep]);
+    } else {
+      setHighlightedElement(null);
+    }
+  }, [currentStep, isTourActive]);
+
+  const handleNext = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSkip = () => {
+    // Remove tour parameter from URL
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete('tour');
+    navigate(newUrl.pathname);
+    setCurrentStep(0);
+    setHighlightedElement(null);
+  };
+
+  const handleFinish = () => {
+    // Remove tour parameter from URL
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete('tour');
+    navigate(newUrl.pathname);
+    setCurrentStep(0);
+    setHighlightedElement(null);
+  };
 
   // -- FETCH LOGINHISTORY AND XPHISTORY --
   useEffect(() => {
@@ -146,13 +196,21 @@ export const SettingPage = () => {
     setSelectedAvatar(user?.avatarUrl ?? defaultAvatarUrl);
   }, [user]);
 
+  if (loading) {
+    return (
+      <div>Loading...</div>
+    )
+  }
+
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-white pt-8">
+      <div className="w-full max-w-screen-2xl mx-auto p-6 space-y-6 bg-white rounded-2xl shadow-lg overflow-auto">
         <h1 className="text-3xl font-bold flex items-center gap-3">⚙️ Settings</h1>
 
         {/* Avatar Selection */}
-        <Card className="overflow-hidden">
+        <Card className={`overflow-hidden transition-all duration-300 ${
+          highlightedElement === 'profile-picture' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
+        }`}>
           <CardHeader>
             <CardTitle>Profile Picture</CardTitle>
             <p className="text-sm text-slate-600">Choose your avatar from our Moomin collection!</p>
@@ -167,7 +225,9 @@ export const SettingPage = () => {
           </CardContent>
         </Card>
         {/* User Stats */}
-        <Card>
+        <Card className={`transition-all duration-300 ${
+          highlightedElement === 'user-stats' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
+        }`}>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Dialog>
@@ -258,7 +318,9 @@ export const SettingPage = () => {
           </CardContent>
         </Card>
         {/* Achievements */}
-        <Card>
+        <Card className={`transition-all duration-300 ${
+          highlightedElement === 'achievements' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
+        }`}>
           <CardHeader>
             <CardTitle>Recent Achievements</CardTitle>
             <p className="text-sm text-slate-600">Your latest milestones</p>
@@ -289,7 +351,9 @@ export const SettingPage = () => {
           </CardContent>
         </Card>
         {/* Personal Information */}
-        <Card>
+        <Card className={`transition-all duration-300 ${
+          highlightedElement === 'personal-info' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
+        }`}>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
             <p className="text-sm text-slate-600">Manage your account details</p>
@@ -373,6 +437,49 @@ export const SettingPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Tour Overlay */}
+      {isTourActive && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold mb-2">Settings Tour</h3>
+              <p className="text-sm text-gray-600">
+                {currentStep === 0 && "Welcome to your Settings page! Let's explore the key features."}
+                {currentStep === 1 && "Here you can view your experience points and learning streak."}
+                {currentStep === 2 && "Check out your recent achievements and milestones."}
+                {currentStep === 3 && "Update your personal information and account details."}
+              </p>
+            </div>
+            <div className="flex justify-between items-center">
+              <Button variant="outline" onClick={handleSkip}>
+                Skip
+              </Button>
+              <div className="flex gap-2">
+                {currentStep > 0 && (
+                  <Button variant="outline" onClick={handlePrev}>
+                    Previous
+                  </Button>
+                )}
+                {currentStep < totalSteps - 1 ? (
+                  <Button onClick={handleNext}>
+                    Next
+                  </Button>
+                ) : (
+                  <Button onClick={handleFinish}>
+                    Finish
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <span className="text-sm text-gray-500">
+                Step {currentStep + 1} of {totalSteps}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
