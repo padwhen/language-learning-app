@@ -18,8 +18,6 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
-import { OnboardingModal } from './modals/OnboardingModal'
-import { onboardingConfig } from './modals/onboardingConfig'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -27,16 +25,19 @@ axios.defaults.withCredentials = true
 function App() {
   const location = useLocation();
   const navigate = useNavigate()
+  
   useEffect(() => {
       const userId = localStorage.getItem('userId')
       if (!userId) navigate('/')
   }, [navigate])
 
+  const handleStartTour = () => {
+  };
+
   return (
     <UserContextProvider>
       <DeckContextProvider>
-        {location.pathname.startsWith('/') && <Header />}
-        <OnboardingModal config={onboardingConfig.allDecks} />
+        {location.pathname !== '/' && <Header onStartTour={handleStartTour} />}
         <Routes>
           <Route index element={<IndexPage />} />
           <Route path="/view-all-decks" element={<AllDecks />} />

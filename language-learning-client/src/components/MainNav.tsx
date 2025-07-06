@@ -1,6 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from "./ui/breadcrumb";
-import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react";
+import { Home, LogOut, Settings, Library, BookOpen, Edit3, Info } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "@/contexts/UserContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -12,8 +12,9 @@ import { LoginPage } from "./UsersComponents/LoginPage";
 import { motion, AnimatePresence } from "framer-motion";
 import { LLAnguageLogo } from "./Logo";
 
-export const MainNav = () => {
+export const MainNav = ({ onStartTour, highlightUser }: { onStartTour?: () => void; highlightUser?: boolean }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { user, setUser } = useContext(UserContext)
     const isPage = (path: string): boolean => location.pathname.startsWith(path)
     const deckId = location.pathname.split('/')[2];
@@ -32,6 +33,16 @@ export const MainNav = () => {
             console.error('Error logging out: ', error);
         }
     }
+
+    const handleStartTour = () => {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('tour', 'true');
+        navigate(currentUrl.pathname + currentUrl.search);
+        
+        if (onStartTour) {
+            onStartTour();
+        }
+    };
 
     // Animation for underline
     const Underline = () => (
@@ -213,11 +224,25 @@ export const MainNav = () => {
                     </Breadcrumb>
                 </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+                <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={handleStartTour}
+                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                    <Info className="w-4 h-4" />
+                    <span className="text-sm">Take Tour</span>
+                </Button>
                 {user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" className="flex items-center gap-2">
+                            <Button 
+                                variant="secondary" 
+                                className={`flex items-center gap-2 transition-all duration-300 ${
+                                    highlightUser ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''
+                                }`}
+                            >
                                 <Avatar className="rounded-3xl my-2 border-black">
                                     <AvatarImage aria-label="avatar" src={user.avatarUrl} alt={user.name} />
                                 </Avatar>
@@ -248,7 +273,15 @@ export const MainNav = () => {
                 ) : (
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" size="lg">Log In</Button>
+                            <Button 
+                                variant="outline" 
+                                size="lg"
+                                className={`transition-all duration-300 ${
+                                    highlightUser ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''
+                                }`}
+                            >
+                                Log In
+                            </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                             <DialogHeader>

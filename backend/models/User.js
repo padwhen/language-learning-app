@@ -18,6 +18,12 @@ const UserSchema = new Schema({
     xpMultiplier: { type: Number, default: 1.0 }, // Default multiplier is 1x (no boost)
     xpMultiplierExpiration: { type: Date, default: null }, // When the multiplier expires
 
+    loginDates: [{
+        date: { type: Date, required: true }, 
+        month: { type: String, required: true },
+        year: { type: Number, required: true },
+    }],
+
     // Achievements and Badges
     achievements: [{
         name: { type: String, required: true },

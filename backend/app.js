@@ -13,8 +13,9 @@ const cardRouter = require('./controllers/cards');
 const deckRouter = require('./controllers/decks');
 const learningHistoryRouter = require('./controllers/learningHistory');
 const gamificationRouter = require('./controllers/gamification');
-const weeklyRouter = require('./controllers/weeklyRanking')
 const savedQuizProgressRoutes = require('./controllers/saveQuizProgress')
+const weeklyRouter = require('./controllers/weeklyRanking');
+const xpHistoryRouter = require('./controllers/xpHistory');
 
 logger.info('connecting to', config.MONGODB_URI);
 
@@ -47,6 +48,8 @@ app.use('/api', learningHistoryRouter)
 app.use('/api/gamification', gamificationRouter)
 app.use('/api', weeklyRouter)
 app.use('/api/save-quiz-progress', savedQuizProgressRoutes)
+app.use('/api', xpHistoryRouter)
+
 
 // Test route to check if API is working
 app.get('/api/test', (request, response) => {

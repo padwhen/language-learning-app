@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MobileNav } from "./MobileNav";
 import { MainNav } from "./MainNav";
 
-export const Header = () => {
+export const Header = ({ onStartTour, highlightUser }: { onStartTour?: () => void; highlightUser?: boolean }) => {
     const [isMobile, setIsMobile] = useState(false);
 
     // Function to check the screen width and update the state
@@ -22,7 +22,7 @@ export const Header = () => {
     return (
         <div className="pt-6">
             <div className="container flex flex-wrap justify-between items-center">
-                {isMobile ? <MobileNav /> : <MainNav />}
+                {isMobile ? <MobileNav /> : <MainNav onStartTour={onStartTour} highlightUser={highlightUser} />}
             </div>
         </div>
     );
