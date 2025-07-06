@@ -79,7 +79,7 @@ const UserLoggedOut = () => (
     </div>
 )
 
-export const User = () => {
+export const User = ({ highlighted }: { highlighted?: boolean }) => {
     const { user, setUser } = useContext(UserContext)
 
     const handleLogout = async () => {
@@ -94,7 +94,7 @@ export const User = () => {
     }
 
     return (
-        <div className="w-full px-4 py-2">
+        <div className={`w-full px-4 py-2 transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg shadow-lg' : ''}`}>
             {user ? <UserLoggedIn user={user} handleLogout={handleLogout} /> : <UserLoggedOut />}
         </div>
     )

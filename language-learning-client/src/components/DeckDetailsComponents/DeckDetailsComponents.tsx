@@ -46,14 +46,14 @@ export const DeckNavigation: React.FC<DeckNavigationProps> = ({
     const moveLeftRightStyle = "border rounded-full hover:bg-gray-200 transition duration-300"
 
     return (
-        <div className="flex items-center justify-center gap-5 mb-4 w-full sm:w-auto">
+        <div className="flex items-center justify-center gap-5 mb-4 w-full">
             <div data-testid="move-left"
                 className={`${moveLeftRightStyle} transform hover:-translate-x-1 ${currentCardIndex === 0 || cardsLength <= 1 ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'cursor-pointer'}`}
                 onClick={currentCardIndex !== 0 && cardsLength > 1 ? onMoveLeft : undefined}
             >
                 <MoveLeft className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-[45px] lg:h-[45px]" />
             </div>
-            <div data-testid="current-card-number" className="text-3xl">
+            <div data-testid="current-card-number" className="text-2xl sm:text-3xl">
                 {currentCardIndex + 1} / {cardsLength}
             </div>
             <div data-testid="move-right"
@@ -95,8 +95,8 @@ export const DeckControls: React.FC<DeckControlsProps> = ({
     }
 
     return (
-        <div className="pt-4 flex flex-wrap justify-between max-w-[875px]">
-            <div className="flex gap-4 items-center justify-center mb-4 w-full sm:w-auto">
+        <div className="pt-6 flex flex-wrap justify-between w-full">
+            <div className="flex gap-6 items-center justify-center mb-6 w-full sm:w-auto">
                 <ToolTip trigger={<Play />} content="Play" onClick={onPlay} />
                 <ToolTip trigger={<Shuffle />} content="Shuffle" onClick={onShuffle} />
             </div>
@@ -125,13 +125,13 @@ export const DeckControls: React.FC<DeckControlsProps> = ({
 }
 
 export const DeckLinks: React.FC<DeckLinksProps> = ({ id, cardsLength }) => {
-    const aStyle = "text xl md:text-2xl inline-block px-4 md:px-8 py-3 rounded-sm border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 w-full sm:w-[205px] text-center"
+    const aStyle = "text-xs sm:text-sm md:text-base lg:text-lg inline-block px-2 sm:px-3 md:px-4 lg:px-6 py-3 rounded-sm border border-gray-300 bg-gray-100 hover:bg-gray-200 hover:border-b-2 hover:border-blue-500 transition-colors duration-300 flex-1 min-w-0 text-center"
     return (
-        <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex gap-2 sm:gap-3 md:gap-4 mb-6">
             <Link to={`/flashcards/${id}`} className={aStyle}>Flashcards</Link>
             <Link to={`/learn-decks/${id}`} data-testid="learn-link" className={aStyle}>
                 {cardsLength >= 4 ? (
-                    <a>Learn</a>
+                    <span>Learn</span>
                 ): (
                     <TooltipProvider>
                         <Tooltip>
@@ -150,7 +150,7 @@ export const DeckLinks: React.FC<DeckLinksProps> = ({ id, cardsLength }) => {
 export const FlashCard: React.FC<FlashCardProps> = ({
     card, isFlipped, onFlip, hint, onGenerateHint, onToggleFavorite
 }) => (
-    <div className="w-full max-w-[875px] border mt-5" data-testid="card-flip-container">
+    <div className="w-full max-w-[875px] mx-auto border mt-8" data-testid="card-flip-container">
         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
             <div key="front" onClick={onFlip}>
                 <FrontCard 

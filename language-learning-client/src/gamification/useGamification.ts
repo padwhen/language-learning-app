@@ -22,7 +22,6 @@ export const useGamification = (
                 activity: 'daily_login',
             });
             const data = response.data;
-            console.log("Backend Response: ", data)
 
             // Show toasts based on backend response
             // Only show XP toast if XP was actually gained

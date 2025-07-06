@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { IndexPage } from "@/pages/IndexPage";
 
 describe('IndexPage', () => {
@@ -9,7 +10,11 @@ describe('IndexPage', () => {
             words: [{ id: '1', text: 'Hello'}, { id: '2', text: 'world'}]
         }
         localStorage.setItem('response', JSON.stringify(mockResponse))
-        render(<IndexPage />)
+        render(
+            <MemoryRouter>
+                <IndexPage />
+            </MemoryRouter>
+        )
         // Verify that the saved data is loaded correctly
         const translatedSentence = screen.getByText(/Hello, world!/i);
         expect(translatedSentence).toBeInTheDocument()
