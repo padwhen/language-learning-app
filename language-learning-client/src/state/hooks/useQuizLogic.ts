@@ -146,6 +146,8 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
         setCards(updatedCards);
 
         const newAnswer: Answer = {
+            // In resume mode, the question number is adjusted by adding the number of answers already provided.
+            // This ensures the question numbering continues correctly from where the user left off.
             question: isResumeMode ? (answers.length + question) : question,
             userAnswer: currentQuestion.options[userAnswerIndex],
             correctAnswer: currentQuestion.correctAnswer,
