@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { CreatorBar } from "../components/DeckDetailsComponents/Creator";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { organizeCardsByScore } from "../composables/SortCard";
 import { NoCard } from "../components/FlashCardComponents/NoCard";
 import { CardCategory } from "../components/DeckDetailsComponents/CardCategory";
@@ -17,10 +17,13 @@ import { AnimatePresence } from "framer-motion";
 import { Input } from "../components/ui/input";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Card } from "../types";
+import CoachMark from "../components/DeckDetailsComponents/CoachMark";
 
 export const DeckDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { deck, cards, deckName } = useFetchDeck(id);
+    const location = useLocation();
+    const navigate = useNavigate();
     
     const [isFlipped, setIsFlipped] = useState<boolean>(false);
     const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
@@ -30,6 +33,52 @@ export const DeckDetailsPage: React.FC = () => {
     const [results, setResults] = useState<Card[]>([])
     const [isSearching, setIsSearching] = useState(false)
     const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+    // Tour state management
+    const [currentStep, setCurrentStep] = useState(0);
+    const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
+    const totalSteps = 6;
+    const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
+
+    // Tour step data
+    const tourSteps = [
+      {
+        title: "Study Mode Navigation 🎯",
+        content: "Welcome to your deck! These navigation buttons let you switch between different study modes like flashcards, learn, match, and test. Each mode offers a unique way to master your vocabulary!",
+        position: "bottom" as const,
+        highlight: "deck-navigation"
+      },
+      {
+        title: "Interactive Flashcard Area 📱",
+        content: "This is your main flashcard area. Click the card to flip it and see the translation. Use the hint button if you need help, star your favorites, and hear pronunciations!",
+        position: "bottom" as const,
+        highlight: "flashcard-area"
+      },
+      {
+        title: "Study Controls 🎮",
+        content: "Use these controls to play through cards automatically, shuffle the deck, or access advanced settings for your study session. Perfect for hands-free learning!",
+        position: "bottom" as const,
+        highlight: "deck-controls"
+      },
+      {
+        title: "Card Navigation 🔄",
+        content: "Navigate between cards using these arrows and see your progress. You can also use your keyboard arrow keys for quick navigation. The progress bar shows how far you've come!",
+        position: "bottom" as const,
+        highlight: "card-navigation"
+      },
+      {
+        title: "Vocabulary Browser 📖",
+        content: "Browse all terms in your deck organized by learning progress. Use the search bar to quickly find specific cards you want to review. Cards are categorized by your mastery level!",
+        position: "top" as const,
+        highlight: "terms-section"
+      },
+      {
+        title: "Learning Analytics 📊",
+        content: "Track your learning progress and history in this sidebar. See your recent activity, upcoming quiz schedules, and detailed analytics about your study patterns!",
+        position: "left" as const,
+        highlight: "learning-history"
+      }
+    ];
     
     const { hint, generateHint } = useHint();
     const { updateFavorite } = useUpdateFavorite();
@@ -37,6 +86,58 @@ export const DeckDetailsPage: React.FC = () => {
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards);
   
     useAutoPlay(autoPlay, isFlipped, currentCardIndex, cards.length, setIsFlipped, setCurrentCardIndex, setAutoPlay);
+
+    // Tour step highlights
+    useEffect(() => {
+      if (isTourActive) {
+        const stepHighlights = [
+          'deck-navigation', 'flashcard-area', 'deck-controls', 'card-navigation', 'terms-section', 'learning-history'
+        ];
+        setHighlightedElement(stepHighlights[currentStep]);
+        
+        // Auto-scroll to highlighted element
+        setTimeout(() => {
+          const element = document.querySelector(`[data-tour-id="${stepHighlights[currentStep]}"]`);
+          if (element) {
+            element.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest' 
+            });
+          }
+        }, 100);
+      } else {
+        setHighlightedElement(null);
+      }
+    }, [currentStep, isTourActive]);
+
+    const handleNext = () => {
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep(currentStep + 1);
+      }
+    };
+
+    const handlePrev = () => {
+      if (currentStep > 0) {
+        setCurrentStep(currentStep - 1);
+      }
+    };
+
+    const handleSkip = () => {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('tour');
+      navigate(newUrl.pathname);
+      setCurrentStep(0);
+      setHighlightedElement(null);
+    };
+
+    const handleFinish = () => {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('tour');
+      navigate(newUrl.pathname);
+      setCurrentStep(0);
+      setHighlightedElement(null);
+    };
   
     const handleMoveLeft = () => {
       moveLeft(currentCardIndex, setCurrentCardIndex);
@@ -100,12 +201,20 @@ export const DeckDetailsPage: React.FC = () => {
             {/* Main content area */}
             <div className="flex-1 xl:max-w-[70%] -ml-8">
               <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-6">{deckName}</h1>
-              <DeckLinks id={id!} cardsLength={cards.length} />
+              
+              {/* Deck Navigation Links */}
+              <div className={`transition-all duration-300 ${
+                highlightedElement === 'deck-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+              }`} data-tour-id="deck-navigation">
+                <DeckLinks id={id!} cardsLength={cards.length} />
+              </div>
               
               {cards.length > 0 ? (
                 <>
                   {/* FlashCard section with consistent centering */}
-                  <div className="flex flex-col items-center w-full mb-8">
+                  <div className={`flex flex-col items-center w-full mb-8 transition-all duration-300 ${
+                    highlightedElement === 'flashcard-area' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-4' : ''
+                  }`} data-tour-id="flashcard-area">
                     <AnimatePresence>
                       <FlashCard 
                         card={cards[currentCardIndex]} 
@@ -119,12 +228,19 @@ export const DeckDetailsPage: React.FC = () => {
                     
                     {/* Controls centered with card */}
                     <div className="w-full max-w-[875px] mx-auto mt-6">
-                      <DeckControls 
-                        onPlay={() => setAutoPlay(!autoPlay)}
-                        onShuffle={() => {/* Implement shuffle */}}
-                        id={id}
-                      />
-                      <div className="mt-6">
+                      <div className={`transition-all duration-300 ${
+                        highlightedElement === 'deck-controls' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+                      }`} data-tour-id="deck-controls">
+                        <DeckControls 
+                          onPlay={() => setAutoPlay(!autoPlay)}
+                          onShuffle={() => {/* Implement shuffle */}}
+                          id={id}
+                        />
+                      </div>
+                      
+                      <div className={`mt-6 transition-all duration-300 ${
+                        highlightedElement === 'card-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+                      }`} data-tour-id="card-navigation">
                         <DeckNavigation 
                           currentCardIndex={currentCardIndex}
                           cardsLength={cards.length}
@@ -141,7 +257,9 @@ export const DeckDetailsPage: React.FC = () => {
                   </div>
                   
                   {/* Terms section */}
-                  <div className="pt-8">
+                  <div className={`pt-8 transition-all duration-300 ${
+                    highlightedElement === 'terms-section' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-4' : ''
+                  }`} data-tour-id="terms-section">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-6 w-full mb-8">
                       <h1 className="text-3xl font-bold flex-shrink-0">Terms in this set ({cards.length})</h1>
                       <form className="relative flex-1 max-w-lg"> 
@@ -189,13 +307,30 @@ export const DeckDetailsPage: React.FC = () => {
             </div>
             
             {/* Sidebar for learning history */}
-            <div className="w-full xl:w-[350px] xl:flex-shrink-0">
+            <div className={`w-full -mr-8 xl:w-[350px] xl:flex-shrink-0 transition-all duration-300 ${
+              highlightedElement === 'learning-history' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+            }`} data-tour-id="learning-history">
               <div className="xl:sticky xl:top-5">
                 <LearningHistory deckId={id!} />
               </div>
             </div>
           </div>
         </div>
+
+        {/* Beautiful Coach Mark Component */}
+        {isTourActive && (
+          <CoachMark
+            step={currentStep}
+            totalSteps={totalSteps}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onSkip={handleSkip}
+            onFinish={handleFinish}
+            title={tourSteps[currentStep].title}
+            content={tourSteps[currentStep].content}
+            position={tourSteps[currentStep].position}
+          />
+        )}
       </div>
     );
 }
