@@ -13,12 +13,12 @@ interface UseQuizLogicReturn {
     loading: boolean;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>, isResumeMode: boolean = false, resumeData?: { currentQuestion: number, answers: Answer[], score: number }, originalQuizItems?: QuizItem[]): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
-    const [question, setQuestion] = useState<number>(1)
-    const [answers, setAnswers] = useState<Answer[]>([])
+    const [question, setQuestion] = useState<number>(1) // Always start from 1 for current quiz
+    const [answers, setAnswers] = useState<Answer[]>(resumeData?.answers || [])
     const [quizdone, setQuizDone] = useState<boolean>(false)
-    const [score, setScore] = useState<number>(0)
+    const [score, setScore] = useState<number>(resumeData?.score || 0)
     const [cards, setCards] = useState<Card[]>([])
     const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
     const [loading, setLoading] = useState(true)
@@ -50,29 +50,35 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
             await axios.put(`/decks/update-card/${deckId}`, { cards: updatedCards });
 
             const allAnswers = lastAnswer ? [...answers, lastAnswer] : answers;
-            const quizDetails = allAnswers.map(answer => ({
-                engCard: quiz[answer.question - 1].userLangCard,
-                userAnswer: answer.userAnswer,
-                correctAnswer: quiz[answer.question - 1].correctAnswer,
-                correct: answer.correct,
-                _id: answer.cardId,
-                cardScore: updatedCards.find(card => card._id === answer.cardId)?.cardScore || 0,
-                timeTaken: answer.timeTaken
-            }))
+            const quizItemsToUse = isResumeMode && originalQuizItems ? originalQuizItems : quiz;
+            
+            const quizDetails = allAnswers.map(answer => {
+                // Find the correct quiz item by cardId instead of question index
+                const quizItem = quizItemsToUse.find(item => item.cardId === answer.cardId);
+                return {
+                    engCard: quizItem?.userLangCard || '',
+                    userAnswer: answer.userAnswer,
+                    correctAnswer: answer.correctAnswer,
+                    correct: answer.correct,
+                    _id: answer.cardId,
+                    cardScore: updatedCards.find(card => card._id === answer.cardId)?.cardScore || 0,
+                    timeTaken: answer.timeTaken
+                }
+            })
             
             const response = await axios.post(`/learning-history/save-quiz-result`, {
                 userId: userId,
                 deckId: deckId,
                 cardsStudied: allAnswers.length, 
                 correctAnswers: allAnswers.filter(a => a.correct).length,
-                quizType: isReviewMode ? 'review': 'learn',
+                quizType: isResumeMode ? 'resume' : (isReviewMode ? 'review': 'learn'),
                 quizDetails: quizDetails
             })
             setNextQuizDate(new Date(response.data.nextQuizDate))
         } catch (error) {
             console.error('Error saving quiz result: ', error)
         }
-    }, [userId, deckId, quiz, answers, isReviewMode])
+    }, [userId, deckId, quiz, answers, isReviewMode, isResumeMode, originalQuizItems])
 
     const saveAnswer = async (
         userAnswerIndex: number, 
@@ -140,7 +146,9 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
         setCards(updatedCards);
 
         const newAnswer: Answer = {
-            question: question,
+            // In resume mode, the question number is adjusted by adding the number of answers already provided.
+            // This ensures the question numbering continues correctly from where the user left off.
+            question: isResumeMode ? (answers.length + question) : question,
             userAnswer: currentQuestion.options[userAnswerIndex],
             correctAnswer: currentQuestion.correctAnswer,
             correct: correct,
