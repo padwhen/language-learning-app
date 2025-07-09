@@ -115,20 +115,20 @@ export const AllDecks = () => {
                                 <DialogTrigger asChild className="text-lg mt-1 border rounded-md px-4">
                                     <Button variant="default">New Deck</Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="w-full max-w-lg sm:max-w-2xl md:max-w-2xl lg:max-w-2xl xl:max-w-2xl p-3 sm:p-6 overflow-y-auto max-h-[95vh]">
                                     <DialogHeader>
-                                        <DialogTitle>Create a New Deck</DialogTitle>
-                                        <DialogDescription>Fill in the details below to create a new deck.</DialogDescription>
+                                        <DialogTitle className="text-lg sm:text-2xl">Create a New Deck</DialogTitle>
+                                        <DialogDescription className="text-xs sm:text-base">Fill in the details below to create a new deck.</DialogDescription>
                                     </DialogHeader>
-                                    <form className="grid gap-4 py-4" onSubmit={handleAddDeck}>
-                                        <div className="flex flex-col gap-2">
+                                    <form className="grid gap-3 sm:gap-4 py-2 sm:py-4" onSubmit={handleAddDeck}>
+                                        <div className="flex flex-col gap-1.5">
                                             <Label htmlFor="deck-name">Name *</Label>
-                                            <Input id="deck-name" value={name} onChange={e => setName(e.target.value)} required placeholder="Name of the new deck" />
+                                            <Input id="deck-name" value={name} onChange={e => setName(e.target.value)} required placeholder="Name of the new deck" className="text-sm sm:text-base" />
                                         </div>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-1.5">
                                             <Label htmlFor="deck-language">Language (optional)</Label>
                                             <Select value={language} onValueChange={setLanguage}>
-                                                <SelectTrigger id="deck-language">
+                                                <SelectTrigger id="deck-language" className="text-sm sm:text-base">
                                                     <SelectValue placeholder="Select language" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -139,7 +139,7 @@ export const AllDecks = () => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-1.5">
                                             <Label htmlFor="deck-tags">Tags</Label>
                                             <Input
                                                 id="deck-tags"
@@ -148,6 +148,7 @@ export const AllDecks = () => {
                                                 onKeyDown={handleTagInputKeyDown}
                                                 placeholder="Type a tag and press Enter"
                                                 autoComplete="off"
+                                                className="text-sm sm:text-base"
                                             />
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 {tags.map((tag, _idx) => (
@@ -161,14 +162,14 @@ export const AllDecks = () => {
                                             </div>
                                             <span className="text-xs text-muted-foreground">Press Enter, comma, or space to add a tag.</span>
                                         </div>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-1.5">
                                             <Label htmlFor="deck-description">Description (optional)</Label>
-                                            <Textarea id="deck-description" value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Describe this deck..." />
+                                            <Textarea id="deck-description" value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Describe this deck..." className="text-sm sm:text-base" />
                                         </div>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-1.5">
                                             <Label htmlFor="deck-visibility">Visibility</Label>
                                             <Select value={visibility} onValueChange={v => setVisibility(v as 'public' | 'private')}>
-                                                <SelectTrigger id="deck-visibility">
+                                                <SelectTrigger id="deck-visibility" className="text-sm sm:text-base">
                                                     <SelectValue placeholder="Select visibility" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -177,17 +178,17 @@ export const AllDecks = () => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <DialogFooter>
+                                        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 mt-2">
                                             <DialogClose asChild>
-                                                <Button type="button" variant="outline">Cancel</Button>
+                                                <Button type="button" variant="outline" className="w-full sm:w-auto">Cancel</Button>
                                             </DialogClose>
-                                            <Button type="submit">Create Deck</Button>
+                                            <Button type="submit" className="w-full sm:w-auto">Create Deck</Button>
                                         </DialogFooter>
                                     </form>
                                     {/* Live Preview */}
-                                    <div className="mt-6">
-                                        <div className="text-sm text-muted-foreground mb-2">Live Preview</div>
-                                        <div className="max-w-md mx-auto">
+                                    <div className="mt-4 sm:mt-6 border-t pt-3 sm:pt-6">
+                                        <div className="text-xs sm:text-sm text-muted-foreground mb-2">Live Preview</div>
+                                        <div className="max-w-full overflow-x-auto">
                                             <DockCardLarge deck={previewDeck} />
                                         </div>
                                     </div>
