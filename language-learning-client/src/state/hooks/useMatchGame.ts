@@ -102,6 +102,7 @@ export const useMatchGame = (deckId: string) => {
                 setTimeout(() => setSelectedCards([]), 500)
             } else {
                 setIncorrectPair([first, second])
+                setShowPenalty(true) // Show the penalty when incorrect match occurs
                 setTimeElapsed(prevTime => prevTime + TIME_PENALTY)
                 setTimeout(() => {
                     setIncorrectPair([])    
