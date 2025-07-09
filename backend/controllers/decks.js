@@ -267,4 +267,22 @@ deckRouter.put('/decks/:id/reset-progress', async (request, response) => {
     }
 })
 
+deckRouter.delete('/decks/:id', async (request, response) => {
+    try {
+        const { token } = request.cookies;
+        if (!token) {
+            return response.status(401).json({ error: 'Unauthorized' });
+        }
+        const { id } = request.params;
+        const userData = jwt.verify(token, JWT_SECRET);
+        const deletedDeck = await Deck.findOneAndDelete({ _id: id, owner: userData.id });
+        if (!deletedDeck) {
+            return response.status(404).json({ error: 'Deck not found' });
+        }
+        response.json({ message: 'Deck deleted successfully' });
+    } catch (error) {
+        response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
 module.exports = deckRouter
