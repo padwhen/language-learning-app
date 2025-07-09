@@ -84,7 +84,7 @@ export const AllDecks = () => {
             setDescription('');
             setVisibility('public');
         } catch (error) {
-            toast({ title: 'Error', description: 'Failed to create deck', variant: 'destructive' });
+            toast({ title: 'Error', description: "We couldn't create your deck. If this keeps happening, let us know", variant: 'destructive' });
         }
     };
 
