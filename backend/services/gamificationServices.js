@@ -1,4 +1,4 @@
-const achievementMap = require('../config/achievements');
+const { achievementMap } = require('../config/achievements');
 const badgeMilestones = require('../config/badges');
 const XpHistory = require('../models/XpHistory');
 
