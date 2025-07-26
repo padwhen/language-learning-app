@@ -8,7 +8,230 @@ const PROMPT_2 = import.meta.env.VITE_PROMPT_2
 const PROMPT_3 = import.meta.env.VITE_PROMPT_3
 const PROMPT_4 = import.meta.env.VITE_PROMPT_4
 
+const cleanJSON = (jsonStr: string): string => {
+    // Remove trailing commas before closing brackets/braces
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+    
+    // Fix common issues with quotes in property names
+    jsonStr = jsonStr.replace(/(['"])?([a-zA-Z_][a-zA-Z0-9_]*)\1?\s*:/g, '"$2":');
+    
+    // Remove any trailing commas at the end
+    jsonStr = jsonStr.replace(/,\s*$/, '');
+    
+    // Fix missing commas between objects in arrays
+    jsonStr = jsonStr.replace(/}\s*{/g, '}, {');
+    
+    // Remove any control characters that might break JSON parsing
+    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+    
+    return jsonStr;
+};
 
+const extractCompleteWords = (text: string): any[] => {
+    const words: any[] = [];
+    
+    const patterns = [
+        // Standard word object pattern
+        /\{[^{}]*"fi"\s*:\s*"[^"]*"[^{}]*"en"\s*:\s*"[^"]*"[^{}]*"type"\s*:\s*"[^"]*"[^{}]*\}/g,
+        // Alternative pattern with different field order
+        /\{[^{}]*"en"\s*:\s*"[^"]*"[^{}]*"fi"\s*:\s*"[^"]*"[^{}]*"type"\s*:\s*"[^"]*"[^{}]*\}/g,
+        // Pattern for objects with type first
+        /\{[^{}]*"type"\s*:\s*"[^"]*"[^{}]*"fi"\s*:\s*"[^"]*"[^{}]*"en"\s*:\s*"[^"]*"[^{}]*\}/g
+    ];
+    
+    for (const pattern of patterns) {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+            try {
+                const cleanedMatch = cleanJSON(match[0]);
+                const wordObj = JSON.parse(cleanedMatch);
+                
+                // Validate it has required fields and isn't a duplicate
+                if (wordObj.fi && wordObj.en && wordObj.type && 
+                    !words.some(w => w.fi === wordObj.fi && w.en === wordObj.en)) {
+                    words.push(wordObj);
+                }
+            } catch (e) {
+                // Skip malformed objects
+                continue;
+            }
+        }
+    }
+    
+    return words;
+};
+
+const extractPartialWords = (text: string): any[] => {
+    const words: any[] = [];
+    
+    // Look for partial word objects with at least fi and en fields
+    const partialPatterns = [
+        // Partial with fi and en, maybe missing other fields
+        /\{[^{}]*"fi"\s*:\s*"([^"]*)"[^{}]*"en"\s*:\s*"([^"]*)"[^{}]*(?:"type"\s*:\s*"([^"]*)")?/g,
+        // Partial with en and fi
+        /\{[^{}]*"en"\s*:\s*"([^"]*)"[^{}]*"fi"\s*:\s*"([^"]*)"[^{}]*(?:"type"\s*:\s*"([^"]*)")?/g
+    ];
+    
+    for (const pattern of partialPatterns) {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+            const [, first, second, type] = match;
+            
+            const isFirstFi = pattern.source.includes('"fi".*"en"');
+            const fi = isFirstFi ? first : second;
+            const en = isFirstFi ? second : first;
+            
+            if (fi && en && fi.length > 0 && en.length > 0) {
+                const partialWord = {
+                    fi,
+                    en,
+                    type: type || 'unknown',
+                    original_word: fi,
+                    pronunciation: '',
+                    comment: 'Loading...',
+                    isPartial: true
+                };
+                
+                // Avoid duplicates
+                if (!words.some(w => w.fi === fi && w.en === en)) {
+                    words.push(partialWord);
+                }
+            }
+        }
+    }
+    
+    return words;
+};
+
+const mergeWords = (partialWords: any[], completeWords: any[]): any[] => {
+    const result = [...completeWords];
+    
+    // Add partial words that don't have complete versions
+    partialWords.forEach(partial => {
+        const hasComplete = completeWords.some(complete => 
+            complete.fi === partial.fi && complete.en === partial.en
+        );
+        
+        if (!hasComplete) {
+            result.push(partial);
+        }
+    });
+    
+    return result;
+};
+
+// Enhanced sentence extraction
+const extractSentence = (text: string): string | null => {
+    // Try multiple patterns for sentence extraction
+    const patterns = [
+        /"sentence"\s*:\s*"([^"]+)"/,
+        /"translation"\s*:\s*"([^"]+)"/,
+        /"translated"\s*:\s*"([^"]+)"/,
+        /"result"\s*:\s*"([^"]+)"/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return null;
+};
+
+// Streaming chat completion with progressive results
+export const chatCompletionStream = async function* (
+    data: { language: string, text: string},
+    onPartialResult?: (sentence: string | null, words: any[]) => void
+) {
+    const {language, text} = data;
+    
+    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
+    const aiModel = 'gpt-4o-mini';
+    
+    let fullResponse = '';
+    let extractedSentence: string | null = null;
+    let extractedWords: any[] = [];
+    let chunkCount = 0;
+
+    const stream = await openai.chat.completions.create({
+        model: aiModel,
+        messages: [{
+            role: 'system',
+            content: 'you are a helpful assistant'
+        }, {
+            role: 'user',
+            content: `${text} in ${language} <--- ${PROMPT_1}`
+        }],
+        stream: true
+    });
+
+    for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        fullResponse += content;
+        chunkCount++;
+        
+        const completeWords = extractCompleteWords(fullResponse);
+        const partialWords = extractPartialWords(fullResponse);
+        const newWords = mergeWords(partialWords, completeWords);
+
+        if (newWords.length > extractedWords.length || 
+            (extractedSentence && !extractedWords.length)) {
+            
+            extractedWords = newWords;
+            
+            if (onPartialResult) {
+                onPartialResult(extractedSentence, extractedWords);
+            }
+            
+            yield {
+                sentence: extractedSentence,
+                words: extractedWords,
+                isComplete: false,
+                originalText: text, // Include original text for highlighting
+                currentWordIndex: extractedWords.length - 1 // Track current word being analyzed
+            };
+        }
+    }
+    try {
+        const jsonRegex = /{(.|\n)*}/;
+        const match = fullResponse.match(jsonRegex);
+        
+        if (match) {
+            const cleanedJson = cleanJSON(match[0]);         
+            const finalResult = JSON.parse(cleanedJson);
+            
+            yield {
+                sentence: finalResult.sentence || extractedSentence,
+                words: finalResult.words || extractedWords,
+                isComplete: true,
+                originalText: text,
+                currentWordIndex: -1 // No current word when complete
+            };
+        } else {
+            yield {
+                sentence: extractedSentence,
+                words: extractedWords,
+                isComplete: true,
+                originalText: text,
+                currentWordIndex: -1
+            };
+        }
+    } catch (error) {
+        console.error('❌ Final JSON parsing failed:', error);
+
+        yield {
+            sentence: extractedSentence,
+            words: extractedWords,
+            isComplete: true,
+            originalText: text,
+            currentWordIndex: -1
+        };
+    }
+};
+
+// Original non-streaming function for backward compatibility
 export const chatCompletion = async (data: { language: string, text: string}) => {
     const {language, text} = data
     const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
@@ -18,14 +241,22 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${text} in ${language} <--- ${PROMPT_1}`}]
     })
     let aiResponse = completion.choices[0].message.content
-    const jsonRegex = /{(.|\n)*}/; 
-    const match = aiResponse?.match(jsonRegex);
-    if (match) {
-        aiResponse = match[0].trim(); // Use the matched JSON string and trim whitespace
-    } else {
-        throw new Error('No valid JSON object found in response');
+    console.log(aiResponse)
+    
+    try {
+        const jsonRegex = /{(.|\n)*}/; 
+        const match = aiResponse?.match(jsonRegex);
+        if (match) {
+            const cleanedJson = cleanJSON(match[0]);
+            aiResponse = cleanedJson;
+        } else {
+            throw new Error('No valid JSON object found in response');
+        }
+        return aiResponse;
+    } catch (error) {
+        console.error('JSON parsing error:', error);
+        throw new Error('Failed to parse AI response as JSON');
     }
-    return aiResponse;
 }
 
 
