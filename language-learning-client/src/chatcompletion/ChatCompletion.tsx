@@ -172,14 +172,30 @@ export const chatCompletionStream = async function* (
         fullResponse += content;
         chunkCount++;
         
+        // Try to extract sentence if we haven't found it yet
+        const previousSentence = extractedSentence;
+        if (!extractedSentence) {
+            extractedSentence = extractSentence(fullResponse);
+        }
+        
+        // Extract words
         const completeWords = extractCompleteWords(fullResponse);
         const partialWords = extractPartialWords(fullResponse);
         const newWords = mergeWords(partialWords, completeWords);
 
-        if (newWords.length > extractedWords.length || 
-            (extractedSentence && !extractedWords.length)) {
-            
+        // Yield if we have new sentence OR new words
+        const hasNewSentence = extractedSentence && extractedSentence !== previousSentence;
+        const hasNewWords = newWords.length > extractedWords.length;
+        
+        if (hasNewSentence || hasNewWords) {
             extractedWords = newWords;
+            
+            console.log('🔄 Yielding update:', {
+                hasNewSentence,
+                hasNewWords,
+                sentence: extractedSentence,
+                wordsCount: extractedWords.length
+            });
             
             if (onPartialResult) {
                 onPartialResult(extractedSentence, extractedWords);
@@ -189,8 +205,8 @@ export const chatCompletionStream = async function* (
                 sentence: extractedSentence,
                 words: extractedWords,
                 isComplete: false,
-                originalText: text, // Include original text for highlighting
-                currentWordIndex: extractedWords.length - 1 // Track current word being analyzed
+                originalText: text,
+                currentWordIndex: extractedWords.length - 1
             };
         }
     }
