@@ -1,5 +1,6 @@
 import OpenAI from "openai"
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
+import { franc } from 'franc'
 
 const googleKey = import.meta.env.VITE_GOOGLE_KEY
 const API_KEY = import.meta.env.VITE_GPT_KEY
@@ -7,6 +8,45 @@ const PROMPT_1 = import.meta.env.VITE_PROMPT_1
 const PROMPT_2 = import.meta.env.VITE_PROMPT_2
 const PROMPT_3 = import.meta.env.VITE_PROMPT_3
 const PROMPT_4 = import.meta.env.VITE_PROMPT_4
+
+// Simple validation function for supported languages
+const validateUserInput = (text: string, selectedLanguage: string): { isValid: boolean; error?: string } => {
+    // Check if input is too short
+    if (!text || text.trim().length < 3) {
+        return {
+            isValid: false,
+            error: 'Your input is too short'
+        };
+    }
+
+    // Language mapping for our 5 supported languages
+    const languageMap: { [key: string]: string } = {
+        'Finnish': 'fin',
+        'Korean': 'kor', 
+        'Greek': 'ell',
+        'Vietnamese': 'vie',
+        'Chinese': 'cmn'
+    };
+
+    const expectedCode = languageMap[selectedLanguage];
+    if (!expectedCode) {
+        // If language not in our list, skip validation
+        return { isValid: true };
+    }
+
+    // Detect language with franc
+    const detectedCode = franc(text.trim(), { minLength: 3 });
+    
+    // If franc can't detect or detects wrong language
+    if (detectedCode === 'und' || detectedCode !== expectedCode) {
+        return {
+            isValid: false,
+            error: `Please write in ${selectedLanguage} as you've selected. We'd love to help you learn!`
+        };
+    }
+
+    return { isValid: true };
+};
 
 const cleanJSON = (jsonStr: string): string => {
     // Remove trailing commas before closing brackets/braces
@@ -146,6 +186,12 @@ export const chatCompletionStream = async function* (
     onPartialResult?: (sentence: string | null, words: any[]) => void
 ) {
     const {language, text} = data;
+
+    // Validate user input
+    const validation = validateUserInput(text, language);
+    if (!validation.isValid) {
+        throw new Error(validation.error);
+    }
     
     const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
     const aiModel = 'gpt-4o-mini';
@@ -250,6 +296,13 @@ export const chatCompletionStream = async function* (
 // Original non-streaming function for backward compatibility
 export const chatCompletion = async (data: { language: string, text: string}) => {
     const {language, text} = data
+
+    // Validate user input
+    const validation = validateUserInput(text, language);
+    if (!validation.isValid) {
+        throw new Error(validation.error);
+    }
+    
     const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
     const aiModel = 'gpt-4o-mini'
     const completion = await openai.chat.completions.create({

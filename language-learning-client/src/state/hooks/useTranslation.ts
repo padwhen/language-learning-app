@@ -9,12 +9,17 @@ const useTranslation = () => {
     const [ready, setReady] = useState(true)
     const [isStreaming, setIsStreaming] = useState(false)
     const [currentWordIndex, setCurrentWordIndex] = useState(-1)
+    const [validationError, setValidationError] = useState<string | null>(null)
     const [response, setResponse] = useState(() => {
         const storedResponse = localStorage.getItem('response')
         return storedResponse ? JSON.parse(storedResponse) : null
     })
 
     const handleTranslationStream = async () => {
+        // Clear localStorage when starting new translation
+        localStorage.removeItem('response');
+        setValidationError(null); // Clear any previous errors
+        
         setReady(false)
         setIsStreaming(true)
         
@@ -95,6 +100,12 @@ const useTranslation = () => {
                 setReady(true);
                 setIsStreaming(false);
                 
+                // Check if it's a validation error and show inline
+                if (error instanceof Error) {
+                    setValidationError(error.message);
+                    return; // Don't try fallback for validation errors
+                }
+                
                 // Fallback to non-streaming
                 try {
                     const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
@@ -116,7 +127,7 @@ const useTranslation = () => {
                     }
                 } catch (fallbackError) {
                     console.error('Fallback translation error:', fallbackError);
-                    // You might want to show an error message to the user here
+                    // Error handling will be done at the UI level
                 }
             }
         }
@@ -124,6 +135,10 @@ const useTranslation = () => {
 
     // Keep the original method for backward compatibility
     const handleTranslation = async () => {
+        // Clear localStorage when starting new translation
+        localStorage.removeItem('response');
+        setValidationError(null); // Clear any previous errors
+        
         setReady(false)
         if (inputText.trim().toLowerCase() === 'test') {
             const parsedResponse = jsonData;
@@ -169,6 +184,9 @@ const useTranslation = () => {
                 setReady(true)
             } catch (error) {
                 console.error('Translation error:', error);
+                if (error instanceof Error) {
+                    setValidationError(error.message);
+                }
                 setReady(true);
             }
         }
@@ -189,6 +207,7 @@ const useTranslation = () => {
         ready, 
         isStreaming,
         currentWordIndex,
+        validationError,
         response, 
         handleTranslation,
         handleTranslationStream
