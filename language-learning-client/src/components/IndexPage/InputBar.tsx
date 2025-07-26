@@ -2,6 +2,12 @@ import { textToSpeech } from "@/chatcompletion/ChatCompletion";
 import { useState, useEffect } from "react";
 import { Volume2, Send, Loader2, Sparkles } from "lucide-react";
 
+interface WordTiming {
+    word: string;
+    start: number;
+    end: number;
+}
+
 interface InputBarProps {
     inputText: string;
     setInputText: (text: string) => void;
@@ -74,6 +80,51 @@ const highlightCurrentWord = (text: string, words: any[], currentIndex: number) 
     return <>{highlightedElements}</>;
 };
 
+// Helper function to highlight text during speech
+const highlightTextForSpeech = (text: string, currentWordIndex: number) => {
+    if (currentWordIndex < 0) {
+        return <span>{text}</span>;
+    }
+
+    const words = text.split(/(\s+)/); // Keep spaces
+    const highlightedElements: JSX.Element[] = [];
+    
+    let wordCount = 0;
+    words.forEach((segment, index) => {
+        if (segment.trim()) {
+            // This is a word
+            const isCurrentWord = wordCount === currentWordIndex;
+            
+            if (isCurrentWord) {
+                highlightedElements.push(
+                    <span 
+                        key={index}
+                        className="bg-blue-300 px-2 py-1 rounded-md animate-pulse border-2 border-blue-500 text-blue-900 font-semibold shadow-sm"
+                    >
+                        {segment}
+                    </span>
+                );
+            } else if (wordCount < currentWordIndex) {
+                // Already spoken
+                highlightedElements.push(
+                    <span key={index} className="bg-gray-200 px-1 py-0.5 rounded text-gray-600">
+                        {segment}
+                    </span>
+                );
+            } else {
+                // Not yet spoken
+                highlightedElements.push(<span key={index} className="text-gray-800">{segment}</span>);
+            }
+            wordCount++;
+        } else {
+            // This is whitespace
+            highlightedElements.push(<span key={index}>{segment}</span>);
+        }
+    });
+
+    return <>{highlightedElements}</>;
+};
+
 export const InputBar: React.FC<InputBarProps> = ({ 
     inputText, 
     setInputText, 
@@ -88,6 +139,8 @@ export const InputBar: React.FC<InputBarProps> = ({
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
     const [loadingTTS, setLoadingTTS] = useState(false)
     const [isFocused, setIsFocused] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSpeechWordIndex, setCurrentSpeechWordIndex] = useState(-1);
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -107,21 +160,124 @@ export const InputBar: React.FC<InputBarProps> = ({
         if (!inputText) return
         setLoadingTTS(true)
         try {
+            // Generate TTS audio
             const url = await textToSpeech(inputText)
             setAudioUrl(url)
+            
+            // Get word timestamps using Whisper (more accurate approach)
+            const wordTimings = await getWordTimingsFromAudio(url, inputText);
+            
+            if (wordTimings && wordTimings.length > 0) {
+                // Play audio with accurate word highlighting
+                const audio = new Audio(url);
+                
+                audio.onloadeddata = () => {
+                    setIsPlaying(true);
+                    setCurrentSpeechWordIndex(0);
+                    
+                    console.log('🎵 Starting speech with Whisper timings:', wordTimings);
+                    
+                    // Use actual word timings from Whisper
+                    wordTimings.forEach((timing: WordTiming, index: number) => {
+                        setTimeout(() => {
+                            setCurrentSpeechWordIndex(index);
+                            console.log(`🔊 Highlighting word ${index + 1}/${wordTimings.length}: "${timing.word}" at ${timing.start}s`);
+                        }, timing.start * 1000);
+                    });
+                    
+                    // Reset when audio ends
+                    setTimeout(() => {
+                        setIsPlaying(false);
+                        setCurrentSpeechWordIndex(-1);
+                        console.log('🎵 Speech playback complete');
+                    }, audio.duration * 1000);
+                };
+                
+                audio.onended = () => {
+                    setIsPlaying(false);
+                    setCurrentSpeechWordIndex(-1);
+                };
+                
+                audio.play();
+            } else {
+                // Fallback to estimated timing if Whisper fails
+                console.log('⚠️ Using fallback timing estimation');
+                await playWithEstimatedTiming(url);
+            }
+            
         } catch (error) {
             console.error('Error generating speech:', error)
+            setIsPlaying(false);
+            setCurrentSpeechWordIndex(-1);
         } finally {
             setLoadingTTS(false)
         }
     }
 
-    useEffect(() => {
-        if (audioUrl) {
-            const audio = new Audio(audioUrl)
-            audio.play()
+    // Fallback function for estimated timing
+    const playWithEstimatedTiming = async (url: string) => {
+        const audio = new Audio(url);
+        
+        audio.onloadeddata = () => {
+            setIsPlaying(true);
+            setCurrentSpeechWordIndex(0);
+            
+            const words = inputText.trim().split(/\s+/);
+            const totalDuration = audio.duration;
+            const timePerWord = totalDuration / words.length;
+            
+            words.forEach((_, index) => {
+                setTimeout(() => {
+                    setCurrentSpeechWordIndex(index);
+                }, index * timePerWord * 1000);
+            });
+            
+            setTimeout(() => {
+                setIsPlaying(false);
+                setCurrentSpeechWordIndex(-1);
+            }, totalDuration * 1000);
+        };
+        
+        audio.play();
+    }
+
+    // Function to get word timings using Whisper API
+    const getWordTimingsFromAudio = async (audioUrl: string, originalText: string): Promise<WordTiming[] | null> => {
+        try {
+            // Convert audio URL to File object for Whisper
+            const response = await fetch(audioUrl);
+            const audioBlob = await response.blob();
+            const audioFile = new File([audioBlob], 'speech.mp3', { type: 'audio/mp3' });
+            
+            // Call Whisper API for word-level timestamps
+            const formData = new FormData();
+            formData.append('file', audioFile);
+            formData.append('model', 'whisper-1');
+            formData.append('response_format', 'verbose_json');
+            formData.append('timestamp_granularities[]', 'word');
+            
+            const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${import.meta.env.VITE_GPT_KEY}`,
+                },
+                body: formData
+            });
+            
+            if (!whisperResponse.ok) {
+                throw new Error('Whisper API failed');
+            }
+            
+            const result = await whisperResponse.json();
+            console.log('🎯 Whisper word timings:', result.words);
+            
+            return result.words; // Returns array of {word, start, end}
+            
+        } catch (error) {
+            console.error('Error getting word timings from Whisper:', error);
+            return null; // Fallback to estimated timing
         }
-    }, [audioUrl])
+    }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && ready) {
@@ -205,6 +361,22 @@ export const InputBar: React.FC<InputBarProps> = ({
                 </div>
             )}
 
+            {/* Speech highlighting display during playback */}
+            {isPlaying && inputText && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="animate-pulse rounded-full h-3 w-3 bg-green-600"></div>
+                        <span className="text-sm font-medium text-green-700">Speaking:</span>
+                    </div>
+                    <div className="text-base text-gray-800 leading-relaxed">
+                        {highlightTextForSpeech(inputText, currentSpeechWordIndex)}
+                    </div>
+                    <div className="mt-2 text-xs text-green-600">
+                        🔊 Listen and follow along
+                    </div>
+                </div>
+            )}
+
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row justify-between w-full items-center mt-6">
                 {ready ? (
@@ -225,15 +397,17 @@ export const InputBar: React.FC<InputBarProps> = ({
                             onClick={handleSpeak} 
                             className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/50"
                             type="button" 
-                            disabled={loadingTTS || !inputText}
+                            disabled={loadingTTS || !inputText || isPlaying}
                         >
                             <span className="relative z-10 flex items-center gap-2">
                                 {loadingTTS ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : isPlaying ? (
+                                    <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
                                 ) : (
                                     <Volume2 className="w-4 h-4" />
                                 )}
-                                {loadingTTS ? "Speaking..." : "Speak"}
+                                {loadingTTS ? "Generating..." : isPlaying ? "Playing..." : "Speak"}
                             </span>
                             {!loadingTTS && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
