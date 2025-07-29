@@ -174,14 +174,11 @@ export const InputBar: React.FC<InputBarProps> = ({
                 audio.onloadeddata = () => {
                     setIsPlaying(true);
                     setCurrentSpeechWordIndex(0);
-                    
-                    console.log('🎵 Starting speech with Whisper timings:', wordTimings);
-                    
+                                        
                     // Use actual word timings from Whisper
                     wordTimings.forEach((timing: WordTiming, index: number) => {
                         setTimeout(() => {
                             setCurrentSpeechWordIndex(index);
-                            console.log(`🔊 Highlighting word ${index + 1}/${wordTimings.length}: "${timing.word}" at ${timing.start}s`);
                         }, timing.start * 1000);
                     });
                     
@@ -189,7 +186,6 @@ export const InputBar: React.FC<InputBarProps> = ({
                     setTimeout(() => {
                         setIsPlaying(false);
                         setCurrentSpeechWordIndex(-1);
-                        console.log('🎵 Speech playback complete');
                     }, audio.duration * 1000);
                 };
                 
@@ -201,7 +197,6 @@ export const InputBar: React.FC<InputBarProps> = ({
                 audio.play();
             } else {
                 // Fallback to estimated timing if Whisper fails
-                console.log('⚠️ Using fallback timing estimation');
                 await playWithEstimatedTiming(url);
             }
             
@@ -269,7 +264,6 @@ export const InputBar: React.FC<InputBarProps> = ({
             }
             
             const result = await whisperResponse.json();
-            console.log('🎯 Whisper word timings:', result.words);
             
             return result.words; // Returns array of {word, start, end}
             

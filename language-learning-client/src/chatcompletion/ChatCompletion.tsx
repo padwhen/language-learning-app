@@ -236,13 +236,6 @@ export const chatCompletionStream = async function* (
         if (hasNewSentence || hasNewWords) {
             extractedWords = newWords;
             
-            console.log('🔄 Yielding update:', {
-                hasNewSentence,
-                hasNewWords,
-                sentence: extractedSentence,
-                wordsCount: extractedWords.length
-            });
-            
             if (onPartialResult) {
                 onPartialResult(extractedSentence, extractedWords);
             }
@@ -310,7 +303,6 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${text} in ${language} <--- ${PROMPT_1}`}]
     })
     let aiResponse = completion.choices[0].message.content
-    console.log(aiResponse)
     
     try {
         const jsonRegex = /{(.|\n)*}/; 
