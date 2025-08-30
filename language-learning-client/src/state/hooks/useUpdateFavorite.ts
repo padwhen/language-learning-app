@@ -11,7 +11,7 @@ export const useUpdateFavorite = () => {
         setError(null)
 
         try {
-            const response = await axios.put<Deck>(
+            await axios.put<Deck>(
                 `/decks/${deckId}/cards/${cardId}/favorite`, 
                 { favorite },
                 { withCredentials: true }
