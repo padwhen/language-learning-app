@@ -38,7 +38,10 @@ export const useGamification = (
                 // ...multiplier toast logic...
             }
 
-            await refreshUserStats()
+            // Only refresh if something actually changed
+            if (data.adjustedXpGained > 0 || data.streakIncreased || data.streakStarted || data.streakReward) {
+                await refreshUserStats();
+            }
         } catch (error) {
             console.error("Error awarding XP: ", error);
             showErrorToast("Failed to award XP. Please try again.");

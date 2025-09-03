@@ -9,7 +9,6 @@ import { DeckContextProvider } from './contexts/DeckContext'
 import { Toaster } from "@/components/ui/toaster"
 import { Header } from './components/Header'
 import { EditPage } from './components/edit-deck/edit-deck'
-import { SettingPage } from './components/SettingsPage'
 import { QuizReport } from './components/LearningReport'
 import { FlashcardPage } from './components/DeckDetailsComponents/FlashCardPage'
 import { MatchGame } from './components/DeckDetailsComponents/MatchGame'
@@ -18,6 +17,7 @@ import { VocabularyPage } from './components/vocabulary-page'
 import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
+import { SettingsPage } from './components/SettingsPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -36,24 +36,69 @@ function App() {
 
   return (
     <UserContextProvider>
-      <DeckContextProvider>
-        {location.pathname !== '/' && <Header onStartTour={handleStartTour} />}
-        <Routes>
-          <Route index element={<IndexPage />} />
-          <Route path="/view-all-decks" element={<AllDecks />} />
-          <Route path="/view-decks/:id" element={<DeckDetailsPage />} />
-          <Route path="/learn-decks/:id" element={<LearningPage />} />
-          <Route path="/edit-deck/:id" element={<EditPage />} />
-          <Route path="/settings" element={<SettingPage />} />
-          <Route path='/view-decks/:id/learning-report/:reportId' element={<QuizReport />} />
-          <Route path='/flashcards/:id' element={<FlashcardPage />} />
-          <Route path='/matchgame/:id' element={<MatchGame />} />
-          <Route path='/testpage/:id' element={<TestPage />} />
-          <Route path='/vocabulary' element={<VocabularyPage />} />
-          <Route path='/review-page/:id' element={<ReviewPage />} />
-        </Routes>              
-        <Toaster />
-      </DeckContextProvider>
+      {location.pathname !== '/' && <Header onStartTour={handleStartTour} />}
+      <Routes>
+        {/* Routes that need deck context */}
+        <Route index element={
+          <DeckContextProvider>
+            <IndexPage />
+          </DeckContextProvider>
+        } />
+        <Route path="/view-all-decks" element={
+          <DeckContextProvider>
+            <AllDecks />
+          </DeckContextProvider>
+        } />
+        <Route path="/view-decks/:id" element={
+          <DeckContextProvider>
+            <DeckDetailsPage />
+          </DeckContextProvider>
+        } />
+        <Route path="/learn-decks/:id" element={
+          <DeckContextProvider>
+            <LearningPage />
+          </DeckContextProvider>
+        } />
+        <Route path="/edit-deck/:id" element={
+          <DeckContextProvider>
+            <EditPage />
+          </DeckContextProvider>
+        } />
+        <Route path='/view-decks/:id/learning-report/:reportId' element={
+          <DeckContextProvider>
+            <QuizReport />
+          </DeckContextProvider>
+        } />
+        <Route path='/flashcards/:id' element={
+          <DeckContextProvider>
+            <FlashcardPage />
+          </DeckContextProvider>
+        } />
+        <Route path='/matchgame/:id' element={
+          <DeckContextProvider>
+            <MatchGame />
+          </DeckContextProvider>
+        } />
+        <Route path='/testpage/:id' element={
+          <DeckContextProvider>
+            <TestPage />
+          </DeckContextProvider>
+        } />
+        <Route path='/vocabulary' element={
+          <DeckContextProvider>
+            <VocabularyPage />
+          </DeckContextProvider>
+        } />
+        <Route path='/review-page/:id' element={
+          <DeckContextProvider>
+            <ReviewPage />
+          </DeckContextProvider>
+        } />
+        
+        {/* Routes that DON'T need deck context */}
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>              
+      <Toaster />
     </UserContextProvider>
   )
 }

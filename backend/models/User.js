@@ -8,6 +8,13 @@ const UserSchema = new Schema({
     deckIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Deck' }],
     avatarUrl: { type: String, default: 'https://github.com/shadcn.png'},
 
+    flashcardWordForm: {
+        type: String,
+        enum: ['original', 'base'],
+        default: 'original',
+        description: 'Whether to use original base form or changed form in flashcards (e.g.,herkulliNEN vs herkulliSTA)'
+    },
+
     // Gamification Features
     level: { type: Number, default: 1 },
     xp: { type: Number, default: 0 }, 
