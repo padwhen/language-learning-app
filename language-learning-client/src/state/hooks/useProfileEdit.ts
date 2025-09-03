@@ -33,6 +33,27 @@ export const useProfileEdit = () => {
         setFormData((prev) => ({ ...prev, [field]: value }))
     }
 
+    const handleFlashcardFormChange = async (form: 'original' | 'base') => {
+        try {
+            const res = await axios.put('/update', { flashcardWordForm: form })
+            if (res.data) {
+                setUser((prev: any) => ({ ...prev, flashcardWordForm: form }))
+                refreshUserStats && refreshUserStats()
+                toast({
+                    title: 'Preference updated!',
+                    description: `Flashcards will now use ${form} word form.`
+                })
+            }
+        } catch (err: any) {
+            handleError(err)
+            toast({
+                title: 'Update failed',
+                description: err?.response?.data?.error || 'Could not update preference', 
+                variant: 'destructive'
+            })
+        }
+    }
+
     const isEditing = editMode.name || editMode.username || editMode.password || selectedAvatar !== (user?.avatarUrl ?? defaultAvatarUrl)
 
     const saveChanges = async () => {
@@ -78,6 +99,7 @@ export const useProfileEdit = () => {
         toggleEdit,
         handleInputChange,
         isEditing,
-        saveChanges
+        saveChanges,
+        handleFlashcardFormChange
       };
 }

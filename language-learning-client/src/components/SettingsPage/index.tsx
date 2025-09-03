@@ -12,6 +12,7 @@ import { StreakCard } from "./StreakCard"
 import { AchievementsCard } from "./AchivementsCard"
 import { PersonalInfoCard } from "./PersonalInfoCard"
 import { TourOverlay } from "@/composables/TourOverlay"
+import { LearningPreferences } from "./LearningPreferences"
 
 export const SettingsPage = () => {
   const { user } = useContext(UserContext)
@@ -88,6 +89,10 @@ export const SettingsPage = () => {
           onToggleEdit={profileEditProps.toggleEdit}
           onTogglePasswordVisibility={() => profileEditProps.setShowPassword(!profileEditProps.showPassword)}
           onSaveChanges={profileEditProps.saveChanges}
+        />
+        <LearningPreferences
+          flashcardWordForm={user?.flashcardWordForm || 'original'} 
+          handleFlashcardFormChange={profileEditProps.handleFlashcardFormChange}
         />
       </div>
 
