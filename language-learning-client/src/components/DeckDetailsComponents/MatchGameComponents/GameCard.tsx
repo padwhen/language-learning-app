@@ -21,14 +21,14 @@ export const GameCard: React.FC<GameCardProps> = ({
         <motion.div
             data-testid={`game-card-${card._id}-${card.type}`}
             animate={isIncorrect ? shakeAnimation : {}}
-            className={`cursor-pointer w-full aspect-[4/3] rounded-lg shadow-md flex items-center justify-center p-4 text-center
-              ${isSelected ? 'bg-blue-100' : 'bg-white'}  
-              ${isIncorrect ? 'bg-red-100' : ''}
-              ${isMatched ? 'opacity-0' : 'opacity-100'}
+            className={`cursor-pointer w-full aspect-[4/3] rounded-md sm:rounded-lg shadow-sm sm:shadow-md flex items-center justify-center p-1 xs:p-2 sm:p-3 lg:p-4 xl:p-6 text-center transition-all duration-200 hover:shadow-lg
+              ${isSelected ? 'bg-blue-100 border-2 border-blue-300' : 'bg-white border border-gray-200'}  
+              ${isIncorrect ? 'bg-red-100 border-red-300' : ''}
+              ${isMatched ? 'opacity-0 pointer-events-none' : 'opacity-100'}
             `}
             onClick={onClick}
         >
-            <span className="text-lg">
+            <span className="text-xs xs:text-sm sm:text-base lg:text-lg xl:text-xl font-medium leading-tight break-words px-1">
                 {card.type === 'eng' ? card.engCard : card.userLangCard}
             </span>
         </motion.div>

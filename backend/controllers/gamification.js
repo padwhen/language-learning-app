@@ -167,4 +167,249 @@ gamificationRouter.post('/use-streak-freeze', async (request, response) => {
     }
 });
 
+// Award XP for Match Game completion and check achievements
+gamificationRouter.post('/match-game-complete', async (request, response) => {
+    try {
+        const { token } = request.cookies;
+        const userData = jwt.verify(token, JWT_SECRET);
+        
+        if (!userData || !userData.id) {
+            return response.status(401).json({ error: 'Invalid token data' });
+        }
+
+        const user = await User.findById(userData.id);
+        if (!user) {
+            return response.status(404).json({ error: 'User not found' });
+        }
+
+        const {
+            deckId,
+            cardIds, // Array of card IDs that were matched
+            timeElapsed, // Time in milliseconds
+            mistakes, // Number of mistakes made
+            completed // Whether the game was completed successfully
+        } = request.body;
+
+        if (!completed) {
+            return response.status(400).json({ error: 'Game was not completed' });
+        }
+
+        console.log("--- Match Game Achievement Check Start ---");
+        console.log(`User: ${user.username}, DeckId: ${deckId}, Cards: ${cardIds?.length}, Time: ${timeElapsed}ms, Mistakes: ${mistakes}`);
+
+        // Initialize matchGameStats if it doesn't exist
+        if (!user.matchGameStats) {
+            user.matchGameStats = {
+                gamesPlayed: 0,
+                uniqueCardsMatched: [],
+                flawlessGames: 0,
+                gamesUnder60s: 0,
+                decksPlayed: [],
+                midnightGames: 0
+            };
+        }
+
+        const responseData = {
+            achievements: [],
+            badges: [],
+            xpGained: 0
+        };
+
+        // Check if it's after 10 PM (22:00)
+        const now = new Date();
+        const isAfter10PM = now.getHours() >= 22;
+
+        // Update stats
+        user.matchGameStats.gamesPlayed += 1;
+        
+        // Add unique cards to array (only if not already present)
+        if (cardIds && cardIds.length > 0) {
+            cardIds.forEach(cardId => {
+                if (!user.matchGameStats.uniqueCardsMatched.includes(cardId)) {
+                    user.matchGameStats.uniqueCardsMatched.push(cardId);
+                }
+            });
+        }
+
+        // Add deck to played decks (only if not already present)
+        if (deckId && !user.matchGameStats.decksPlayed.includes(deckId)) {
+            user.matchGameStats.decksPlayed.push(deckId);
+        }
+
+        // Check if flawless (no mistakes)
+        if (mistakes === 0) {
+            user.matchGameStats.flawlessGames += 1;
+        }
+
+        // Check if under 60 seconds
+        if (timeElapsed < 60000) {
+            user.matchGameStats.gamesUnder60s += 1;
+        }
+
+        // Check if midnight game
+        if (isAfter10PM) {
+            user.matchGameStats.midnightGames += 1;
+        }
+
+        // Award base XP for completing match game
+        const baseXP = 10;
+        const xpAwarded = gamificationService.applyXPMultiplier(user, baseXP);
+        user.xp += xpAwarded;
+        responseData.xpGained = xpAwarded;
+
+        // Check for achievements
+        const { achievementMap } = require('../config/achievements');
+
+        // 1. Match Maker (First game)
+        if (user.matchGameStats.gamesPlayed === 1) {
+            if (!user.achievements.some(a => a.name === achievementMap.first_match_game.name)) {
+                user.achievements.push({
+                    name: achievementMap.first_match_game.name,
+                    description: achievementMap.first_match_game.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push({
+                    ...achievementMap.first_match_game,
+                    tier: 'bronze' // First game is always bronze
+                });
+            }
+        }
+
+        // 2. Word Catcher (10 unique cards)
+        if (user.matchGameStats.uniqueCardsMatched.length >= 10) {
+            if (!user.achievements.some(a => a.name === achievementMap.word_catcher.name)) {
+                user.achievements.push({
+                    name: achievementMap.word_catcher.name,
+                    description: achievementMap.word_catcher.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push(achievementMap.word_catcher);
+            }
+        }
+
+        // 3. Flawless Flip (no mistakes this game)
+        if (mistakes === 0) {
+            if (!user.achievements.some(a => a.name === achievementMap.flawless_flip.name)) {
+                user.achievements.push({
+                    name: achievementMap.flawless_flip.name,
+                    description: achievementMap.flawless_flip.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push(achievementMap.flawless_flip);
+            }
+        }
+
+        // 4. Blink & You'll Miss It (under 60 seconds)
+        if (timeElapsed < 60000) {
+            if (!user.achievements.some(a => a.name === achievementMap.blink_miss.name)) {
+                user.achievements.push({
+                    name: achievementMap.blink_miss.name,
+                    description: achievementMap.blink_miss.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push(achievementMap.blink_miss);
+            }
+        }
+
+        // 5. Deck Hopper (3 different decks)
+        if (user.matchGameStats.decksPlayed.length >= 3) {
+            if (!user.achievements.some(a => a.name === achievementMap.deck_hopper.name)) {
+                user.achievements.push({
+                    name: achievementMap.deck_hopper.name,
+                    description: achievementMap.deck_hopper.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push(achievementMap.deck_hopper);
+            }
+        }
+
+        // 6. Midnight Matcher (after 10 PM)
+        if (isAfter10PM) {
+            if (!user.achievements.some(a => a.name === achievementMap.midnight_matcher.name)) {
+                user.achievements.push({
+                    name: achievementMap.midnight_matcher.name,
+                    description: achievementMap.midnight_matcher.description,
+                    dateEarned: new Date()
+                });
+                responseData.achievements.push(achievementMap.midnight_matcher);
+            }
+        }
+
+        // Check for Match Maker tier badge
+        const { matchMakerTiers } = require('../config/achievements');
+        const gamesPlayed = user.matchGameStats.gamesPlayed;
+        let currentTier = null;
+
+        if (gamesPlayed >= matchMakerTiers.diamond.min) currentTier = 'Diamond';
+        else if (gamesPlayed >= matchMakerTiers.gold.min) currentTier = 'Gold';
+        else if (gamesPlayed >= matchMakerTiers.silver.min) currentTier = 'Silver';
+        else if (gamesPlayed >= matchMakerTiers.bronze.min) currentTier = 'Bronze';
+
+        if (currentTier) {
+            const existingBadge = user.badges.find(b => b.name === 'Match Maker');
+            if (!existingBadge || existingBadge.tier !== currentTier) {
+                // Remove old badge if exists
+                if (existingBadge) {
+                    user.badges = user.badges.filter(b => b.name !== 'Match Maker');
+                }
+                // Add new tier badge
+                user.badges.push({
+                    name: 'Match Maker',
+                    tier: currentTier,
+                    dateEarned: new Date()
+                });
+                responseData.badges.push({
+                    name: 'Match Maker',
+                    tier: currentTier,
+                    count: gamesPlayed
+                });
+            }
+        }
+
+        // Record XP event
+        gamificationService.recordXpEvent(user._id, xpAwarded, 'match_game_complete');
+
+        // Check for level up
+        const levelUpInfo = gamificationService.checkAndApplyLevelUp(user);
+        if (levelUpInfo) {
+            responseData.levelUpInfo = levelUpInfo;
+        }
+
+        // Check for XP badges
+        const badgeData = gamificationService.checkXpBadges(user);
+        if (badgeData) {
+            responseData.badges.push(...(badgeData.badges || []));
+        }
+
+        await user.save();
+
+        console.log("Match Game Stats:", user.matchGameStats);
+        console.log("Achievements earned this session:", responseData.achievements.length);
+        console.log("--- Match Game Achievement Check End ---");
+
+        response.json({
+            success: true,
+            xp: user.xp,
+            level: user.level,
+            matchGameStats: {
+                gamesPlayed: user.matchGameStats.gamesPlayed,
+                uniqueCardsMatched: user.matchGameStats.uniqueCardsMatched.length,
+                flawlessGames: user.matchGameStats.flawlessGames,
+                gamesUnder60s: user.matchGameStats.gamesUnder60s,
+                decksPlayed: user.matchGameStats.decksPlayed.length,
+                midnightGames: user.matchGameStats.midnightGames
+            },
+            ...responseData
+        });
+
+    } catch (error) {
+        console.error('Error in match-game-complete endpoint:', error);
+        if (error instanceof jwt.JsonWebTokenError) {
+            response.status(401).json({ error: 'Invalid token' });
+        } else {
+            response.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+});
+
 module.exports = gamificationRouter;

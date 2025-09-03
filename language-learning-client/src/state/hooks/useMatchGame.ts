@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import useFetchDeck from "./useFetchDeck"
 import { GameCard, GameOptions } from "@/types"
+import { useMatchGameGamification } from "./useMatchGameGamification"
+import { useParams } from "react-router-dom"
 
 
 export const shuffleArray = <T>(array: T[]): T[] => {
@@ -9,6 +11,7 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 
 export const useMatchGame = (deckId: string) => {
     const { cards } = useFetchDeck(deckId)
+    const { submitMatchGameResult } = useMatchGameGamification()
     const [gameCards, setGameCards] = useState<GameCard[]>([])
     const [selectedCards, setSelectedCards] = useState<string[]>([])
     const [matchedPairs, setMatchedPairs] = useState<string[]>([])
@@ -21,6 +24,8 @@ export const useMatchGame = (deckId: string) => {
         showTimer: true,
         allowDeselect: false
     })
+    const [mistakeCount, setMistakeCount] = useState(0)
+    const [gameStartTime, setGameStartTime] = useState(0)
     const TIME_PENALTY = 5000
 
     useEffect(() => {
@@ -43,9 +48,38 @@ export const useMatchGame = (deckId: string) => {
         checkForMatch()
     }, [selectedCards])
 
+    // Handle game completion and submit to gamification system
+    useEffect(() => {
+        if (isGameCompleted && gameCards.length > 0) {
+            handleGameCompletion()
+        }
+    }, [isGameCompleted])
+
+    const handleGameCompletion = async () => {
+        if (!deckId || gameCards.length === 0) return
+
+        // Get unique card IDs that were matched
+        const uniqueCardIds = Array.from(new Set(
+            gameCards.map(card => card._id)
+        ))
+
+        const gameResult = {
+            deckId,
+            cardIds: uniqueCardIds,
+            timeElapsed,
+            mistakes: mistakeCount,
+            completed: true
+        }
+
+        console.log('Game completed, submitting result:', gameResult)
+        await submitMatchGameResult(gameResult)
+    }
+
     const startGame = useCallback(() => {
         setGameStarted(true)
         setTimeElapsed(0)
+        setMistakeCount(0)
+        setGameStartTime(Date.now())
     }, [])
 
     const resetGame = () => {
@@ -54,6 +88,8 @@ export const useMatchGame = (deckId: string) => {
         setIncorrectPair([])
         setTimeElapsed(0)
         setIsGameCompleted(false)
+        setMistakeCount(0)
+        setGameStartTime(0)
         if (cards) {
             const filteredCards = cards.filter(card => card.cardScore < 3)
             const selected = filteredCards.slice(0, 6)
@@ -102,7 +138,9 @@ export const useMatchGame = (deckId: string) => {
                 setTimeout(() => setSelectedCards([]), 500)
             } else {
                 setIncorrectPair([first, second])
+                setShowPenalty(true) // Show the penalty when incorrect match occurs
                 setTimeElapsed(prevTime => prevTime + TIME_PENALTY)
+                setMistakeCount(prev => prev + 1) // Track mistakes for achievements
                 setTimeout(() => {
                     setIncorrectPair([])    
                     setSelectedCards([])
@@ -122,6 +160,7 @@ export const useMatchGame = (deckId: string) => {
         gameStarted,
         showPenalty,
         gameOptions,
+        mistakeCount,
         shuffleCards,
         handleCardClick,
         startGame,

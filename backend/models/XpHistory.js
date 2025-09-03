@@ -23,6 +23,7 @@ const XpHistorySchema = new Schema({
             'achievement_bonus',
             'quiz_completion',
             'lesson_completion',
+            'match_game_complete',
             'other'
         ]
     },

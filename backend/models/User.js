@@ -43,6 +43,16 @@ const UserSchema = new Schema({
         dateEarned: { type: Date, default: Date.now }
     }],
 
+    // Match Game Achievements Tracking
+    matchGameStats: {
+        gamesPlayed: { type: Number, default: 0 },
+        uniqueCardsMatched: [{ type: String }], // Array of card IDs instead of Set
+        flawlessGames: { type: Number, default: 0 },
+        gamesUnder60s: { type: Number, default: 0 },
+        decksPlayed: [{ type: String }], // Array of deck IDs instead of Set
+        midnightGames: { type: Number, default: 0 }
+    },
+
     weeklyXP: { type: Number, default: 0 }, // XP earned in current week
     weeklyXPHistory: [{
         week: { type: String, required: true }, // Format: "YYYY-WW" (e.g., "2025-10")
