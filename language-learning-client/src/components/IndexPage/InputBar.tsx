@@ -19,6 +19,10 @@ interface InputBarProps {
     currentWordIndex?: number;
 }
 
+const cleanWord = (word: string) => {
+    return word.toLowerCase().replace(/[.,!?;:"'()]/g, '')
+}
+
 // Helper function to highlight the current word being analyzed
 const highlightCurrentWord = (text: string, words: any[], currentIndex: number) => {
     if (!words || words.length === 0 || currentIndex < 0) {
@@ -35,8 +39,8 @@ const highlightCurrentWord = (text: string, words: any[], currentIndex: number) 
     
     segments.forEach((segment, index) => {
         if (segment.trim() && !/^[.,!?;:"'()]+$/.test(segment)) {
-            const cleanSegment = segment.toLowerCase().replace(/[.,!?;:"'()]/g, '');
-            const cleanCurrentWord = currentWord.en.toLowerCase().replace(/[.,!?;:"'()]/g, ''); // Using en field
+            const cleanSegment = cleanWord(segment);
+            const cleanCurrentWord = cleanWord(segment); // Using en field
             
             // Check if this segment matches the current word being analyzed
             const isCurrentWord = cleanSegment === cleanCurrentWord || 
