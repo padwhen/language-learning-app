@@ -31,6 +31,7 @@ export interface User {
     xpMultiplierExpiration?: Date | null;
     achievements?: Achievement[];
     badges?: Badge[];
+    flashcardWordForm: 'original'
 }
 
 interface UserContextType {
@@ -70,11 +71,11 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 const { data } = await axios.get<User>('/profile');
                 const defaultAvatarUrl = "https://github.com/shadcn.png";
 
-                data.avatarUrl = defaultAvatarUrl || defaultAvatarUrl;
+                data.avatarUrl = data.avatarUrl || defaultAvatarUrl;
                 setUser(data);
                 localStorage.setItem('userId', data._id);
                 
-                // Award XP for daily login
+                // Award XP for daily login only if needed
                 await awardDailyLoginXp();
             } else {
                 setIsAuthenticated(false);

@@ -33,15 +33,10 @@ export const useQuizProgress = (userId: string | null, deckId: string | undefine
     const saveProgress = useCallback(async (progressData: QuizProgressData) => {
         if (!userId || !deckId) return
 
-        console.log({userId})
-        console.log({deckId})
-
         setIsLoading(true)
         setError(null)
 
         try {
-            console.log({userId})
-            console.log({deckId})
             await axios.post(`/save-quiz-progress/${userId}/${deckId}`, progressData)
             setSavedProgress(progressData)
 

@@ -60,9 +60,6 @@ export const LearningPage: React.FC = () => {
         deleteProgress,
     } = useQuizProgress(userId || '', id || '')
 
-    console.log("userId: ", userId)
-    console.log("deckId: ", id)
-
     const filteredAndSortedCards = useMemo(() => filterCards(), [cards, includeCompletedCards, cardsToLearn, shuffleCards]);
     const { question, quizdone, score, saveAnswer, nextQuizDate: quizNextDate, answers } = useQuizLogic(
         quiz, 

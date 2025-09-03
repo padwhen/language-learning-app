@@ -129,16 +129,20 @@ usersRouter.put('/update', async (request, response) => {
     jwt.verify(token, JWT_SECRET, {}, async (error, userData) => {
         if (error) return response.status(401).json({ error: 'Invalid token' })
         const { id } = userData
-        const { name, username, avatarUrl } = request.body
+        const { name, username, avatarUrl, flashcardWordForm } = request.body
         try {
             const existingUser = await User.findOne({ username })
             if (existingUser && existingUser._id.toString() !== id) {
                 return response.status(422).json({ error: 'Username already exists. Please choose another one'})
             }
-            const updatedUser = await User.findByIdAndUpdate(id, { name, username, avatarUrl }, { new: true, runValidators: true })
+            const updatedData = { name, username, avatarUrl }
+            if (flashcardWordForm) {
+                updatedData.flashcardWordForm = flashcardWordForm
+            }
+            const updatedUser = await User.findByIdAndUpdate(id, updatedData, { new: true, runValidators: true })
             if (!updatedUser) return response.status(404).json({ error: 'User not found '})
-            const { name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl } = updatedUser
-            response.json({ name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl });
+            const { name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl, flashcardWordForm: updatedFlashcardWordForm } = updatedUser
+            response.json({ name: updatedName, username: updatedUsername, avatarUrl: updatedAvatarUrl, flashcardWordForm: updatedFlashcardWordForm });
         } catch (error) {
             console.error('Error in /update: ', error)
         }

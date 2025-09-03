@@ -12,7 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 
 export const IndexPage = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, response, handleTranslation } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, response, handleTranslationStream } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -119,10 +119,41 @@ export const IndexPage = () => {
                             <InputBar 
                                 inputText={inputText} 
                                 setInputText={setInputText} 
-                                handleTranslation={handleTranslation} 
+                                handleTranslation={handleTranslationStream} 
                                 ready={ready}
                                 highlighted={highlightedElement === 'input-bar'}
+                                isStreaming={isStreaming}
+                                currentWords={response?.words}
+                                currentWordIndex={currentWordIndex}
                             />
+                            
+                            {/* Validation Error Display */}
+                            {validationError && (
+                                <div className="px-6 py-4">
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span className="text-white text-sm font-bold">!</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-red-800 font-medium">Input Error</p>
+                                                <p className="text-red-600 text-sm">{validationError}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Loading indicator when streaming */}
+                            {isStreaming && !response?.sentence && (
+                                <div className="px-6 py-4">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        <span className="text-gray-600">Translating...</span>
+                                    </div>
+                                </div>
+                            )}
+                            
                             {(response?.sentence || isTourActive) && (
                                 <div 
                                     className={`transition-all duration-700 ease-out transform ${
@@ -141,6 +172,17 @@ export const IndexPage = () => {
                                     />
                                 </div>
                             )}
+                            
+                            {/* Loading indicator for words when streaming */}
+                            {isStreaming && response?.sentence && !response?.words?.length && (
+                                <div className="px-6 py-4">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        <span className="text-gray-600">Analyzing words...</span>
+                                    </div>
+                                </div>
+                            )}
+                            
                             {(response?.words || isTourActive) && (
                                 <div 
                                     className={`transition-all duration-700 ease-out transform ${
@@ -157,6 +199,7 @@ export const IndexPage = () => {
                                         words={isTourActive ? mockWords : response?.words}
                                         highlighted={highlightedElement === 'word-details'}
                                         isMockData={isTourActive && !response?.words}
+                                        isStreaming={isStreaming}
                                     />
                                 </div>
                             )}

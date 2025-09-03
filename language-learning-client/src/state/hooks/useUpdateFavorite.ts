@@ -11,12 +11,11 @@ export const useUpdateFavorite = () => {
         setError(null)
 
         try {
-            const response = await axios.put<Deck>(
+            await axios.put<Deck>(
                 `/decks/${deckId}/cards/${cardId}/favorite`, 
                 { favorite },
                 { withCredentials: true }
             )
-            console.log('Card favorite status updated:', response.data)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred while updating favorite status');
         } finally {
