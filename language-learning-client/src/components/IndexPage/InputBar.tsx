@@ -40,7 +40,7 @@ const highlightCurrentWord = (text: string, words: any[], currentIndex: number) 
     segments.forEach((segment, index) => {
         if (segment.trim() && !/^[.,!?;:"'()]+$/.test(segment)) {
             const cleanSegment = cleanWord(segment);
-            const cleanCurrentWord = cleanWord(segment); // Using en field
+            const cleanCurrentWord = cleanWord(currentWord.en); // use current analyzed word (en)
             
             // Check if this segment matches the current word being analyzed
             const isCurrentWord = cleanSegment === cleanCurrentWord || 

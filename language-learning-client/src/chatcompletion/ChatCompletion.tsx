@@ -48,23 +48,52 @@ const validateUserInput = (text: string, selectedLanguage: string): { isValid: b
     return { isValid: true };
 };
 
-const cleanJSON = (jsonStr: string): string => {
-    // Remove trailing commas before closing brackets/braces
-    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+const progressiveJSONParse = (jsonStr: string): any => {
+    if (!jsonStr || typeof jsonStr !== 'string') {
+        return {};
+    }
+
+    // Try to find the longest valid JSON prefix
+    let validLength = 0;
+    let result = {};
     
-    // Fix common issues with quotes in property names
-    jsonStr = jsonStr.replace(/(['"])?([a-zA-Z_][a-zA-Z0-9_]*)\1?\s*:/g, '"$2":');
+    // Start from the full string and work backwards
+    for (let i = jsonStr.length; i > 0; i--) {
+        try {
+            const partial = jsonStr.substring(0, i);
+            result = JSON.parse(partial);
+            validLength = i;
+            break;
+        } catch (e) {
+            // Continue trying shorter prefixes
+            continue;
+        }
+    }
     
-    // Remove any trailing commas at the end
-    jsonStr = jsonStr.replace(/,\s*$/, '');
+    if (validLength === 0) {
+        // If no valid JSON found, try to extract what we can
+        return extractPartialData(jsonStr);
+    }
     
-    // Fix missing commas between objects in arrays
-    jsonStr = jsonStr.replace(/}\s*{/g, '}, {');
+    return result;
+};
+
+const extractPartialData = (text: string): any => {
+    const result: any = {};
     
-    // Remove any control characters that might break JSON parsing
-    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+    // Try to extract sentence
+    const sentence = extractSentence(text);
+    if (sentence) {
+        result.sentence = sentence;
+    }
     
-    return jsonStr;
+    // Try to extract words
+    const words = extractCompleteWords(text);
+    if (words.length > 0) {
+        result.words = words;
+    }
+    
+    return result;
 };
 
 const extractCompleteWords = (text: string): any[] => {
@@ -83,8 +112,8 @@ const extractCompleteWords = (text: string): any[] => {
         let match;
         while ((match = pattern.exec(text)) !== null) {
             try {
-                const cleanedMatch = cleanJSON(match[0]);
-                const wordObj = JSON.parse(cleanedMatch);
+                const cleanedMatch = progressiveJSONParse(match[0]);
+                const wordObj = cleanedMatch;
                 
                 // Validate it has required fields and isn't a duplicate
                 if (wordObj.fi && wordObj.en && wordObj.type && 
@@ -250,12 +279,12 @@ export const chatCompletionStream = async function* (
         }
     }
     try {
+        // Try to find the most complete JSON object in the response
         const jsonRegex = /{(.|\n)*}/;
         const match = fullResponse.match(jsonRegex);
         
         if (match) {
-            const cleanedJson = cleanJSON(match[0]);         
-            const finalResult = JSON.parse(cleanedJson);
+            const finalResult = progressiveJSONParse(match[0]);
             
             yield {
                 sentence: finalResult.sentence || extractedSentence,
@@ -265,6 +294,7 @@ export const chatCompletionStream = async function* (
                 currentWordIndex: -1 // No current word when complete
             };
         } else {
+            // No JSON object found, use extracted data
             yield {
                 sentence: extractedSentence,
                 words: extractedWords,
@@ -276,6 +306,7 @@ export const chatCompletionStream = async function* (
     } catch (error) {
         console.error('❌ Final JSON parsing failed:', error);
 
+        // Last resort: return whatever we extracted during streaming
         yield {
             sentence: extractedSentence,
             words: extractedWords,
@@ -308,15 +339,35 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         const jsonRegex = /{(.|\n)*}/; 
         const match = aiResponse?.match(jsonRegex);
         if (match) {
-            const cleanedJson = cleanJSON(match[0]);
-            aiResponse = cleanedJson;
+            const finalResult = progressiveJSONParse(match[0]);
+            
+            // Try to parse the result to validate it
+            try {
+                // If progressiveJSONParse returns a valid object, use it
+                if (finalResult && typeof finalResult === 'object') {
+                    aiResponse = JSON.stringify(finalResult);
+                } else {
+                    throw new Error('Invalid result from progressive parsing');
+                }
+            } catch (parseError) {
+                console.warn('Failed to parse result in non-streaming function:', parseError);
+                // If parsing fails, try to return a minimal valid JSON
+                aiResponse = JSON.stringify({
+                    sentence: "Translation failed",
+                    words: []
+                });
+            }
         } else {
             throw new Error('No valid JSON object found in response');
         }
         return aiResponse;
     } catch (error) {
         console.error('JSON parsing error:', error);
-        throw new Error('Failed to parse AI response as JSON');
+        // Return a minimal valid JSON instead of throwing
+        return JSON.stringify({
+            sentence: "Translation failed",
+            words: []
+        });
     }
 }
 
