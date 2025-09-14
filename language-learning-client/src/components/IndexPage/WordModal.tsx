@@ -27,15 +27,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
     (user?.flashcardWordForm as 'original' | 'base') !== 'base' &&
     !cookieDismissed();
 
-  // Debug logging
-  console.log('WordModal Debug:', {
-    fi,
-    original_word,
-    wordsAreDifferent: original_word?.trim().toLowerCase() !== fi?.trim().toLowerCase(),
-    userPref: user?.flashcardWordForm,
-    cookieDismissed: cookieDismissed(),
-    shouldShowTip
-  });
+
 
   const { toast } = useToast()
 
