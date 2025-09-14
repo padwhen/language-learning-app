@@ -4,6 +4,7 @@ export interface Word {
     en: string;
     type: string;
     original_word: string;
+    en_base?: string;
     pronunciation: string;
     comment: string;
 }

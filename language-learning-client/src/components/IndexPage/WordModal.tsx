@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 export const Modal: React.FC<{word: Word}> = ({word}) => {
   const { user } = useContext(UserContext)
   const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
-  const { fi, en, pronunciation, original_word, comment } = word;
+  const { fi, en_base, en, pronunciation, original_word, comment } = word;
 
   const { toast } = useToast()
 
@@ -69,8 +69,8 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
         <DialogDescription>
           <div className="overflow-y-auto">
             <div className="flex mt-1 gap-2">
-              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Original word</h4>
-              <p className="text-gray-800 text-lg/6">{original_word}</p>
+              <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Base word</h4>
+              <p className="text-gray-800 text-lg/6">{original_word} {en === en_base ? '' : `- ${en_base}`}</p>
             </div>
             <div className="flex mt-1 gap-2">
               <h4 className="text-lg/6 font-bold text-gray-800 min-w-[150px]">Pronunciation</h4>
