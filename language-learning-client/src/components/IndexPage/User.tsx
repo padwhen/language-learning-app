@@ -64,7 +64,7 @@ const UserLoggedOut = () => (
                 <Dialog>
                     <DialogTrigger asChild>
                         <button className="w-full sm:w-auto text-center px-4 py-2 text-md font-semibold rounded-lg text-blue-600 hover:bg-blue-50">
-                            Log In
+                            Get Started
                         </button>
                     </DialogTrigger>
                     <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">

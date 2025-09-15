@@ -157,7 +157,7 @@ export function MobileNav() {
                       aria-label="Open login dialog"
                       data-testid="mobile-nav-login"
                     >
-                      Log In
+                      Get Started
                     </Button>
                   </DialogTrigger>
                   <DialogContent 

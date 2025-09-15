@@ -280,7 +280,7 @@ export const MainNav = ({ onStartTour, highlightUser }: { onStartTour?: () => vo
                                     highlightUser ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''
                                 }`}
                             >
-                                Log In
+                                Get Started
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
