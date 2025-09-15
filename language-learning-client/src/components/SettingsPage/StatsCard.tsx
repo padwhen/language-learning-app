@@ -21,7 +21,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
                 <div className={`bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-6 text-white cursor-pointer hover:scale-105 transition-transform duration-200 w-full ${highlightedElement === 'user-stats' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''}`}>
                     <div className="text-sm opacity-90 mb-2">Experience</div>
                     <div className="text-4xl font-bold mb-1">{user?.xp ?? 0}</div>
-                    <div className="text-xs opacity-80 mb-4">out of {xpProgress.xpNeededForNextLevel} XP</div>
+                    <div className="text-xs opacity-80 mb-4">out of {xpProgress.xpForNextLevel} XP</div>
                     <div className="w-full bg-white/20 rounded-full h-2 mb-4">
                         <div className="bg-white h-2 rounded-full" style={{ width: `${xpProgress.progressPercentage}%` }}></div>
                     </div>

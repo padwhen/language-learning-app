@@ -10,6 +10,7 @@ export interface XPProgress {
     xpInCurrentLevel: number;
     xpNeededForNextLevel: number;
     progressPercentage: number;
+    xpForNextLevel: number;
 }
 
 export const getXpProgress = (user: { level?: number; xp?: number} | null): XPProgress => {
@@ -19,11 +20,12 @@ export const getXpProgress = (user: { level?: number; xp?: number} | null): XPPr
     const xpForNextLevel = calculateXPForNextLevel(currentLevel)
     const xpInCurrentLevel = currentXP - xpForCurrentLevel
     const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
-    const progressPercentage = (currentXP / xpNeededForNextLevel) * 100;
+    const progressPercentage = (xpInCurrentLevel / xpNeededForNextLevel) * 100;
     
     return {
       xpInCurrentLevel,
       xpNeededForNextLevel,
-      progressPercentage: Math.min(progressPercentage, 100)
+      progressPercentage: Math.min(progressPercentage, 100),
+      xpForNextLevel
     };
 }
