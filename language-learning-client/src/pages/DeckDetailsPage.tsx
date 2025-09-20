@@ -80,12 +80,18 @@ export const DeckDetailsPage: React.FC = () => {
       }
     ];
     
-    const { hint, generateHint } = useHint();
+    const { hint, generateHint, clearHint } = useHint();
     const { updateFavorite } = useUpdateFavorite();
   
     const { stillLearning, notStudied, completed } = organizeCardsByScore(cards);
   
     useAutoPlay(autoPlay, isFlipped, currentCardIndex, cards.length, setIsFlipped, setCurrentCardIndex, setAutoPlay);
+
+    // Reset hint whenever the current card changes
+    useEffect(() => {
+      clearHint();
+      setIsFlipped(false);
+    }, [currentCardIndex]);
 
     // Tour step highlights
     useEffect(() => {
@@ -162,6 +168,7 @@ export const DeckDetailsPage: React.FC = () => {
   
     const handleCardClick = (event: React.MouseEvent) => {
       if (!(event.target as HTMLElement).closest('button')) {
+        clearHint();
         setIsFlipped(!isFlipped);
       }
     };

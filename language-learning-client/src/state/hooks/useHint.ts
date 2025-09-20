@@ -18,5 +18,7 @@ export const useHint = () => {
         }
     }
 
-    return { hint, generateHint }
+    const clearHint = () => setHint("")
+
+    return { hint, generateHint, clearHint }
 }

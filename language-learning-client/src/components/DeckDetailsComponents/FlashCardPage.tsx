@@ -24,6 +24,7 @@ export const FlashcardPage = () => {
     const currentCard = cards[currentCardIndex]
 
     const handleFlip = () => {
+        setHint('')
         setIsFlipped(!isFlipped)
     }
 
