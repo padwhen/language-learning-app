@@ -1,3 +1,15 @@
+export type TokenType = 'noun' | 'verb' | 'adjective' | 'adverb' | 'numeral' | 'other';
+
+export interface GrammarPattern {
+  pattern: string;          // e.g. "genitive"
+  example: string;          // e.g. "Helsingin kaupungin"
+  translation: string;      // e.g. "of the city of Helsinki"
+  explanation: string;      // e.g. "Indicates possession or relation."
+  notes: string[];          // optional notes
+  morphology: string[] | string; // backward compatible: array or string
+  tags: string[];           // e.g. ["genitive", "noun"] - grammatical categories only
+}
+
 export interface Word {
     id: string;
     fi: string;
@@ -7,6 +19,9 @@ export interface Word {
     en_base?: string;
     pronunciation: string;
     comment: string;
+    context_matches_base?: boolean;
+    pattern?: GrammarPattern;
+    themes?: string[];        // e.g. ["currency", "economy"] - semantic domains
 }
 
 export interface DockCardData {

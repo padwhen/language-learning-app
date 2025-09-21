@@ -1,5 +1,6 @@
 import { Word } from "@/types"
 import { Modal } from "./WordModal"
+import { shouldHighlightWord } from "@/utils/grammarUtils"
 import React, { useEffect, useState } from "react";
 
 interface WordCategoryProps {
@@ -8,9 +9,10 @@ interface WordCategoryProps {
     index?: number;
     isMockData?: boolean;
     isStreaming?: boolean;
+    learningMode?: boolean;
 }
 
-const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false }) => {
+const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, learningMode = false }) => {
     const [visibleWords, setVisibleWords] = useState<Word[]>([]);
     
     useEffect(() => {        
@@ -95,7 +97,7 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                             animationFillMode: 'both'
                         } : {}}
                     >
-                        <Modal word={word} />
+                        <Modal word={word} learningMode={learningMode} />
                         {/* Show loading indicator for partial words */}
                         {(word as any).isPartial && (
                             <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full w-3 h-3 flex items-center justify-center">
@@ -115,7 +117,7 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
     );
 };
 
-export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMockData?: boolean; isStreaming?: boolean}> = ({ words, highlighted, isMockData = false, isStreaming = false }) => {
+export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMockData?: boolean; isStreaming?: boolean; learningMode?: boolean}> = ({ words, highlighted, isMockData = false, isStreaming = false, learningMode = false }) => {
     const categories = [
         { title: 'Verbs', words: words.filter(word => word.type === 'verb' )},
         { title: 'Nouns', words: words.filter(word => word.type === 'noun' )},
@@ -133,6 +135,7 @@ export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMock
                         index={index}
                         isMockData={isMockData}
                         isStreaming={isStreaming}
+                        learningMode={learningMode}
                     />
                 ))}
             </div>

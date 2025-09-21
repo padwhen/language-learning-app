@@ -6,13 +6,14 @@ import { DeckInfo } from "../components/IndexPage/DeckInfo";
 import { Header } from "../components/Header";
 import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
+import { LearningModeLoadingModal } from "../components/IndexPage/LearningModeLoadingModal";
 import useTranslation from "../state/hooks/useTranslation";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
 export const IndexPage = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, response, handleTranslationStream } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, learningMode, setLearningMode, learningModeStep, isLearningModeLoading, response, handleTranslationStream } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -125,6 +126,8 @@ export const IndexPage = () => {
                                 isStreaming={isStreaming}
                                 currentWords={response?.words}
                                 currentWordIndex={currentWordIndex}
+                                learningMode={learningMode}
+                                setLearningMode={setLearningMode}
                             />
                             
                             {/* Validation Error Display */}
@@ -166,10 +169,12 @@ export const IndexPage = () => {
                                         animationFillMode: 'both'
                                     }}
                                 >
-                                    <Translation 
-                                        text={isTourActive ? mockTranslation : response?.sentence}
-                                        highlighted={highlightedElement === 'translation'}
-                                    />
+                            <Translation 
+                                text={isTourActive ? mockTranslation : response?.sentence}
+                                highlighted={highlightedElement === 'translation'}
+                                words={isTourActive ? mockWords : response?.words}
+                                learningMode={learningMode}
+                            />
                                 </div>
                             )}
                             
@@ -200,6 +205,7 @@ export const IndexPage = () => {
                                         highlighted={highlightedElement === 'word-details'}
                                         isMockData={isTourActive && !response?.words}
                                         isStreaming={isStreaming}
+                                        learningMode={learningMode}
                                     />
                                 </div>
                             )}
@@ -222,6 +228,13 @@ export const IndexPage = () => {
                 newUrl.searchParams.set('tour', 'true');
                 navigate(newUrl.pathname + newUrl.search);
             }} />
+
+            {/* Learning Mode Loading Modal */}
+            <LearningModeLoadingModal 
+                isOpen={isLearningModeLoading}
+                currentStep={learningModeStep}
+                totalSteps={3}
+            />
 
             {/* Onboarding Coach Marks */}
             {isTourActive && (

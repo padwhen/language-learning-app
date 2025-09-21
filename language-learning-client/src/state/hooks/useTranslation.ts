@@ -10,6 +10,21 @@ const useTranslation = () => {
     const [isStreaming, setIsStreaming] = useState(false)
     const [currentWordIndex, setCurrentWordIndex] = useState(-1)
     const [validationError, setValidationError] = useState<string | null>(null)
+    const [learningMode, setLearningMode] = useState(() => {
+        // Check if stored response has details flag to auto-enable learning mode
+        const storedResponse = localStorage.getItem('response')
+        if (storedResponse) {
+            try {
+                const parsed = JSON.parse(storedResponse)
+                return parsed.details === true
+            } catch {
+                return false
+            }
+        }
+        return false
+    })
+    const [learningModeStep, setLearningModeStep] = useState(0)
+    const [isLearningModeLoading, setIsLearningModeLoading] = useState(false)
     const [response, setResponse] = useState(() => {
         const storedResponse = localStorage.getItem('response')
         return storedResponse ? JSON.parse(storedResponse) : null
@@ -21,7 +36,14 @@ const useTranslation = () => {
         setValidationError(null); // Clear any previous errors
         
         setReady(false)
-        setIsStreaming(true)
+        
+        // If learning mode is active, show the loading modal instead of streaming
+        if (learningMode) {
+            setIsLearningModeLoading(true)
+            setLearningModeStep(0)
+        } else {
+            setIsStreaming(true)
+        }
         
         // Clear previous response
         setResponse(null)
@@ -29,31 +51,36 @@ const useTranslation = () => {
         if (inputText.trim().toLowerCase() === 'test') {
             const parsedResponse = jsonData;
             const { sentence, words } = parsedResponse
-            if (sentence) {
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, sentence: sentence 
-                }))
-            }
-            if (words) {
-                const wordsWithUUID = words.map(word => ({
-                    ...word, id: uuidv4()
-                }))
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, words: wordsWithUUID
-                }))
-            }
-            localStorage.setItem("response", JSON.stringify(parsedResponse))
-            localStorage.setItem("fromLanguage", fromLanguage)
-            setReady(true)
-            setIsStreaming(false)
+            
+            // Create final response with details flag when learning mode is active
+            const finalResponse = {
+                sentence,
+                words: words?.map(word => ({
+                    ...word, id: uuidv4(), isPartial: false
+                })) || [],
+                details: learningMode // Add details flag to indicate learning mode was used
+            };
+            
+            setResponse(finalResponse);
+            localStorage.setItem("response", JSON.stringify(finalResponse));
+            localStorage.setItem("fromLanguage", fromLanguage);
+            setReady(true);
+            setIsStreaming(false);
         } else {
             try {
-                const stream = chatCompletionStream({ language: fromLanguage, text: inputText });
+                const stream = chatCompletionStream({ language: fromLanguage, text: inputText, learningMode });
                 
                 let chunkNumber = 0;
                 for await (const chunk of stream) {
                     chunkNumber++;
                     const { sentence, words, isComplete, currentWordIndex: streamWordIndex } = chunk;
+                    
+                    // For learning mode, simulate progress steps
+                    if (learningMode && chunkNumber === 1) {
+                        setLearningModeStep(1); // Step 1: Grammar analysis
+                        setTimeout(() => setLearningModeStep(2), 1000); // Step 2: Validation after 1s
+                    }
+                    
                     // Update current word index for highlighting
                     if (typeof streamWordIndex === 'number') {
                         setCurrentWordIndex(streamWordIndex);
@@ -85,8 +112,10 @@ const useTranslation = () => {
                             sentence,
                             words: words?.map((word: any) => ({
                                 ...word, 
-                                id: word.id || uuidv4()
-                            })) || []
+                                id: word.id || uuidv4(),
+                                isPartial: false // Clear partial flag when complete
+                            })) || [],
+                            details: learningMode // Add details flag to indicate learning mode was used
                         };
                         localStorage.setItem('response', JSON.stringify(finalResponse));
                         localStorage.setItem('fromLanguage', fromLanguage);
@@ -95,10 +124,14 @@ const useTranslation = () => {
                 
                 setReady(true);
                 setIsStreaming(false);
+                setIsLearningModeLoading(false);
+                setLearningModeStep(0);
             } catch (error) {
                 console.error('Streaming translation error:', error);
                 setReady(true);
                 setIsStreaming(false);
+                setIsLearningModeLoading(false);
+                setLearningModeStep(0);
                 
                 // Check if it's a validation error and show inline
                 if (error instanceof Error) {
@@ -108,7 +141,7 @@ const useTranslation = () => {
                 
                 // Fallback to non-streaming
                 try {
-                    const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
+                    const response_json = await chatCompletion({ language: fromLanguage, text: inputText, learningMode });
                     if (response_json !== null) {
                         const parsedResponse = JSON.parse(response_json);
                         const { sentence, words } = parsedResponse;
@@ -117,8 +150,10 @@ const useTranslation = () => {
                             sentence,
                             words: words?.map((word: any) => ({
                                 ...word, 
-                                id: uuidv4()
-                            })) || []
+                                id: uuidv4(),
+                                isPartial: false // Clear partial flag when complete
+                            })) || [],
+                            details: learningMode // Add details flag to indicate learning mode was used
                         };
                         
                         setResponse(finalResponse);
@@ -143,22 +178,20 @@ const useTranslation = () => {
         if (inputText.trim().toLowerCase() === 'test') {
             const parsedResponse = jsonData;
             const { sentence, words } = parsedResponse
-            if (sentence) {
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, sentence: sentence 
-                }))
-            }
-            if (words) {
-                const wordsWithUUID = words.map(word => ({
-                    ...word, id: uuidv4()
-                }))
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, words: wordsWithUUID
-                }))
-            }
-            localStorage.setItem("response", JSON.stringify(parsedResponse))
-            localStorage.setItem("fromLanguage", fromLanguage)
-            setReady(true)
+            
+            // Create final response with details flag when learning mode is active
+            const finalResponse = {
+                sentence,
+                words: words?.map(word => ({
+                    ...word, id: uuidv4(), isPartial: false
+                })) || [],
+                details: learningMode // Add details flag to indicate learning mode was used
+            };
+            
+            setResponse(finalResponse);
+            localStorage.setItem("response", JSON.stringify(finalResponse));
+            localStorage.setItem("fromLanguage", fromLanguage);
+            setReady(true);
         } else {
             try {
                 const response_json = await chatCompletion({ language: fromLanguage, text: inputText })
@@ -172,7 +205,7 @@ const useTranslation = () => {
                     }
                     if (words) {
                         const wordsWithUUID = words.map((word: any) => ({
-                            ...word, id: uuidv4()
+                            ...word, id: uuidv4(), isPartial: false
                         }))
                         setResponse((prevResponse: any) => ({
                             ...prevResponse, words: wordsWithUUID
@@ -199,6 +232,39 @@ const useTranslation = () => {
         }
     }, [])
 
+    // Enhanced setLearningMode handler that manages localStorage and forces re-processing
+    const handleLearningModeToggle = (newLearningMode: boolean) => {
+        setLearningMode(newLearningMode);
+        
+        if (!newLearningMode) {
+            // When turning OFF learning mode:
+            // 1. Clear the stored response to remove grammar data
+            localStorage.removeItem('response');
+            // 2. Clear the current response state
+            setResponse(null);
+        } else {
+            // When turning ON learning mode:
+            // Check if there's existing translation data without grammar details
+            const storedResponse = localStorage.getItem('response');
+            if (storedResponse) {
+                try {
+                    const parsed = JSON.parse(storedResponse);
+                    // If the stored response doesn't have details flag or grammar data,
+                    // we need to force re-processing
+                    if (!parsed.details || !parsed.words?.some((word: any) => word.pattern)) {
+                        // Clear the stored response to force re-translation with learning mode
+                        localStorage.removeItem('response');
+                        setResponse(null);
+                    }
+                } catch {
+                    // If parsing fails, clear the corrupted data
+                    localStorage.removeItem('response');
+                    setResponse(null);
+                }
+            }
+        }
+    };
+
     return { 
         fromLanguage, 
         setFromLanguage, 
@@ -208,6 +274,10 @@ const useTranslation = () => {
         isStreaming,
         currentWordIndex,
         validationError,
+        learningMode,
+        setLearningMode: handleLearningModeToggle,
+        learningModeStep,
+        isLearningModeLoading,
         response, 
         handleTranslation,
         handleTranslationStream

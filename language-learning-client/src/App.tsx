@@ -18,6 +18,7 @@ import { useEffect } from 'react'
 import { LearningPage } from './components/LearningPage/LearningPage'
 import { ReviewPage } from './components/ReviewPage/ReviewPage'
 import { SettingsPage } from './components/SettingsPage'
+import { GrammarPage } from './pages/GrammarPage'
 
 axios.defaults.baseURL = 'http://localhost:2323/api/'
 axios.defaults.withCredentials = true
@@ -97,6 +98,7 @@ function App() {
         
         {/* Routes that DON'T need deck context */}
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/grammar" element={<GrammarPage />} />
       </Routes>              
       <Toaster />
     </UserContextProvider>

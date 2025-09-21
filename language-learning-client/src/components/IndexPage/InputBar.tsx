@@ -1,6 +1,7 @@
 import { textToSpeech } from "@/chatcompletion/ChatCompletion";
 import { useState, useEffect } from "react";
 import { Volume2, Send, Loader2, Sparkles } from "lucide-react";
+import { LearningModeToggle } from "./LearningModeToggle";
 
 interface WordTiming {
     word: string;
@@ -17,6 +18,8 @@ interface InputBarProps {
     isStreaming?: boolean;
     currentWords?: any[];
     currentWordIndex?: number;
+    learningMode?: boolean;
+    setLearningMode?: (enabled: boolean) => void;
 }
 
 const cleanWord = (word: string) => {
@@ -137,7 +140,9 @@ export const InputBar: React.FC<InputBarProps> = ({
     highlighted,
     isStreaming = false,
     currentWords = [],
-    currentWordIndex = -1
+    currentWordIndex = -1,
+    learningMode = false,
+    setLearningMode
 }) => {
     const [countdown, setCountdown] = useState(60);
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -150,8 +155,16 @@ export const InputBar: React.FC<InputBarProps> = ({
         let timer: NodeJS.Timeout;
         if (!ready) {
             timer = setInterval(() => {
-                setCountdown(prevCountdown => prevCountdown - 1);
+                setCountdown(prevCountdown => {
+                    if (prevCountdown <= 1) {
+                        return 0; // Stop at 0, don't go negative
+                    }
+                    return prevCountdown - 1;
+                });
             }, 1000);
+        } else {
+            // Reset countdown when ready becomes true
+            setCountdown(60);
         }
         return () => clearInterval(timer);
     }, [!ready]);
@@ -287,14 +300,23 @@ export const InputBar: React.FC<InputBarProps> = ({
     return (
         <div className={`mt-0 w-full px-0 transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
             {/* Header with icon and title */}
-            <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
+                        <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">Enter Your Text</h3>
+                        <p className="text-sm text-gray-500">Type or paste text for translation</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Enter Your Text</h3>
-                    <p className="text-sm text-gray-500">Type or paste text for translation</p>
-                </div>
+                {setLearningMode && (
+                    <LearningModeToggle 
+                        learningMode={learningMode} 
+                        onToggle={setLearningMode}
+                        words={currentWords}
+                    />
+                )}
             </div>
 
             {/* Modern textarea container */}

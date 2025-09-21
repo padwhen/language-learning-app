@@ -8,6 +8,9 @@ const PROMPT_1 = import.meta.env.VITE_PROMPT_1
 const PROMPT_2 = import.meta.env.VITE_PROMPT_2
 const PROMPT_3 = import.meta.env.VITE_PROMPT_3
 const PROMPT_4 = import.meta.env.VITE_PROMPT_4
+const PROMPT_LEARNING_MODE = import.meta.env.VITE_PROMPT_LEARNING_MODE
+const FIX_LEARNING_MODE_1 = import.meta.env.VITE_FIX_LEARNING_MODE_1
+const FIX_LEARNING_MODE_2 = import.meta.env.VITE_FIX_LEARNING_MODE_2
 
 // Simple validation function for supported languages
 const validateUserInput = (text: string, selectedLanguage: string): { isValid: boolean; error?: string } => {
@@ -209,17 +212,142 @@ const extractSentence = (text: string): string | null => {
     return null;
 };
 
+// Learning mode processing pipeline
+const processLearningModeStep1 = async (initialData: any): Promise<any> => {
+    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
+    const aiModel = 'gpt-4o-mini';
+    
+    const completion = await openai.chat.completions.create({
+        model: aiModel,
+        messages: [{
+            role: 'system',
+            content: 'you are a helpful assistant'
+        }, {
+            role: 'user',
+            content: `${JSON.stringify(initialData)} <--- ${FIX_LEARNING_MODE_1}`
+        }]
+    });
+    
+    let aiResponse = completion.choices[0].message.content;
+    const jsonRegex = /{(.|\n)*}/;
+    const match = aiResponse?.match(jsonRegex);
+    
+    if (match) {
+        return progressiveJSONParse(match[0]);
+    } else {
+        throw new Error('No valid JSON object found in FIX_LEARNING_MODE_1 response');
+    }
+};
+
+const processLearningModeStep2 = async (step1Data: any): Promise<any> => {
+    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
+    const aiModel = 'gpt-4o-mini';
+    
+    const completion = await openai.chat.completions.create({
+        model: aiModel,
+        messages: [{
+            role: 'system',
+            content: 'you are a helpful assistant'
+        }, {
+            role: 'user',
+            content: `${JSON.stringify(step1Data)} <--- ${FIX_LEARNING_MODE_2}`
+        }]
+    });
+    
+    let aiResponse = completion.choices[0].message.content;
+    const jsonRegex = /{(.|\n)*}/;
+    const match = aiResponse?.match(jsonRegex);
+    
+    if (match) {
+        const result = progressiveJSONParse(match[0]);
+        
+        // If step 2 has autofixed data, use that; otherwise use step1Data
+        if (result.autofixed) {
+            return { ...result.autofixed, details: true };
+        } else {
+            return { ...step1Data, details: true };
+        }
+    } else {
+        // If no valid response, return step1Data with details flag
+        return { ...step1Data, details: true };
+    }
+};
+
+const runLearningModePipeline = async (language: string, text: string, onProgress?: (step: number) => void): Promise<any> => {
+    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
+    const aiModel = 'gpt-4o-mini';
+    
+    // Step 1: Initial learning mode processing
+    onProgress?.(0);
+    const completion = await openai.chat.completions.create({
+        model: aiModel,
+        messages: [{
+            role: 'system',
+            content: 'you are a helpful assistant'
+        }, {
+            role: 'user',
+            content: `${text} in ${language} <--- ${PROMPT_LEARNING_MODE}`
+        }]
+    });
+    
+    let aiResponse = completion.choices[0].message.content;
+    const jsonRegex = /{(.|\n)*}/;
+    const match = aiResponse?.match(jsonRegex);
+    
+    if (!match) {
+        throw new Error('No valid JSON object found in PROMPT_LEARNING_MODE response');
+    }
+    
+    const initialData = progressiveJSONParse(match[0]);
+    
+    // Step 2: Fix and refine the data
+    onProgress?.(1);
+    const step1Data = await processLearningModeStep1(initialData);
+    
+    // Step 3: Final validation and auto-fixing
+    onProgress?.(2);
+    const finalData = await processLearningModeStep2(step1Data);
+    
+    // Don't modify the sentence - render as-is from the AI response
+    // The sentence should be whatever the AI returns, not re-translated
+    
+    return finalData;
+};
+
 // Streaming chat completion with progressive results
 export const chatCompletionStream = async function* (
-    data: { language: string, text: string},
+    data: { language: string, text: string, learningMode?: boolean},
     onPartialResult?: (sentence: string | null, words: any[]) => void
 ) {
-    const {language, text} = data;
+    const {language, text, learningMode = false} = data;
 
     // Validate user input
     const validation = validateUserInput(text, language);
     if (!validation.isValid) {
         throw new Error(validation.error);
+    }
+    
+    // If learning mode is requested, use the learning mode pipeline (non-streaming)
+    if (learningMode) {
+        try {
+            const learningResult = await runLearningModePipeline(language, text, (step: number) => {
+                // Progress callback - this would need to be passed from the hook
+                // For now, we'll handle this in the hook level
+            });
+            
+            // Yield the complete result immediately for learning mode
+            yield {
+                sentence: learningResult.sentence,
+                words: learningResult.words || [],
+                isComplete: true,
+                originalText: text,
+                currentWordIndex: -1
+            };
+            return;
+        } catch (error) {
+            console.error('Learning mode pipeline failed in streaming:', error);
+            // Fall back to regular streaming mode
+        }
     }
     
     const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
@@ -318,8 +446,8 @@ export const chatCompletionStream = async function* (
 };
 
 // Original non-streaming function for backward compatibility
-export const chatCompletion = async (data: { language: string, text: string}) => {
-    const {language, text} = data
+export const chatCompletion = async (data: { language: string, text: string, learningMode?: boolean, existingData?: any }) => {
+    const {language, text, learningMode = false, existingData} = data
 
     // Validate user input
     const validation = validateUserInput(text, language);
@@ -327,6 +455,29 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         throw new Error(validation.error);
     }
     
+    // If learning mode is requested and we have existing data without details, run learning mode pipeline
+    if (learningMode && existingData && !existingData.details) {
+        try {
+            const learningResult = await runLearningModePipeline(language, text);
+            return JSON.stringify(learningResult);
+        } catch (error) {
+            console.error('Learning mode pipeline failed:', error);
+            // Fall back to regular mode
+        }
+    }
+    
+    // If learning mode is requested but no existing data, run learning mode pipeline
+    if (learningMode && !existingData) {
+        try {
+            const learningResult = await runLearningModePipeline(language, text);
+            return JSON.stringify(learningResult);
+        } catch (error) {
+            console.error('Learning mode pipeline failed:', error);
+            // Fall back to regular mode
+        }
+    }
+    
+    // Regular mode (default)
     const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
     const aiModel = 'gpt-4o-mini'
     const completion = await openai.chat.completions.create({
@@ -345,7 +496,9 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
             try {
                 // If progressiveJSONParse returns a valid object, use it
                 if (finalResult && typeof finalResult === 'object') {
-                    aiResponse = JSON.stringify(finalResult);
+                    // Add details: false for regular mode
+                    const resultWithDetails = { ...finalResult, details: false };
+                    aiResponse = JSON.stringify(resultWithDetails);
                 } else {
                     throw new Error('Invalid result from progressive parsing');
                 }
@@ -354,7 +507,8 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
                 // If parsing fails, try to return a minimal valid JSON
                 aiResponse = JSON.stringify({
                     sentence: "Translation failed",
-                    words: []
+                    words: [],
+                    details: false
                 });
             }
         } else {
@@ -366,7 +520,8 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         // Return a minimal valid JSON instead of throwing
         return JSON.stringify({
             sentence: "Translation failed",
-            words: []
+            words: [],
+            details: false
         });
     }
 }
