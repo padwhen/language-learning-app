@@ -41,6 +41,26 @@ const achievementMap = {
         name: 'Midnight Matcher',
         description: 'Play a matching game after 10 PM!',
         lottieFile: 'owl.json'
+    },
+    'mini_game_flash-recall': {
+        name: 'Flash Master',
+        description: 'Minigame - Flashcard Recall',
+    },
+    'mini_game_word-match': {
+        name: 'Word Wizard',
+        description: 'Successfully match words in the word-match game!',
+    },
+    'mini_game_case-fill': {
+        name: 'Case Cracker',
+        description: 'Fill in the blanks like a pro!',
+    },
+    'mini_game_true-false': {
+        name: 'Truth Seeker',
+        description: 'Distinguish truth from fiction in the true-false challenge!',
+    },
+    'mini_game_speed-tap': {
+        name: 'Speed Demon',
+        description: 'Lightning-fast reflexes in the speed-tap game!',
     }
 };
 

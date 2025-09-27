@@ -316,10 +316,10 @@ const runLearningModePipeline = async (language: string, text: string, onProgres
 
 // Streaming chat completion with progressive results
 export const chatCompletionStream = async function* (
-    data: { language: string, text: string, learningMode?: boolean},
+    data: { language: string, text: string, learningMode?: boolean, onProgress?: (step: number) => void},
     onPartialResult?: (sentence: string | null, words: any[]) => void
 ) {
-    const {language, text, learningMode = false} = data;
+    const {language, text, learningMode = false, onProgress} = data;
 
     // Validate user input
     const validation = validateUserInput(text, language);
@@ -330,10 +330,7 @@ export const chatCompletionStream = async function* (
     // If learning mode is requested, use the learning mode pipeline (non-streaming)
     if (learningMode) {
         try {
-            const learningResult = await runLearningModePipeline(language, text, (step: number) => {
-                // Progress callback - this would need to be passed from the hook
-                // For now, we'll handle this in the hook level
-            });
+            const learningResult = await runLearningModePipeline(language, text, onProgress);
             
             // Yield the complete result immediately for learning mode
             yield {

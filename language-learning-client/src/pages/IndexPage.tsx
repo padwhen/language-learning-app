@@ -6,14 +6,13 @@ import { DeckInfo } from "../components/IndexPage/DeckInfo";
 import { Header } from "../components/Header";
 import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
-import { LearningModeLoadingModal } from "../components/IndexPage/LearningModeLoadingModal";
-import useTranslation from "../state/hooks/useTranslation";
+import { useTranslationContext } from "../contexts/TranslationContext";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
 export const IndexPage = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, learningMode, setLearningMode, learningModeStep, isLearningModeLoading, response, handleTranslationStream } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, learningMode, setLearningMode, response, handleTranslationStream } = useTranslationContext();
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -159,6 +158,7 @@ export const IndexPage = () => {
                             
                             {(response?.sentence || isTourActive) && (
                                 <div 
+                                    data-translation-results
                                     className={`transition-all duration-700 ease-out transform ${
                                         isTourActive && !response?.sentence 
                                             ? 'animate-in fade-in slide-in-from-bottom-4' 
@@ -229,12 +229,7 @@ export const IndexPage = () => {
                 navigate(newUrl.pathname + newUrl.search);
             }} />
 
-            {/* Learning Mode Loading Modal */}
-            <LearningModeLoadingModal 
-                isOpen={isLearningModeLoading}
-                currentStep={learningModeStep}
-                totalSteps={3}
-            />
+            {/* Learning Mode Widget is now rendered globally in App.tsx */}
 
             {/* Onboarding Coach Marks */}
             {isTourActive && (

@@ -24,6 +24,11 @@ const XpHistorySchema = new Schema({
             'quiz_completion',
             'lesson_completion',
             'match_game_complete',
+            'mini_game_flash-recall',
+            'mini_game_word-match',
+            'mini_game_case-fill',
+            'mini_game-true-false',
+            'mini_game-speed-tap',
             'other'
         ]
     },

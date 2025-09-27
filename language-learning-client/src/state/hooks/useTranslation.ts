@@ -25,6 +25,8 @@ const useTranslation = () => {
     })
     const [learningModeStep, setLearningModeStep] = useState(0)
     const [isLearningModeLoading, setIsLearningModeLoading] = useState(false)
+    const [showLearningWidget, setShowLearningWidget] = useState(false)
+    const [isTranslationCompleted, setIsTranslationCompleted] = useState(false)
     const [response, setResponse] = useState(() => {
         const storedResponse = localStorage.getItem('response')
         return storedResponse ? JSON.parse(storedResponse) : null
@@ -37,9 +39,9 @@ const useTranslation = () => {
         
         setReady(false)
         
-        // If learning mode is active, show the loading modal instead of streaming
+        // If learning mode is active, show the widget instead of streaming
         if (learningMode) {
-            setIsLearningModeLoading(true)
+            setShowLearningWidget(true)
             setLearningModeStep(0)
         } else {
             setIsStreaming(true)
@@ -68,18 +70,22 @@ const useTranslation = () => {
             setIsStreaming(false);
         } else {
             try {
-                const stream = chatCompletionStream({ language: fromLanguage, text: inputText, learningMode });
+                // Create a progress callback for learning mode
+                const progressCallback = learningMode ? (step: number) => {
+                    setLearningModeStep(step);
+                } : undefined;
+
+                const stream = chatCompletionStream({ 
+                    language: fromLanguage, 
+                    text: inputText, 
+                    learningMode,
+                    onProgress: progressCallback 
+                });
                 
                 let chunkNumber = 0;
                 for await (const chunk of stream) {
                     chunkNumber++;
                     const { sentence, words, isComplete, currentWordIndex: streamWordIndex } = chunk;
-                    
-                    // For learning mode, simulate progress steps
-                    if (learningMode && chunkNumber === 1) {
-                        setLearningModeStep(1); // Step 1: Grammar analysis
-                        setTimeout(() => setLearningModeStep(2), 1000); // Step 2: Validation after 1s
-                    }
                     
                     // Update current word index for highlighting
                     if (typeof streamWordIndex === 'number') {
@@ -119,19 +125,28 @@ const useTranslation = () => {
                         };
                         localStorage.setItem('response', JSON.stringify(finalResponse));
                         localStorage.setItem('fromLanguage', fromLanguage);
+                        
+                        // Set completion state for learning mode
+                        if (learningMode) {
+                            setIsTranslationCompleted(true);
+                        }
                     }
                 }
                 
                 setReady(true);
                 setIsStreaming(false);
-                setIsLearningModeLoading(false);
-                setLearningModeStep(0);
+                // Don't hide widget immediately if learning mode is active and completed
+                if (!learningMode || !isTranslationCompleted) {
+                    setShowLearningWidget(false);
+                    setLearningModeStep(0);
+                }
             } catch (error) {
                 console.error('Streaming translation error:', error);
                 setReady(true);
                 setIsStreaming(false);
-                setIsLearningModeLoading(false);
+                setShowLearningWidget(false);
                 setLearningModeStep(0);
+                setIsTranslationCompleted(false);
                 
                 // Check if it's a validation error and show inline
                 if (error instanceof Error) {
@@ -159,6 +174,11 @@ const useTranslation = () => {
                         setResponse(finalResponse);
                         localStorage.setItem('response', JSON.stringify(finalResponse));
                         localStorage.setItem('fromLanguage', fromLanguage);
+                        
+                        // Set completion state for learning mode fallback
+                        if (learningMode) {
+                            setIsTranslationCompleted(true);
+                        }
                     }
                 } catch (fallbackError) {
                     console.error('Fallback translation error:', fallbackError);
@@ -265,6 +285,24 @@ const useTranslation = () => {
         }
     };
 
+    const closeWidget = () => {
+        setShowLearningWidget(false);
+        setLearningModeStep(0);
+        setIsTranslationCompleted(false);
+    };
+
+    const handleTranslationComplete = () => {
+        // Hide the widget and reset completion state
+        setShowLearningWidget(false);
+        setIsTranslationCompleted(false);
+        setLearningModeStep(0);
+        // Optionally scroll to the translation results
+        const translationElement = document.querySelector('[data-translation-results]');
+        if (translationElement) {
+            translationElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return { 
         fromLanguage, 
         setFromLanguage, 
@@ -277,7 +315,10 @@ const useTranslation = () => {
         learningMode,
         setLearningMode: handleLearningModeToggle,
         learningModeStep,
-        isLearningModeLoading,
+        showLearningWidget,
+        closeWidget,
+        isTranslationCompleted,
+        handleTranslationComplete,
         response, 
         handleTranslation,
         handleTranslationStream
