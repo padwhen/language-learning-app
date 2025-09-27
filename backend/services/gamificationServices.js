@@ -85,8 +85,40 @@ function updateStreak(user, today) {
 }
 
 /**
+ * Records login date for daily login activity to ensure consistency between XP and login tracking.
+ * @param {object} user - Mongoose user document.
+ * @param {Date} today - The current date object.
+ */
+function recordLoginDateForDailyActivity(user, today) {
+    const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const todayDateString = today.toISOString().split('T')[0];
+
+    const alreadyLoggedToday = user.loginDates.some(login => 
+        login.date.toISOString().split('T')[0] === todayDateString
+    );
+
+    if (!alreadyLoggedToday) {
+        user.loginDates.push({
+            date: today,
+            month: currentMonth,
+            year: today.getFullYear()
+        });
+        
+        // Keep only the last 3 months of login data to avoid unbounded growth
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        
+        user.loginDates = user.loginDates.filter(login => 
+            login.date >= threeMonthsAgo
+        );
+        
+        console.log(`Recorded login date for daily activity: ${user.username} on ${todayDateString}`);
+    }
+}
+
+/**
  * Checks if daily login XP was already awarded today and awards XP conditionally.
- * Modifies user object (xp, weeklyXP).
+ * Modifies user object (xp, weeklyXP, loginDates).
  * @param {object} user - Mongoose user document.
  * @param {number} xpAmount - Base XP amount for the activity.
  * @param {string} activity - Type of activity (e.g., 'daily_login').
@@ -112,6 +144,11 @@ function awardExperience(user, xpAmount, activity, today) {
             adjustedXpGained = adjustedXp;
             console.log(`Awarded ${adjustedXpGained} XP for activity: ${activity}`);
             recordXpEvent(user._id, adjustedXpGained, activity)
+            
+            // Record login date for daily login activity to ensure consistency
+            if (activity === 'daily_login') {
+                recordLoginDateForDailyActivity(user, today);
+            }
         }
     }
     return { xpAwarded: adjustedXpGained, alreadyAwardedDailyLoginToday };
@@ -295,5 +332,6 @@ module.exports = {
     checkAndApplyStreakRewards,
     checkActivityAchievements,
     checkXpBadges,
-    recordXpEvent
+    recordXpEvent,
+    recordLoginDateForDailyActivity
 };

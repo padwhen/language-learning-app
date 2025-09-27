@@ -27,9 +27,15 @@ jest.mock('../../config/badges', () => ([
     // Add other mock badges as needed
 ]), { virtual: true });
 
+// Mock XpHistory model to prevent database validation errors
+jest.mock('../../models/XpHistory', () => ({
+    create: jest.fn().mockResolvedValue({}),
+}), { virtual: true });
+
 describe('Gamification Service - Unit Tests', () => {
     // --- Helper for creating mock user objects ---
     const createMockUser = (initialData = {}) => ({
+        _id: '507f1f77bcf86cd799439011', // Mock ObjectId
         username: 'testuser',
         level: 1,
         xp: 0,
@@ -42,6 +48,7 @@ describe('Gamification Service - Unit Tests', () => {
         xpMultiplierExpiration: null,
         achievements: [],
         badges: [],
+        loginDates: [],
         // If any service functions call Mongoose-specific methods on the user
         // (like .save()), mock them here, e.g.:
         // save: jest.fn().mockResolvedValue(true),
@@ -287,6 +294,30 @@ describe('Gamification Service - Unit Tests', () => {
             expect(flags.alreadyAwardedDailyLoginToday).toBe(false)
             expect(mockUser.xp).toBe(50)
             expect(mockUser.weeklyXP).toBe(50)
+        })
+        it('should record login date for daily login activity', () => {
+            const flags = awardExperience(mockUser, xpAmount, 'daily_login', today)
+            expect(flags.xpAwarded).toBe(50)
+            expect(mockUser.loginDates).toHaveLength(1)
+            expect(mockUser.loginDates[0].date).toEqual(today)
+            expect(mockUser.loginDates[0].month).toBe(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`)
+            expect(mockUser.loginDates[0].year).toBe(today.getFullYear())
+        })
+        it('should not record duplicate login dates for same day', () => {
+            // First daily login
+            awardExperience(mockUser, xpAmount, 'daily_login', today)
+            expect(mockUser.loginDates).toHaveLength(1)
+            
+            // Second daily login same day (should not add another entry)
+            const secondToday = new Date(today)
+            secondToday.setHours(14, 0, 0, 0) // Different time, same day
+            awardExperience(mockUser, xpAmount, 'daily_login', secondToday)
+            expect(mockUser.loginDates).toHaveLength(1) // Should still be 1
+        })
+        it('should not record login date for non-daily-login activities', () => {
+            const flags = awardExperience(mockUser, xpAmount, 'quiz_complete', today)
+            expect(flags.xpAwarded).toBe(50)
+            expect(mockUser.loginDates).toHaveLength(0) // Should not record login date
         })
         it('should not award XP for subsequent daily logins on same day', () => {
             today.setHours(0, 0, 0, 0);
