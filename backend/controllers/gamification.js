@@ -42,6 +42,7 @@ gamificationRouter.post('/award-xp', async (request, response) => {
         // 3. Award XP (handles daily login check & multiplier)
         const { xpAwarded, alreadyAwardedDailyLoginToday } = gamificationService.awardExperience(user, xpAmount, activity, today);
         responseData.adjustedXpGained = xpAwarded;
+        responseData.alreadyAwardedDailyLoginToday = alreadyAwardedDailyLoginToday;
 
         // 4. Check Level Up
         const levelUpInfo = gamificationService.checkAndApplyLevelUp(user);
