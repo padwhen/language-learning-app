@@ -1,8 +1,9 @@
-import { BookOpen, Target, TrendingUp, Zap } from "lucide-react";
-import React from "react";
+import { BookOpen, Target, Zap, Brain, Info } from "lucide-react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LearningStep } from "../types";
+import { AlgorithmVisualizationDialog } from "./AlgorithmVisualizationDialog";
 
 interface IntroStepProps {
     deckName: string;
@@ -19,6 +20,8 @@ export const IntroStep: React.FC<IntroStepProps> = ({
     setShowIntroAgain,
     nextStep
 }) => {
+    const [showAlgorithmDialog, setShowAlgorithmDialog] = useState(false);
+
     return (
         <div className={`max-w-4xl mx-auto p-2 sm:p-4 lg:p-8 space-y-6 sm:space-y-8 lg:space-y-10 ${animationClass}`}>
             <div className="text-center space-y-3 sm:space-y-4">
@@ -59,13 +62,13 @@ export const IntroStep: React.FC<IntroStepProps> = ({
                 </div>
                 <div className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4">
-                        <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+                        <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                     </div>
                     <h3 className="text-sm sm:text-base font-semibold text-black mb-1 sm:mb-2">
-                        Adaptive Learning
+                        Spaced Repetition
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                        Focus on cards that need the most attention
+                        Smart scheduling that adapts to your memory
                     </p>
                 </div>
             </div>
@@ -81,11 +84,40 @@ export const IntroStep: React.FC<IntroStepProps> = ({
                     Don't show this intro again for this account
                 </label>
             </div>
+            {/* Algorithm Explanation Section */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-purple-200">
+                <div className="text-center space-y-3">
+                    <div className="flex items-center justify-center gap-2">
+                        <Brain className="w-5 h-5 text-purple-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">How Spaced Repetition Works</h3>
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                        Each time you answer correctly, we'll wait a little longer before showing the word again. 
+                        If you forget, we'll bring it back sooner. This way, you'll remember with fewer reviews over time.
+                    </p>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3 bg-white hover:bg-gray-50 border-purple-300 text-purple-700"
+                        onClick={() => setShowAlgorithmDialog(true)}
+                    >
+                        <Info className="w-4 h-4 mr-2" />
+                        Show me how
+                    </Button>
+                </div>
+            </div>
+
             <div className="flex justify-center pt-2">
                 <Button size="lg" className="w-full sm:w-auto" onClick={() => nextStep('settings')}>
                     Continue
                 </Button>
             </div>
+
+            {/* Algorithm Visualization Dialog */}
+            <AlgorithmVisualizationDialog 
+                isOpen={showAlgorithmDialog}
+                onClose={() => setShowAlgorithmDialog(false)}
+            />
         </div>
     );
 }

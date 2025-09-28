@@ -17,8 +17,6 @@ interface QuizData {
 
 export const useFetchQuizHistory = (id: string | undefined) => {
     const [quizData, setQuizData] = useState<QuizData | null>(null)
-    const [searchTerm, setSearchTerm] = useState('')
-    const [filter, setFilter] = useState('default')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<Error | null>(null)
 
@@ -46,19 +44,15 @@ export const useFetchQuizHistory = (id: string | undefined) => {
             }
         }
         fetchDeck()
-    }, [])
+    }, [id])
 
     const averageTime = quizData
         ? (quizData.quizDetails.reduce((sum, quiz) => sum + quiz.timeTaken, 0) / quizData.quizDetails.length / 1000).toFixed(2)
         : '0'
 
-    const filteredQuizDetails = quizData
-        ? quizData.quizDetails.filter(quiz => 
-            quiz.question.toLocaleLowerCase().includes(searchTerm.toLowerCase())
-        )
-        : []
+    const filteredQuizDetails = quizData ? quizData.quizDetails : []
 
     return {
-        quizData, searchTerm, setSearchTerm, filter, setFilter, averageTime, filteredQuizDetails, loading, error
+        quizData, averageTime, filteredQuizDetails, loading, error
     }
 }

@@ -19,6 +19,7 @@ import { PreviewPage } from './Step/PreviewPage';
 import { QuizPage } from './Step/QuizPage';
 import { useQuizProgress } from '@/state/hooks/useQuizProgress';
 import { ResumeAnswerReview } from './ResumeAnswerReview';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 export const LearningPage: React.FC = () => {
@@ -74,7 +75,8 @@ export const LearningPage: React.FC = () => {
             answers: savedProgress.answers,
             score: savedProgress.score
         } : undefined,
-        savedProgress?.quizItems // originalQuizItems for resume mode
+        savedProgress?.quizItems, // originalQuizItems for resume mode
+        currentStep === 'quiz' // isQuizStarted - only start timer when actually in quiz
     )
 
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id)
@@ -82,7 +84,7 @@ export const LearningPage: React.FC = () => {
     // Animation helper
     const triggerAnimation = (animation: string) => {
         setAnimationClass(animation)
-        setTimeout(() => setAnimationClass(''), 500)
+        setTimeout(() => setAnimationClass(''), 300)
     }
 
     // Load saved progress on component mount
@@ -164,14 +166,20 @@ export const LearningPage: React.FC = () => {
         }
     }, [id, quizdone])
 
-    // Clean up saved progress when quiz is completed
+    // Clean up saved progress when component unmounts (user leaves the page)
     useEffect(() => {
-        if (quizdone && savedProgress) {
-            deleteProgress()
+        return () => {
+            if (savedProgress && quizdone) {
+                deleteProgress()
+            }
         }
-    }, [quizdone, savedProgress, deleteProgress])
+    }, [savedProgress, quizdone, deleteProgress])
 
-    const handleStartQuiz = () => {
+    const handleStartQuiz = async () => {
+        // Clean up any existing saved progress when starting a new quiz
+        if (savedProgress && quizdone) {
+            await deleteProgress()
+        }
         triggerAnimation('animate-bounce')
         setTimeout(() => setCurrentStep('quiz'), 200)
     }
@@ -234,8 +242,7 @@ export const LearningPage: React.FC = () => {
     }
 
     const nextStep = (step: LearningStep) => {
-        triggerAnimation('animate-slide')
-        setTimeout(() => setCurrentStep(step), 100)
+        setCurrentStep(step)
     }
 
     if (filteredAndSortedCards.length === 0 && currentStep !== 'intro') {
@@ -250,6 +257,7 @@ export const LearningPage: React.FC = () => {
                 return (
                     <IntroStep 
                         deckName={deckName} 
+                        animationClass={animationClass}
                         showIntroAgain={showIntroAgain} 
                         setShowIntroAgain={setShowIntroAgain} 
                         nextStep={nextStep} 
@@ -260,14 +268,12 @@ export const LearningPage: React.FC = () => {
                 return (
                     <div>
                         <SettingsIntroPage 
-                            animationClass={animationClass} 
+                            animationClass={animationClass}
                             cards={cards} 
                             cardsToLearn={cardsToLearn}
                             setCardsToLearn={setCardsToLearn}
                             cardTypeToLearn={cardTypeToLearn}
                             setCardTypeToLearn={setCardTypeToLearn} 
-                            includeCompletedCards={includeCompletedCards}
-                            setIncludeCompletedCards={setIncludeCompletedCards} 
                             triggerAnimation={triggerAnimation} 
                             nextStep={nextStep}
                         />
@@ -323,7 +329,17 @@ export const LearningPage: React.FC = () => {
     return (
         <div className="flex justify-center min-h-screen pt-4 sm:pt-8 lg:pt-12 p-2 sm:p-4">
             <CardUI className='w-full max-w-4xl h-full min-h-[80vh] flex flex-col'>
-                {renderStep()}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentStep}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                        {renderStep()}
+                    </motion.div>
+                </AnimatePresence>
             </CardUI>
             <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
                 <DialogContent>
@@ -383,4 +399,5 @@ export const LearningPage: React.FC = () => {
         </div>
     )
 }
+
 

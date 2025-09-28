@@ -13,7 +13,7 @@ interface UseQuizLogicReturn {
     loading: boolean;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>, isResumeMode: boolean = false, resumeData?: { currentQuestion: number, answers: Answer[], score: number }, originalQuizItems?: QuizItem[]): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>, isResumeMode: boolean = false, resumeData?: { currentQuestion: number, answers: Answer[], score: number }, originalQuizItems?: QuizItem[], isQuizStarted: boolean = false): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
     const [question, setQuestion] = useState<number>(1) // Always start from 1 for current quiz
     const [answers, setAnswers] = useState<Answer[]>(resumeData?.answers || [])
@@ -24,11 +24,20 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
     const [loading, setLoading] = useState(true)
     const map = useRef<Record<string, number>>(mapInput || {});
 
-    const startTimeRef = useRef<number>(Date.now())
+    const startTimeRef = useRef<number>(0)
+    const [quizStartTime, setQuizStartTime] = useState<number>(0)
 
     useEffect(() => {
-        startTimeRef.current = Date.now()
-    }, [question])
+        if (isQuizStarted && quizStartTime === 0) {
+            // Quiz just started - set the start time
+            const now = Date.now()
+            setQuizStartTime(now)
+            startTimeRef.current = now
+        } else if (isQuizStarted && quizStartTime > 0) {
+            // Quiz is ongoing - update timer for new question
+            startTimeRef.current = Date.now()
+        }
+    }, [question, isQuizStarted, quizStartTime])
 
     const fetchCards = async () => {
         try {
@@ -101,14 +110,18 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
                 let scoreUpdated = false
 
                 if (isReviewMode) {
-                    // Review mode logic - only update score when map[cardId] reaches 0
+                    // Enhanced review mode logic with SRS algorithm
                     const reviewStatus = map.current[cardId] || 0
                     if (reviewStatus === 0 && correct) {
+                        // Correct answer in review mode - increase score
                         newScore = Math.min(card.cardScore + 1, 5)
                         scoreUpdated = true
+                        console.log(`Review: Card ${cardId} score increased to ${newScore}`)
                     } else if (reviewStatus === 2 && !correct) {
+                        // Incorrect answer in review mode - decrease score
                         newScore = Math.max(card.cardScore - 1, 0)
                         scoreUpdated = true
+                        console.log(`Review: Card ${cardId} score decreased to ${newScore}`)
                     }
                     
                     // Remove card from map if score was updated
@@ -116,11 +129,15 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
                         delete map.current[cardId]
                     }
                 } else {
-                    // Learn mode logic
+                    // Enhanced learn mode logic with SRS algorithm
                     if (correct) {
+                        // Correct answer in learn mode - increase score
                         newScore = Math.min(card.cardScore + 1, 5)
+                        console.log(`Learn: Card ${cardId} score increased to ${newScore}`)
                     } else {
-                        newScore = 0
+                        // Incorrect answer in learn mode - don't reset, just don't increase
+                        newScore = card.cardScore
+                        console.log(`Learn: Card ${cardId} score unchanged at ${newScore}`)
                     }
                 }
 

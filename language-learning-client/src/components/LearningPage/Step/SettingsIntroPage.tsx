@@ -2,12 +2,11 @@ import { toast } from "@/components/ui/use-toast";
 import { Card } from "@/types";
 import React, { useState } from "react";
 import { LearningStep } from "../types";
-import { CheckCircle, Lightbulb, Settings, AlertCircle } from "lucide-react";
+import { CheckCircle, Lightbulb, AlertCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CardTypeToLearn } from "../types";
-import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SettingsIntroPageProps {
@@ -17,8 +16,6 @@ interface SettingsIntroPageProps {
     setCardsToLearn: (count: number) => void;
     cardTypeToLearn: CardTypeToLearn
     setCardTypeToLearn: (type: CardTypeToLearn) => void
-    includeCompletedCards: boolean;
-    setIncludeCompletedCards: (include: boolean) => void
     triggerAnimation: (animationClass: string) => void
     nextStep: (step: LearningStep) => void
 }
@@ -30,8 +27,6 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
     setCardsToLearn,
     cardTypeToLearn,
     setCardTypeToLearn,
-    includeCompletedCards,
-    setIncludeCompletedCards,
     triggerAnimation,
     nextStep
 }) => {
@@ -43,17 +38,14 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
     const recommendCount = Math.min(8, Math.max(4, notStudiedCards))
 
     const getCardCountOptions = () => {
-        const maxCards = Math.min(cards.length, 20)
+        const maxNewCards = cards.filter(card => !card.learning && card.cardScore !== 5).length
         const options = []
 
-        options.push({ value: 4, label: '4 cards (Quick)', duration: '~5min' })
-        options.push({ value: 8, label: '8 cards (Recommended)', duration: '~10min' })
-        options.push({ value: 12, label: '12 cards (Extended)', duration: '~15min' })
+        options.push({ value: 4, label: '4 new cards (Quick)', duration: '~5min' })
+        options.push({ value: 8, label: '8 new cards (Recommended)', duration: '~10min' })
+        options.push({ value: 12, label: '12 new cards (Extended)', duration: '~15min' })
 
-        if (maxCards >= 16) { options.push({ value: 16, label: '16 cards (Intensive)', duration: '~20min' }) }
-        if (maxCards >= 20) { options.push({ value: 20, label: '20 cards (Marathon)', duration: '~25min' })}
-
-        return options.filter(option => option.value <= maxCards)
+        return options.filter(option => option.value <= maxNewCards)
     }
 
     const validateSettings = () => {
@@ -61,23 +53,18 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
         
         // Check if cards to learn is selected
         if (!cardsToLearn || cardsToLearn <= 0) {
-            errors.push("Please select the number of cards to learn")
+            errors.push("Please select the number of new words to learn")
         }
         
-        // Check if card type is selected
-        if (!cardTypeToLearn) {
-            errors.push("Please select which type of cards to focus on")
-        }
-        
-        // Check if there are enough cards available
+        // Check if there are enough new cards available
         const availableCards = getAvailableCardsCount()
         if (cardsToLearn > availableCards) {
-            errors.push(`Only ${availableCards} cards available for the selected type`)
+            errors.push(`Only ${availableCards} new words available to learn`)
         }
         
-        // Check if any cards exist
-        if (cards.length === 0) {
-            errors.push("No cards available to learn")
+        // Check if any new cards exist
+        if (availableCards === 0) {
+            errors.push("No new words available to learn")
         }
         
         setValidationErrors(errors)
@@ -85,30 +72,26 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
     }
 
     const getAvailableCardsCount = () => {
-        switch (cardTypeToLearn) {
-            case 'Not studied':
-                return cards.filter(card => !card.learning && card.cardScore !== 5).length
-            case 'Learning':
-                return cards.filter(card => card.learning && card.cardScore !== 5).length
-            case 'Completed':
-                return cards.filter(card => card.cardScore === 5).length
-            case 'All':
-            default:
-                return cards.length
-        }
+        // Only count new cards (not studied)
+        return cards.filter(card => !card.learning && card.cardScore !== 5).length
     }
 
     const applyRecommendedSettings = () => {
         setIsCardFadingOut(true)
 
-        setCardsToLearn(recommendCount)
+        // Find the closest available option to the recommended count
+        const availableOptions = getCardCountOptions()
+        const closestOption = availableOptions.reduce((prev, curr) => 
+            Math.abs(curr.value - recommendCount) < Math.abs(prev.value - recommendCount) ? curr : prev
+        )
+
+        setCardsToLearn(closestOption.value)
         setCardTypeToLearn('Not studied')
-        setIncludeCompletedCards(false)
         setValidationErrors([]) // Clear any existing validation errors
         triggerAnimation('animate-pulse')
         toast({
             title: "Settings applied! ✨",
-            description: `Ready to learn ${recommendCount} new cards`, 
+            description: `Ready to learn ${closestOption.value} new words`, 
             duration: 2000
         })
 
@@ -174,8 +157,8 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
             animate="visible"
         >
             <motion.div className="text-center space-y-2" variants={itemVariants}>
-                <h2 className="text-3xl font-bold text-blue-500">Customize Your Session</h2>
-                <p className="text-gray-600">Tailor your learning experience to maximize results</p>
+                <h2 className="text-3xl font-bold text-blue-500">Customize Your Learning Session</h2>
+                <p className="text-gray-600">Choose how many new words to learn today</p>
             </motion.div>
 
             {/* Validation Errors */}
@@ -219,11 +202,11 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                                 <h3 className="text-lg font-semibold text-yellow-800">Smart Recommendation</h3>
                             </div>
                             <p className="text-yellow-700 mb-4">
-                                We recommend learning <strong>{recommendCount} "Not Studied"</strong> cards for this session.
+                                We recommend learning <strong>{recommendCount} new words</strong> for this session.
                                 This gives you the perfect balance of challenge and achievement!
                             </p>
                             <p className="text-sm text-yellow-600 mb-4">
-                                Why 8 cards? Research shows that 7±2 items is the optimal range for working memory, making 8 cards perfect for effective learning without cognitive overload.
+                                Why 8 words? Research shows that 7±2 items is the optimal range for working memory, making 8 words perfect for effective learning without cognitive overload.
                             </p>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Button
@@ -242,7 +225,7 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                 {/* Number of cards selection */}
                 <div className="space-y-3">
                     <Label className={`text-lg font-semibold ${validationErrors.some(e => e.includes('cards to learn')) ? 'text-red-600' : 'text-gray-700'}`}>
-                        Number of cards to learn *
+                        How many new words to learn today? *
                     </Label>
                     <motion.div 
                         className="grid grid-cols-1 md:grid-cols-2 gap-3"
@@ -287,10 +270,10 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                     </motion.div>
                 </div>
 
-                {/* Card Type Selection */}
+                {/* Focus Selection */}
                 <motion.div className="space-y-3" variants={itemVariants}>
                     <Label className={`text-lg font-semibold ${validationErrors.some(e => e.includes('type of cards')) ? 'text-red-600' : 'text-gray-700'}`}>
-                        Focus on *
+                        Focus
                     </Label>
                     <Select
                         value={cardTypeToLearn}
@@ -302,41 +285,28 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                         <SelectTrigger className={`h-12 text-lg border-2 hover:border-gray-300 transition-colors ${
                             validationErrors.some(e => e.includes('type of cards')) ? 'border-red-300' : ''
                         }`}>
-                            <SelectValue placeholder='Select card type' />
+                            <SelectValue placeholder='Select focus' />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">🎯 All Cards</SelectItem>
                             <SelectItem value='Not studied'>🌟 Not Studied (New)</SelectItem>
-                            <SelectItem value='Learning'>📚 Currently Learning</SelectItem>
-                            <SelectItem value='Completed'>✅ Completed Cards</SelectItem>
+                            <SelectItem value='Learning'>🔄 Reset Cards</SelectItem>
                         </SelectContent>
                     </Select>
                 </motion.div>
 
-                {/* Optional Settings */}
+                {/* Transparent Explanation */}
                 <motion.div 
-                    className="space-y-4 p-4 bg-gray-50 rounded-lg"
+                    className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200"
                     variants={itemVariants}
-                    whileHover={{ backgroundColor: "rgb(249 250 251)" }}
                 >
-                    <h3 className="font-semibold text-gray-700 flex items-center gap-2">
-                        <Settings className="w-5 h-5" />
-                        Optional Settings
-                    </h3>
-                    <motion.div 
-                        className="flex items-center space-x-3"
-                        whileHover={{ x: 4 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    >
-                        <Checkbox
-                            id="includeCompleted"
-                            checked={includeCompletedCards}
-                            onCheckedChange={(checked) => setIncludeCompletedCards(checked as boolean)}
-                        />
-                        <Label htmlFor="includeCompleted" className="text-gray-700 cursor-pointer">
-                            Include completed cards for review
-                        </Label>
-                    </motion.div>
+                    <div className="flex items-center gap-2">
+                        <Info className="w-5 h-5 text-blue-600" />
+                        <h3 className="font-semibold text-blue-900">How it works</h3>
+                    </div>
+                    <p className="text-sm text-blue-800 leading-relaxed">
+                        New words you learn today will automatically move into your review schedule. 
+                        You don't need to pick them again later — the system handles it.
+                    </p>
                 </motion.div>
             </motion.div>
 

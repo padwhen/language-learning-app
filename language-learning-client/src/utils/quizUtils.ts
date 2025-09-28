@@ -19,21 +19,21 @@ export const getUniqueQuizDetails = (
 }
 
 export const getSpeedCategory = (timeTaken: number, averageTime: any): string => {
-    const avgTime =  parseFloat(averageTime) * 1000
-    if (timeTaken <= avgTime / 1.5) return "Fastest"
+    const avgTime = parseFloat(averageTime) * 1000
+    if (timeTaken <= avgTime / 1.5) return "Fast"
     if (timeTaken <= avgTime) return "Average"
     return "Slow"
 }
 
 export const getSpeedCategoryClassName = (speedCategory: string) => {
     switch (speedCategory) {
-        case 'Fastest':
-            return 'animate-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent font-black text-xl p-2'
+        case 'Fast':
+            return 'bg-green-100 text-green-800 border-green-200'
         case 'Average':
-            return 'text-black font-bold p-2'
+            return 'bg-yellow-100 text-yellow-800 border-yellow-200'
         case 'Slow':
-            return 'bg-gradient-to-r from-blue-200 to-blue-500 text-blue-800 font-semibold bg-clip-text text-transparent p-2'
+            return 'bg-gray-100 text-gray-600 border-gray-200'
         default:
-            return ''
+            return 'bg-gray-100 text-gray-600 border-gray-200'
     }
 }

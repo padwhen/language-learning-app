@@ -184,17 +184,31 @@ router.get('/learning-history/:learningHistoryId', async (req, res) => {
     }
 })
 
-function determineNextQuizDate(quizType, cardsStudied, correctAnswers) {
+function determineNextQuizDate(quizType, cardsStudied, correctAnswers, currentInterval = 1) {
     const performance = correctAnswers / cardsStudied;
     let daysUntilNextQuiz = 1; // default for learn and resume
 
     if (quizType === 'review') {
-        if (performance >= 0.8) {
-            daysUntilNextQuiz = Math.round(daysUntilNextQuiz * 2);
-        } else if (performance < 0.6) {
-            daysUntilNextQuiz = Math.max(1, Math.round(daysUntilNextQuiz * 0.5));
+        // Enhanced SRS algorithm based on performance
+        if (performance >= 0.9) {
+            // Excellent performance - extend interval significantly
+            daysUntilNextQuiz = Math.min(30, Math.round(currentInterval * 2.5));
+        } else if (performance >= 0.8) {
+            // Good performance - extend interval moderately
+            daysUntilNextQuiz = Math.min(30, Math.round(currentInterval * 2));
+        } else if (performance >= 0.6) {
+            // Fair performance - maintain or slightly extend interval
+            daysUntilNextQuiz = Math.min(30, Math.round(currentInterval * 1.2));
+        } else if (performance >= 0.4) {
+            // Poor performance - reduce interval
+            daysUntilNextQuiz = Math.max(1, Math.round(currentInterval * 0.7));
+        } else {
+            // Very poor performance - significantly reduce interval
+            daysUntilNextQuiz = Math.max(1, Math.round(currentInterval * 0.5));
         }
-        daysUntilNextQuiz = Math.min(30, daysUntilNextQuiz);
+        
+        // Ensure minimum interval of 1 day and maximum of 30 days
+        daysUntilNextQuiz = Math.max(1, Math.min(30, daysUntilNextQuiz));
     }
     // Resume sessions use the same logic as learn sessions (1 day default)
 

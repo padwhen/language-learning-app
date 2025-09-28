@@ -5,13 +5,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { QuizItem } from "@/types";
-import { BookOpen, CheckCircle2, Save, Settings, X, Zap } from "lucide-react";
+import { CheckCircle2, Save, Settings, X, Zap, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
 import ConfettiExplosion from "react-confetti-explosion";
 import { Question } from "../Question";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import React from "react";
+import { format } from "date-fns";
 
 interface QuizPageProps {
     quizdone: boolean;
@@ -157,9 +159,10 @@ export const QuizPage: React.FC<QuizPageProps> = ({
         </CardHeader>
         <CardContent className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
             {quizdone ? (
-                <div className={`grid gap-8 place-items-center text-center ${animationClass}`}>
+                <div className={`w-full max-w-4xl mx-auto space-y-8 ${animationClass}`}>
+                    {/* Header */}
                     <motion.div 
-                        className="space-y-4"
+                        className="text-center space-y-4"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.8 }}
@@ -184,57 +187,114 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                             "Keep practicing! 💪"}
                         </motion.div>
                     </motion.div>
+
+                    {/* Performance Summary Cards */}
                     <motion.div 
-                        className='text-lg text-center text-gray-600 bg-gray-50 p-6 rounded-xl'
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ 
-                            delay: 1.5, 
-                            duration: 0.6,
-                            type: "spring"
-                        }}>
+                        transition={{ delay: 1.4 }}
+                    >
+                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+                            <div className="flex items-center justify-center mb-2">
+                                <Target className="h-6 w-6 text-blue-600 mr-2" />
+                                <span className="text-2xl font-bold text-blue-600">
+                                    {score}/{quiz.length}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Correct Answers</p>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+                            <div className="flex items-center justify-center mb-2">
+                                <TrendingUp className="h-6 w-6 text-green-600 mr-2" />
+                                <span className="text-2xl font-bold text-green-600">
+                                    {Math.round((score / quiz.length) * 100)}%
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Accuracy Rate</p>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center">
+                            <div className="flex items-center justify-center mb-2">
+                                <BookOpen className="h-6 w-6 text-purple-600 mr-2" />
+                                <span className="text-2xl font-bold text-purple-600">
+                                    {quiz.length}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Cards Studied</p>
+                        </div>
+                    </motion.div>
+
+
+                    {/* Next Review Schedule */}
+                    <motion.div 
+                        className="bg-white p-6 rounded-xl shadow-sm border"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.8 }}
+                    >
+                        <div className="flex items-center gap-2 mb-4">
+                            <Calendar className="h-5 w-5 text-blue-600" />
+                            <h3 className="text-lg font-semibold text-gray-900">Next Review Schedule</h3>
+                        </div>
+                        
                         {nextQuizDate || quizNextDate ? (
-                            <>
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                    <motion.div
-                                        animate={{ 
-                                            rotate: [0, 10, -10, 10, 0],
-                                        }}
-                                        transition={{ 
-                                            delay: 2,
-                                            duration: 1,
-                                            ease: "easeInOut" 
-                                        }}
-                                    >
-                                        <BookOpen className="w-5 h-5" />
-                                    </motion.div>
-                                    <span className="font-semibold">Next Review</span>
+                            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center gap-3">
+                                    <Calendar className="h-5 w-5 text-green-600" />
+                                    <div>
+                                        <p className="font-medium text-green-900">Next Review</p>
+                                        <p className="text-sm text-green-700">
+                                            {nextQuizDate || quizNextDate ? 
+                                                (() => {
+                                                    try {
+                                                        const date = new Date((nextQuizDate || quizNextDate)!);
+                                                        return isNaN(date.getTime()) ? 'Not scheduled' : format(date, 'EEEE, MMMM dd, yyyy');
+                                                    } catch {
+                                                        return 'Not scheduled';
+                                                    }
+                                                })() : 'Not scheduled'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <span>{(nextQuizDate || quizNextDate)?.toLocaleDateString()}</span>
-                            </>
+                                <Badge className="bg-green-100 text-green-800">
+                                    {nextQuizDate || quizNextDate ? 
+                                        (() => {
+                                            try {
+                                                const date = new Date((nextQuizDate || quizNextDate)!);
+                                                return isNaN(date.getTime()) ? 0 : Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                            } catch {
+                                                return 0;
+                                            }
+                                        })() : 0} days
+                                </Badge>
+                            </div>
                         ) : (
-                            <>
+                            <div className="p-4 bg-gray-50 rounded-lg text-center">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <motion.div
                                         animate={{ 
                                             scale: [1, 1.2, 1],
                                         }}
                                         transition={{ 
-                                            delay: 2,
                                             duration: 0.6,
                                             repeat: Infinity,
                                             repeatDelay: 2
                                         }}
                                     >
-                                        <Zap className="w-5 h-5" />
+                                        <Zap className="w-5 h-5 text-gray-600" />
                                     </motion.div>
-                                    <span className="font-semibold">Ready for More!</span>
+                                    <span className="font-semibold text-gray-700">Ready for More!</span>
                                 </div>
-                                <span>You can start a new session whenever you're ready!</span>
-                            </>
+                                <p className="text-gray-600">You can start a new session whenever you're ready!</p>
+                            </div>
                         )}
                     </motion.div>
+
+                    {/* Action Button */}
                     <motion.div
+                        className="text-center"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ 
@@ -245,11 +305,11 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                    <Link to={`/view-decks/${id}`}>
-                        <Button className='text-xl py-6 px-12 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200'>
-                            Continue Learning 🚀
-                        </Button>
-                    </Link>
+                        <Link to={`/view-decks/${id}`}>
+                            <Button className='text-xl py-6 px-12 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200'>
+                                Continue Learning 🚀
+                            </Button>
+                        </Link>
                     </motion.div>
                 </div>
             ) : (

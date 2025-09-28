@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Label } from "../ui/label";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { Brain, TrendingUp, Target } from "lucide-react";
 
 interface QuestionProps {
     data: {
@@ -337,24 +339,67 @@ export const Question: React.FC<QuestionProps> = (props) => {
             <AnimatePresence>
                 {submitted && (
                     <motion.div 
-                        className="mt-4 text-center text-xl"
+                        className="mt-6 space-y-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.5, delay: 0.5 }}
                     >
-                        <motion.span
-                            animate={{ 
-                                opacity: [0.7, 1, 0.7],
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
+                        {/* SRS Algorithm Feedback */}
+                        <motion.div 
+                            className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.7 }}
                         >
-                            Moving to next question...
-                        </motion.span>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Brain className="h-4 w-4 text-purple-600" />
+                                <span className="text-sm font-semibold text-gray-900">Spaced Repetition Update</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Target className="h-4 w-4 text-gray-600" />
+                                    <span className="text-sm text-gray-700">Card Score:</span>
+                                </div>
+                                <Badge className={
+                                    selectedIndex === props.data.correctIndex 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-red-100 text-red-800'
+                                }>
+                                    {selectedIndex === props.data.correctIndex 
+                                        ? `+1 (${Math.min(props.data.cardScore + 1, 5)})` 
+                                        : `Reset (0)`
+                                    }
+                                </Badge>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-600">
+                                {selectedIndex === props.data.correctIndex 
+                                    ? "Great! This card will be scheduled for longer intervals."
+                                    : "This card will be reviewed more frequently to strengthen your memory."
+                                }
+                            </div>
+                        </motion.div>
+
+                        {/* Moving to next question */}
+                        <motion.div 
+                            className="text-center text-xl"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.2 }}
+                        >
+                            <motion.span
+                                animate={{ 
+                                    opacity: [0.7, 1, 0.7],
+                                }}
+                                transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                Moving to next question...
+                            </motion.span>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
