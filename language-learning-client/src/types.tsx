@@ -7,6 +7,7 @@ export interface Word {
     en_base?: string;
     pronunciation: string;
     comment: string;
+    sentenceText?: string; // The part of the English sentence that corresponds to this word (e.g., "on Friday evening")
 }
 
 export interface DockCardData {

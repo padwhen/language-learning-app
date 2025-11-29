@@ -11,8 +11,10 @@ import { DisplayCurrentDecks } from "./DisplayCurrentDecks"
 import { useToast } from "@/components/ui/use-toast"
 import { ContextTip } from "./ContextTip"
 import { cookieDismissed } from "@/utils/cookie"
+import { useTranslationHover } from "@/contexts/TranslationHoverContext"
 
 export const Modal: React.FC<{word: Word}> = ({word}) => {
+  const { setHoveredText } = useTranslationHover();
   const { user } = useContext(UserContext)
   const [openNewDeck, setOpenNewDeck] = useState<boolean>(false)
   const { fi, en_base, en, pronunciation, original_word, comment } = word;
@@ -79,7 +81,21 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="m-1 py-1 px-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white text-md hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">{fi}</Button>
+        <Button 
+          variant="outline" 
+          className="m-1 py-1 px-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white text-md hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+          onMouseEnter={() => {
+            // Highlight the corresponding text in the sentence when hovering
+            if (word.sentenceText) {
+              setHoveredText(word.sentenceText);
+            }
+          }}
+          onMouseLeave={() => {
+            setHoveredText(null);
+          }}
+        >
+          {fi}
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[95vw] w-full sm:max-w-[600px] md:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
@@ -88,7 +104,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
         <DialogDescription className="space-y-2">
           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
             <h4 className="text-base font-bold text-gray-800 sm:min-w-[130px]">Base word</h4>
-            <p className="text-gray-800 text-base">{original_word} {en === en_base ? '' : `- ${en_base}`}</p>
+            <p className="text-gray-800 text-base">{original_word} {(en_base && en_base !== en) ? `- ${en_base}` : ''}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
             <h4 className="text-base font-bold text-gray-800 sm:min-w-[130px]">Pronunciation</h4>

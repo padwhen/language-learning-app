@@ -34,7 +34,7 @@ export const ResumeAnswerReview: React.FC<ResumeAnswerReviewProps> = ({
                     {previousAnswers.map((answer, index) => {
                         const quizItem = quizItems[answer.question - 1];
                         const isCorrect = answer.correct;
-                        const timeInSeconds = (answer.timeTaken / 1000).toFixed(1);
+                        const timeInSeconds = (answer.timeTaken).toFixed(1);
                         
                         return (
                             <motion.div

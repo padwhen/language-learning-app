@@ -1,6 +1,7 @@
 import { Word } from "@/types"
 import { Modal } from "./WordModal"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface WordCategoryProps {
     title: string;
@@ -8,58 +9,86 @@ interface WordCategoryProps {
     index?: number;
     isMockData?: boolean;
     isStreaming?: boolean;
+    translationKey?: number; // Key that changes only on new translations
 }
 
-const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false }) => {
-    const [visibleWords, setVisibleWords] = useState<Word[]>([]);
+// Helper function to check if a string is only punctuation
+const isPunctuationOnly = (str: string): boolean => {
+    // Remove whitespace and check if remaining is only punctuation
+    const trimmed = str.trim();
+    if (!trimmed) return true;
+    // Check if string contains only punctuation characters
+    return /^[^\w\s]+$/.test(trimmed);
+};
+
+// Helper function to deduplicate words based on Finnish word (fi) and filter out punctuation
+const deduplicateWords = (words: Word[]): Word[] => {
+    const seen = new Map<string, Word>();
+    const seenIds = new Set<string>();
     
-    useEffect(() => {        
-        if (!isStreaming) {
-            setVisibleWords(words);
-            return;
-        }
-        
-        // When streaming, animate in new words immediately
-        if (words.length > visibleWords.length) {
-            const newWords = words.slice(visibleWords.length);
-            
-            newWords.forEach((word, i) => {
-                setTimeout(() => {
-                    setVisibleWords(prev => {
-                        // Replace existing partial with complete if available
-                        const existing = prev.findIndex(w => w.fi === word.fi && w.en === word.en);
-                        if (existing !== -1) {
-                            const updated = [...prev];
-                            updated[existing] = word;
-                            return updated;
-                        }
-                        return [...prev, word];
-                    });
-                }, i * 100); // Faster animation for immediate feedback
-            });
-        } else if (words.length === visibleWords.length) {
-            // Update existing words (partial -> complete)
-            const hasChanges = words.some((word, i) => {
-                const visible = visibleWords[i];
-                return visible && (
-                    (visible as any).isPartial && !(word as any).isPartial
-                );
-            });
-            
-            if (hasChanges) {
-                setVisibleWords(words);
+    words.forEach(word => {
+        const key = word.fi?.toLowerCase().trim() || '';
+        // Skip if empty, punctuation only, or already seen
+        if (key && !isPunctuationOnly(key)) {
+            // If we haven't seen this word before, add it
+            if (!seen.has(key)) {
+                // Ensure unique ID - if ID already exists, generate a new one
+                let uniqueId = word.id || `${word.fi}-${word.en}`;
+                let counter = 0;
+                while (seenIds.has(uniqueId)) {
+                    uniqueId = `${word.fi}-${word.en}-${counter}`;
+                    counter++;
+                }
+                seenIds.add(uniqueId);
+                
+                seen.set(key, { ...word, id: uniqueId });
             }
         }
-    }, [words, isStreaming]);
+    });
+    return Array.from(seen.values());
+};
+
+const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, translationKey = 0 }) => {
+    const [visibleWords, setVisibleWords] = useState<Word[]>([]);
+    const [lastTranslationKey, setLastTranslationKey] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
     
-    // Reset visible words when words array changes completely (new translation)
+    // Deduplicate words
+    const uniqueWords = useMemo(() => deduplicateWords(words), [words]);
+    const MAX_VISIBLE_WORDS = 12; // Show first 12 words, then allow expansion
+    const shouldShowExpandButton = uniqueWords.length > MAX_VISIBLE_WORDS;
+    
+    const displayedWords = useMemo(() => {
+        return isExpanded || !shouldShowExpandButton 
+            ? uniqueWords 
+            : uniqueWords.slice(0, MAX_VISIBLE_WORDS);
+    }, [isExpanded, uniqueWords, shouldShowExpandButton]);
+    
     useEffect(() => {
-        if (!isStreaming) {
-            setVisibleWords(words);
-        } else {
+        // Only animate when translationKey changes (new translation started)
+        if (!isStreaming && uniqueWords.length > 0 && translationKey !== lastTranslationKey) {
+            setLastTranslationKey(translationKey);
+            setIsExpanded(false); // Reset expansion on new translation
             setVisibleWords([]);
+            
+            // Calculate what to show initially
+            const initialWords = uniqueWords.length > MAX_VISIBLE_WORDS 
+                ? uniqueWords.slice(0, MAX_VISIBLE_WORDS)
+                : uniqueWords;
+            
+            // Animate words in with staggered delay for smooth transition
+            initialWords.forEach((word, i) => {
+                setTimeout(() => {
+                    setVisibleWords(prev => [...prev, word]);
+                }, i * 50); // Staggered animation: 50ms per word
+            });
+        } else if (uniqueWords.length === 0) {
+            setVisibleWords([]);
+        } else if (!isStreaming && uniqueWords.length > 0 && translationKey === lastTranslationKey) {
+            // Update visible words when expansion changes or words update
+            setVisibleWords(displayedWords);
         }
-    }, [words.length === 0]); // Reset when starting new translation
+    }, [uniqueWords, displayedWords, isStreaming, translationKey, lastTranslationKey]);
     
     return (
         <div 
@@ -71,56 +100,72 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                 animationFillMode: 'both'
             } : {}}
         >
-            <div className="text-lg font-bold py-2">
-                {title}
-                {isStreaming && visibleWords.length === 0 && words.length === 0 && (
-                    <span className="ml-2 text-sm text-gray-500">
-                        <div className="inline-block animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
-                    </span>
-                )}
-                {visibleWords.length > 0 && (
-                    <span className="ml-2 text-sm text-gray-600">
-                        ({visibleWords.length})
-                    </span>
+            <div className="text-lg font-bold py-2 flex items-center justify-between w-full px-4">
+                <div className="flex items-center">
+                    {title}
+                    {isStreaming && uniqueWords.length === 0 && (
+                        <span className="ml-2 text-sm text-gray-500">
+                            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
+                        </span>
+                    )}
+                    {uniqueWords.length > 0 && (
+                        <span className="ml-2 text-sm text-gray-600">
+                            ({uniqueWords.length})
+                        </span>
+                    )}
+                </div>
+                {shouldShowExpandButton && !isStreaming && (
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                        aria-label={isExpanded ? "Show less" : "Show more"}
+                    >
+                        {isExpanded ? (
+                            <>
+                                <span>Show less</span>
+                                <ChevronUp className="h-4 w-4" />
+                            </>
+                        ) : (
+                            <>
+                                <span>Show {uniqueWords.length - MAX_VISIBLE_WORDS} more</span>
+                                <ChevronDown className="h-4 w-4" />
+                            </>
+                        )}
+                    </button>
                 )}
             </div>
             <div className="w-full border-b border-gray-300"></div>
             <div className="flex flex-wrap justify-center p-2 min-h-[60px]">
-                {visibleWords.map((word, wordIndex) => (
-                    <div
-                        key={word.id || `${word.fi}-${word.en}`}
-                        className={`relative ${isStreaming ? 'animate-slideIn' : ''}`}
-                        style={isStreaming ? {
-                            animationDelay: `${wordIndex * 0.05}s`,
-                            animationFillMode: 'both'
-                        } : {}}
-                    >
-                        <Modal word={word} />
-                        {/* Show loading indicator for partial words */}
-                        {(word as any).isPartial && (
-                            <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full w-3 h-3 flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-2 w-2 border-[1px] border-white border-t-transparent"></div>
-                            </div>
-                        )}
-                    </div>
-                ))}
-                {isStreaming && words.length > visibleWords.length && (
-                    <div className="flex items-center justify-center p-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span className="ml-2 text-xs text-gray-500">Loading more...</span>
-                    </div>
-                )}
+                {visibleWords.map((word, wordIndex) => {
+                    // Create a truly unique key combining multiple fields
+                    const uniqueKey = `${word.id || 'no-id'}-${word.fi}-${word.en}-${wordIndex}`;
+                    return (
+                        <div
+                            key={uniqueKey}
+                            className="relative animate-fadeInUp"
+                            style={{
+                                animationDelay: `${wordIndex * 0.05}s`,
+                                animationFillMode: 'both',
+                                animationDuration: '0.4s'
+                            }}
+                        >
+                            <Modal word={word} />
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
 };
 
-export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMockData?: boolean; isStreaming?: boolean}> = ({ words, highlighted, isMockData = false, isStreaming = false }) => {
+export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMockData?: boolean; isStreaming?: boolean; translationKey?: number}> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0 }) => {
+    // Deduplicate words first, then categorize
+    const uniqueWords = deduplicateWords(words);
     const categories = [
-        { title: 'Verbs', words: words.filter(word => word.type === 'verb' )},
-        { title: 'Nouns', words: words.filter(word => word.type === 'noun' )},
-        { title: 'Adjectives', words: words.filter(word => word.type === 'adjective') },
-        { title: 'Others', words: words.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
+        { title: 'Verbs', words: uniqueWords.filter(word => word.type === 'verb' )},
+        { title: 'Nouns', words: uniqueWords.filter(word => word.type === 'noun' )},
+        { title: 'Adjectives', words: uniqueWords.filter(word => word.type === 'adjective') },
+        { title: 'Others', words: uniqueWords.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
     ]
     return (
         <div className={`mt-5 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
@@ -133,6 +178,7 @@ export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMock
                         index={index}
                         isMockData={isMockData}
                         isStreaming={isStreaming}
+                        translationKey={translationKey}
                     />
                 ))}
             </div>

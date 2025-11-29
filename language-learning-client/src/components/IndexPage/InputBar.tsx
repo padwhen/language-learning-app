@@ -1,6 +1,7 @@
 import { textToSpeech } from "@/chatcompletion/ChatCompletion";
 import { useState, useEffect } from "react";
 import { Volume2, Send, Loader2, Sparkles } from "lucide-react";
+import { ConfidenceBadge } from "./ConfidenceBadge";
 
 interface WordTiming {
     word: string;
@@ -17,6 +18,15 @@ interface InputBarProps {
     isStreaming?: boolean;
     currentWords?: any[];
     currentWordIndex?: number;
+    confidence?: number | null;
+    confidenceDetails?: {
+        accuracy?: number;
+        completeness?: number;
+        naturalness?: number;
+        grammar?: number;
+        concerns?: string[];
+    } | null;
+    onRerun?: () => void;
 }
 
 const cleanWord = (word: string) => {
@@ -137,7 +147,10 @@ export const InputBar: React.FC<InputBarProps> = ({
     highlighted,
     isStreaming = false,
     currentWords = [],
-    currentWordIndex = -1
+    currentWordIndex = -1,
+    confidence,
+    confidenceDetails,
+    onRerun
 }) => {
     const [countdown, setCountdown] = useState(60);
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -376,22 +389,23 @@ export const InputBar: React.FC<InputBarProps> = ({
             )}
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row justify-between w-full items-center mt-6">
+            <div className="flex flex-col sm:flex-row justify-between w-full items-center mt-6 gap-3">
                 {ready ? (
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <button 
-                            onClick={handleTranslation} 
-                            className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
-                            type="submit"
-                        >
-                            <span className="relative z-10 flex items-center gap-2">
-                                <Send className="w-4 h-4" />
-                                Translate
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                        </button>      
-                        
-                        <button 
+                    <div className="flex flex-col gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row gap-3 items-center">
+                            <button 
+                                onClick={handleTranslation} 
+                                className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                                type="submit"
+                            >
+                                <span className="relative z-10 flex items-center gap-2">
+                                    <Send className="w-4 h-4" />
+                                    Translate
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                            </button>
+                            
+                            <button 
                             onClick={handleSpeak} 
                             className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/50"
                             type="button" 
@@ -410,7 +424,19 @@ export const InputBar: React.FC<InputBarProps> = ({
                             {!loadingTTS && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                             )}
-                        </button>              
+                        </button>
+                        </div>
+                        
+                        {/* Confidence Badge - shown below Translate button */}
+                        {confidence !== null && confidence !== undefined && (
+                            <div className="flex justify-center sm:justify-start">
+                                <ConfidenceBadge 
+                                    confidence={confidence}
+                                    onRerun={onRerun}
+                                    confidenceDetails={confidenceDetails || undefined}
+                                />
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex flex-col sm:flex-row justify-between w-full items-center">

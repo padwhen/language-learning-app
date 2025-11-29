@@ -1,6 +1,7 @@
 const express = require('express')
 const deckRouter = express.Router()
 const Deck = require('../models/Deck')
+const LearningHistory = require('../models/LearningHistory')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../utils/config')
 const { verifyToken } = require('../utils/middleware')
@@ -260,6 +261,8 @@ deckRouter.put('/decks/:id/reset-progress', async (request, response) => {
         if (!updatedDeck) {
             return response.status(404).json({ error: 'Deck not found' })
         }
+        // Also delete all learning history entries for this user and deck
+        await LearningHistory.deleteMany({ deckId: id, userId: userData.id })
         response.json(updatedDeck)
     } catch (error) {
         console.error('Error resetting progress:', error)

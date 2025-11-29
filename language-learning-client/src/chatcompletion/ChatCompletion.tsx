@@ -1,13 +1,16 @@
 import OpenAI from "openai"
+import Cerebras from "@cerebras/cerebras_cloud_sdk"
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
 import { franc } from 'franc'
 
 const googleKey = import.meta.env.VITE_GOOGLE_KEY
 const API_KEY = import.meta.env.VITE_GPT_KEY
 const PROMPT_1 = import.meta.env.VITE_PROMPT_1
+const PROMPT_1_REVIEW = import.meta.env.VITE_PROMPT_1_REVIEW
 const PROMPT_2 = import.meta.env.VITE_PROMPT_2
 const PROMPT_3 = import.meta.env.VITE_PROMPT_3
 const PROMPT_4 = import.meta.env.VITE_PROMPT_4
+const LANGUAGE_KEY = import.meta.env.VITE_LANGUAGE_KEY
 
 // Simple validation function for supported languages
 const validateUserInput = (text: string, selectedLanguage: string): { isValid: boolean; error?: string } => {
@@ -172,21 +175,39 @@ const extractPartialWords = (text: string): any[] => {
     return words;
 };
 
-const mergeWords = (partialWords: any[], completeWords: any[]): any[] => {
-    const result = [...completeWords];
-    
-    // Add partial words that don't have complete versions
-    partialWords.forEach(partial => {
-        const hasComplete = completeWords.some(complete => 
-            complete.fi === partial.fi && complete.en === partial.en
-        );
-        
-        if (!hasComplete) {
-            result.push(partial);
+// Prefer non-partial words and merge details based on Finnish surface form
+const normalizeSurface = (fi: string) => (fi || '').toLowerCase().trim();
+
+const mergeRecords = (base: any, extra: any) => {
+    const merged = { ...base };
+    for (const key of ['en', 'en_base', 'type', 'original_word', 'pronunciation', 'comment']) {
+        if ((merged[key] === undefined || merged[key] === '' || merged[key] === 'Loading...') && extra[key] !== undefined) {
+            merged[key] = extra[key];
         }
-    });
-    
-    return result;
+    }
+    // If either record is non-partial, mark final as non-partial
+    if (base.isPartial === true && extra.isPartial !== true) merged.isPartial = false;
+    if (!merged.original_word) merged.original_word = merged.fi;
+    return merged;
+};
+
+const mergeWords = (partialWords: any[], completeWords: any[]): any[] => {
+    const byFi: Record<string, any> = {};
+    // Seed with complete words first
+    for (const w of completeWords) {
+        const key = normalizeSurface(w.fi);
+        byFi[key] = mergeRecords({ ...w, isPartial: false }, {});
+    }
+    // Merge partials where we have no complete or to fill missing fields
+    for (const p of partialWords) {
+        const key = normalizeSurface(p.fi);
+        if (!byFi[key]) {
+            byFi[key] = { ...p };
+        } else {
+            byFi[key] = mergeRecords(byFi[key], p);
+        }
+    }
+    return Object.values(byFi);
 };
 
 // Enhanced sentence extraction
@@ -209,10 +230,112 @@ const extractSentence = (text: string): string | null => {
     return null;
 };
 
-// Streaming chat completion with progressive results
+// Helper function to extract confidence score from response
+const extractConfidence = (text: string): number | null => {
+    // Look for confidence in various formats
+    const patterns = [
+        /"confidence"\s*:\s*(\d+)/i,
+        /confidence[:\s]+(\d+)/i,
+        /rated[:\s]+(\d+)%/i,
+        /(\d+)%\s+confidence/i
+    ];
+    
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+            const confidence = parseInt(match[1], 10);
+            if (confidence >= 0 && confidence <= 100) {
+                return confidence;
+            }
+        }
+    }
+    
+    return null;
+};
+
+// Helper function to parse and extract translation result from API response
+const parseTranslationResponse = (fullResponse: string, originalText: string) => {
+    try {
+        // Try to find the most complete JSON object in the response
+        const jsonRegex = /{(.|\n)*}/;
+        const match = fullResponse.match(jsonRegex);
+        
+        if (match) {
+            const finalResult = progressiveJSONParse(match[0]);
+            const finalWords = Array.isArray(finalResult.words) ? mergeWords([], finalResult.words) : [];
+            const confidence = finalResult.confidence || extractConfidence(fullResponse);
+            
+            // Extract confidence details with concerns
+            let confidenceDetails = null;
+            if (finalResult.confidenceDetails) {
+                confidenceDetails = {
+                    accuracy: finalResult.confidenceDetails.accuracy,
+                    completeness: finalResult.confidenceDetails.completeness,
+                    naturalness: finalResult.confidenceDetails.naturalness,
+                    grammar: finalResult.confidenceDetails.grammar,
+                    concerns: Array.isArray(finalResult.confidenceDetails.concerns) 
+                        ? finalResult.confidenceDetails.concerns 
+                        : (Array.isArray(finalResult.concerns) ? finalResult.concerns : [])
+                };
+            } else if (finalResult.concerns && Array.isArray(finalResult.concerns)) {
+                // If concerns are at top level, include them
+                confidenceDetails = {
+                    concerns: finalResult.concerns
+                };
+            }
+            
+            return {
+                sentence: finalResult.sentence || null,
+                words: finalWords,
+                isComplete: true,
+                originalText: originalText,
+                currentWordIndex: -1,
+                confidence: confidence,
+                confidenceDetails: confidenceDetails
+            };
+        } else {
+            // No JSON object found, try to extract what we can
+            const extractedSentence = extractSentence(fullResponse);
+            const completeWords = extractCompleteWords(fullResponse);
+            const partialWords = extractPartialWords(fullResponse);
+            const extractedWords = mergeWords(partialWords, completeWords);
+            const confidence = extractConfidence(fullResponse);
+            
+            return {
+                sentence: extractedSentence,
+                words: extractedWords,
+                isComplete: true,
+                originalText: originalText,
+                currentWordIndex: -1,
+                confidence: confidence,
+                confidenceDetails: null
+            };
+        }
+    } catch (error) {
+        console.error('❌ JSON parsing failed:', error);
+        
+        // Last resort: try to extract what we can
+        const extractedSentence = extractSentence(fullResponse);
+        const completeWords = extractCompleteWords(fullResponse);
+        const partialWords = extractPartialWords(fullResponse);
+        const extractedWords = mergeWords(partialWords, completeWords);
+        const confidence = extractConfidence(fullResponse);
+        
+        return {
+            sentence: extractedSentence,
+            words: extractedWords,
+            isComplete: true,
+            originalText: originalText,
+            currentWordIndex: -1,
+            confidence: confidence,
+            confidenceDetails: null
+        };
+    }
+};
+
+// Non-streaming chat completion with two-pass translation (initial + review)
 export const chatCompletionStream = async function* (
-    data: { language: string, text: string},
-    onPartialResult?: (sentence: string | null, words: any[]) => void
+    data: { language: string, text: string}
 ) {
     const {language, text} = data;
 
@@ -222,98 +345,65 @@ export const chatCompletionStream = async function* (
         throw new Error(validation.error);
     }
     
-    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true});
-    const aiModel = 'gpt-4o-mini';
-    
-    let fullResponse = '';
-    let extractedSentence: string | null = null;
-    let extractedWords: any[] = [];
-    let chunkCount = 0;
+    const cerebras = new Cerebras({
+        apiKey: LANGUAGE_KEY
+    });
+    const aiModel = 'gpt-oss-120b';
 
-    const stream = await openai.chat.completions.create({
+    // PASS 1: Initial translation
+    const firstPassCompletion = await cerebras.chat.completions.create({
         model: aiModel,
         messages: [{
             role: 'system',
             content: 'you are a helpful assistant'
         }, {
             role: 'user',
-            content: `${text} in ${language} <--- ${PROMPT_1}`
+            content: `Important: Translate the ENTIRE input (all sentences/paragraphs) into ${language}. Do not summarize, omit, or shorten. Return JSON where "sentence" contains the full translation string covering the whole input. For each word in the "words" array, include a "sentenceText" field that contains the specific part(s) of the English sentence that corresponds to this Finnish word (e.g., if the word is "perjantai-illalta", the sentenceText might be "on Friday evening"). This helps users understand which part of the translation corresponds to each word.\n\nINPUT:\n${text}\n\n<--- ${PROMPT_1}`
         }],
-        stream: true
+        stream: false
     });
 
-    for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        fullResponse += content;
-        chunkCount++;
-        
-        // Try to extract sentence if we haven't found it yet
-        const previousSentence = extractedSentence;
-        if (!extractedSentence) {
-            extractedSentence = extractSentence(fullResponse);
-        }
-        
-        // Extract words
-        const completeWords = extractCompleteWords(fullResponse);
-        const partialWords = extractPartialWords(fullResponse);
-        const newWords = mergeWords(partialWords, completeWords);
-
-        // Yield if we have new sentence OR new words
-        const hasNewSentence = extractedSentence && extractedSentence !== previousSentence;
-        const hasNewWords = newWords.length > extractedWords.length;
-        
-        if (hasNewSentence || hasNewWords) {
-            extractedWords = newWords;
-            
-            if (onPartialResult) {
-                onPartialResult(extractedSentence, extractedWords);
-            }
-            
-            yield {
-                sentence: extractedSentence,
-                words: extractedWords,
-                isComplete: false,
-                originalText: text,
-                currentWordIndex: extractedWords.length - 1
-            };
-        }
+    const firstPassResponse = (firstPassCompletion as any).choices[0].message.content || '';
+    const firstPassResult = parseTranslationResponse(firstPassResponse, text);
+    
+    // If first pass failed to get a valid result, yield it and return
+    if (!firstPassResult.sentence || firstPassResult.words.length === 0) {
+        yield firstPassResult;
+        return;
     }
-    try {
-        // Try to find the most complete JSON object in the response
-        const jsonRegex = /{(.|\n)*}/;
-        const match = fullResponse.match(jsonRegex);
-        
-        if (match) {
-            const finalResult = progressiveJSONParse(match[0]);
-            
-            yield {
-                sentence: finalResult.sentence || extractedSentence,
-                words: finalResult.words || extractedWords,
-                isComplete: true,
-                originalText: text,
-                currentWordIndex: -1 // No current word when complete
-            };
-        } else {
-            // No JSON object found, use extracted data
-            yield {
-                sentence: extractedSentence,
-                words: extractedWords,
-                isComplete: true,
-                originalText: text,
-                currentWordIndex: -1
-            };
-        }
-    } catch (error) {
-        console.error('❌ Final JSON parsing failed:', error);
 
-        // Last resort: return whatever we extracted during streaming
-        yield {
-            sentence: extractedSentence,
-            words: extractedWords,
-            isComplete: true,
-            originalText: text,
-            currentWordIndex: -1
-        };
+    // PASS 2: Review and improve the translation
+    try {
+        const reviewPrompt = `ORIGINAL TEXT:\n${text}\n\nFIRST TRANSLATION RESULT:\n${JSON.stringify(firstPassResult, null, 2)}\n\nReview and improve the translation. Ensure each word in the "words" array has a "sentenceText" field that accurately identifies which part(s) of the English sentence corresponds to that Finnish word. The sentenceText should be the exact phrase or words from the "sentence" field that translate this specific word.\n\nIMPORTANT: After reviewing, provide a comprehensive confidence assessment:\n1. Include a "confidence" field (0-100) representing overall confidence in the translation.\n2. Include a "confidenceDetails" object with individual scores (0-100) for:\n   - "accuracy": How correct are the word choices? Are technical terms, idioms, and context-specific words translated accurately?\n   - "completeness": Is all content from the original translated? Nothing omitted or summarized?\n   - "naturalness": How natural does the English phrasing sound? Is it idiomatic and fluent?\n   - "grammar": Are there any grammatical errors? Is the sentence structure correct?\n3. Include a "concerns" array with specific, detailed explanations for why the confidence is not 100%. For each concern, explain:\n   - What specific aspect is uncertain or could be improved\n   - Why it affects the confidence score\n   - What the potential issue might be\n\nExample format:\n"confidence": 85,\n"confidenceDetails": {\n  "accuracy": 90,\n  "completeness": 85,\n  "naturalness": 80,\n  "grammar": 95\n},\n"concerns": [\n  "Some technical terms (e.g., 'lastensuojeluilmoitus') may need domain-specific verification as child protection terminology can vary by jurisdiction",\n  "The phrase 'viime lukukausi' could be more naturally rendered as 'last school year' but the exact academic period context might need clarification",\n  "The compound word 'flunssakierteiden' is translated but the medical/idiomatic nuance might be slightly different in English"\n]\n\nAlways provide detailed, specific concerns that explain what contributes to the missing percentage (100 - confidence).\n\n<--- ${PROMPT_1_REVIEW}`;
+        
+        const reviewCompletion = await cerebras.chat.completions.create({
+            model: aiModel,
+            messages: [{
+                role: 'system',
+                content: 'you are a helpful assistant'
+            }, {
+                role: 'user',
+                content: reviewPrompt
+            }],
+            stream: false
+        });
+
+        const reviewResponse = (reviewCompletion as any).choices[0].message.content || '';
+        const reviewedResult = parseTranslationResponse(reviewResponse, text);
+        
+        // If review pass produced a valid result, use it; otherwise fall back to first pass
+        if (reviewedResult.sentence && reviewedResult.words.length > 0) {
+            // Ensure confidence is included (from review or fallback to first pass)
+            reviewedResult.confidence = reviewedResult.confidence ?? firstPassResult.confidence ?? null;
+            yield reviewedResult;
+        } else {
+            console.warn('Review pass failed, using first pass result');
+            yield firstPassResult;
+        }
+    } catch (reviewError) {
+        console.error('Review pass error:', reviewError);
+        // If review fails, yield the first pass result
+        yield firstPassResult;
     }
 };
 
@@ -327,13 +417,19 @@ export const chatCompletion = async (data: { language: string, text: string}) =>
         throw new Error(validation.error);
     }
     
-    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
-    const aiModel = 'gpt-4o-mini'
-    const completion = await openai.chat.completions.create({
+    const cerebras = new Cerebras({
+        apiKey: LANGUAGE_KEY
+    });
+    const aiModel = 'gpt-oss-120b';
+    const completion = await cerebras.chat.completions.create({
         model: aiModel,
-        messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${text} in ${language} <--- ${PROMPT_1}`}]
+        messages: [
+            { role: 'system', content: 'you are a helpful assistant' },
+            { role: 'user', content: `Important: Translate the ENTIRE input (all sentences/paragraphs) into ${language}. Do not summarize, omit, or shorten. Return JSON where "sentence" contains the full translation string covering the whole input.\n\nINPUT:\n${text}\n\n<--- ${PROMPT_1}` }
+        ],
+        stream: false
     })
-    let aiResponse = completion.choices[0].message.content
+    let aiResponse = (completion as any).choices[0].message.content
     
     try {
         const jsonRegex = /{(.|\n)*}/; 
@@ -405,13 +501,16 @@ export const test = async (word: string) => {
 
 export const createTest = async (data: any) => {
     const jsonString = JSON.stringify(data)
-    const openai = new OpenAI({apiKey: API_KEY, dangerouslyAllowBrowser: true})
-    const aiModel = 'gpt-4o-mini'
-    const completion = await openai.chat.completions.create({
+    const cerebras = new Cerebras({
+        apiKey: LANGUAGE_KEY
+    });
+    const aiModel = 'gpt-oss-120b'
+    const completion = await cerebras.chat.completions.create({
         model: aiModel,
-        messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${jsonString} <--- ${PROMPT_4}`}]
+        messages: [{role: 'system',content: 'you are a helpful assistant'},{role: 'user',content: `${jsonString} <--- ${PROMPT_4}`}],
+        stream: false
     })
-    let aiResponse = completion.choices[0].message.content
+    let aiResponse = (completion as any).choices[0].message.content
     const jsonRegex = /{(.|\n)*}/; 
     const match = aiResponse?.match(jsonRegex);
     if (match) {

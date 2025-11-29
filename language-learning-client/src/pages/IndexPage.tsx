@@ -9,10 +9,11 @@ import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { TranslationHoverProvider } from "@/contexts/TranslationHoverContext";
 
 
 export const IndexPage = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, currentWordIndex, validationError, response, handleTranslationStream } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, translationKey, response, handleTranslationStream } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -103,7 +104,7 @@ export const IndexPage = () => {
     };
 
     return (
-        <>
+        <TranslationHoverProvider>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
                 <Header 
                     highlightUser={highlightedElement === 'user-header'}
@@ -124,7 +125,10 @@ export const IndexPage = () => {
                                 highlighted={highlightedElement === 'input-bar'}
                                 isStreaming={isStreaming}
                                 currentWords={response?.words}
-                                currentWordIndex={currentWordIndex}
+                                currentWordIndex={-1}
+                                confidence={response?.confidence}
+                                confidenceDetails={response?.confidenceDetails}
+                                onRerun={handleTranslationStream}
                             />
                             
                             {/* Validation Error Display */}
@@ -169,6 +173,7 @@ export const IndexPage = () => {
                                     <Translation 
                                         text={isTourActive ? mockTranslation : response?.sentence}
                                         highlighted={highlightedElement === 'translation'}
+                                        translationKey={translationKey}
                                     />
                                 </div>
                             )}
@@ -200,6 +205,7 @@ export const IndexPage = () => {
                                         highlighted={highlightedElement === 'word-details'}
                                         isMockData={isTourActive && !response?.words}
                                         isStreaming={isStreaming}
+                                        translationKey={translationKey}
                                     />
                                 </div>
                             )}
@@ -234,6 +240,6 @@ export const IndexPage = () => {
                     onFinish={handleFinish}
                 />
             )}
-        </>
+        </TranslationHoverProvider>
     )
 }
