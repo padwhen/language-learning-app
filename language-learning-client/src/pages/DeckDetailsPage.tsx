@@ -201,90 +201,93 @@ export const DeckDetailsPage: React.FC = () => {
     }, [debouncedSearchTerm, cards])
 
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-50">
         {/* Main container with proper max width and centering */}
-        <div className="max-w-7xl mx-auto pt-5 px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col xl:flex-row gap-12 xl:gap-24">
+        <div className="max-w-7xl mx-auto pt-6 px-4 md:px-6 lg:px-8 pb-12">
+          <div className="flex flex-col xl:flex-row gap-8 xl:gap-12">
             {/* Main content area */}
-            <div className="flex-1 xl:max-w-[70%] -ml-8">
-              <h1 className="text-3xl md:text-4xl font-bold mt-4 mb-6">{deckName}</h1>
-              
-              {/* Deck Navigation Links */}
-              <div className={`transition-all duration-300 ${
-                highlightedElement === 'deck-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
-              }`} data-tour-id="deck-navigation">
-                <DeckLinks id={id!} cardsLength={cards.length} />
+            <div className="flex-1 xl:max-w-[65%]">
+              {/* Header Section */}
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{deckName}</h1>
+                
+                {/* Deck Navigation Links */}
+                <div className={`transition-all duration-300 ${
+                  highlightedElement === 'deck-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+                }`} data-tour-id="deck-navigation">
+                  <DeckLinks id={id!} cardsLength={cards.length} />
+                </div>
               </div>
               
               {cards.length > 0 ? (
                 <>
-                  {/* FlashCard section with consistent centering */}
-                  <div className={`flex flex-col items-center w-full mb-8 transition-all duration-300 ${
-                    highlightedElement === 'flashcard-area' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-4' : ''
+                  {/* FlashCard section - Cleaner spacing */}
+                  <div className={`bg-gray-50 rounded-xl shadow-sm p-6 mb-8 transition-all duration-300 ${
+                    highlightedElement === 'flashcard-area' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
                   }`} data-tour-id="flashcard-area">
-                    <AnimatePresence>
-                      <FlashCard 
-                        card={cards[currentCardIndex]} 
-                        isFlipped={isFlipped} 
-                        onFlip={handleCardClick}
-                        hint={hint}
-                        onGenerateHint={handleGenerateHintClick}
-                        onToggleFavorite={handleToggleFavorite}
-                      />
-                    </AnimatePresence>
-                    
-                    {/* Controls centered with card */}
-                    <div className="w-full max-w-[875px] mx-auto mt-6">
-                      <div className={`transition-all duration-300 ${
-                        highlightedElement === 'deck-controls' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
-                      }`} data-tour-id="deck-controls">
-                        <DeckControls 
-                          onPlay={() => setAutoPlay(!autoPlay)}
-                          onShuffle={() => {/* Implement shuffle */}}
-                          id={id}
+                    <div className="flex flex-col items-center">
+                      <AnimatePresence>
+                        <FlashCard 
+                          card={cards[currentCardIndex]} 
+                          isFlipped={isFlipped} 
+                          onFlip={handleCardClick}
+                          hint={hint}
+                          onGenerateHint={handleGenerateHintClick}
+                          onToggleFavorite={handleToggleFavorite}
                         />
-                      </div>
+                      </AnimatePresence>
                       
-                      <div className={`mt-6 transition-all duration-300 ${
-                        highlightedElement === 'card-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
-                      }`} data-tour-id="card-navigation">
-                        <DeckNavigation 
-                          currentCardIndex={currentCardIndex}
-                          cardsLength={cards.length}
-                          onMoveLeft={handleMoveLeft}
-                          onMoveRight={handleMoveRight}
-                        />
+                      {/* Controls with better spacing */}
+                      <div className="w-full max-w-[875px] mt-8 space-y-4">
+                        <div className={`transition-all duration-300 ${
+                          highlightedElement === 'deck-controls' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+                        }`} data-tour-id="deck-controls">
+                          <DeckControls 
+                            onPlay={() => setAutoPlay(!autoPlay)}
+                            onShuffle={() => {/* Implement shuffle */}}
+                            id={id}
+                          />
+                        </div>
+                        
+                        <div className={`transition-all duration-300 ${
+                          highlightedElement === 'card-navigation' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
+                        }`} data-tour-id="card-navigation">
+                          <DeckNavigation 
+                            currentCardIndex={currentCardIndex}
+                            cardsLength={cards.length}
+                            onMoveLeft={handleMoveLeft}
+                            onMoveRight={handleMoveRight}
+                          />
+                        </div>
+                        <Progress value={(currentCardIndex + 1) / cards.length * 100} className="w-full h-2" />
                       </div>
-                      <Progress value={(currentCardIndex + 1) / cards.length * 100} className="w-full max-h-1 mt-6" />
                     </div>
                   </div>
 
-                  <div className="mb-8">
+                  {/* Creator Bar - Better positioned */}
+                  <div className="mb-10">
                     <CreatorBar id={id!} />
                   </div>
                   
-                  {/* Terms section */}
-                  <div className={`pt-8 transition-all duration-300 ${
-                    highlightedElement === 'terms-section' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-4' : ''
+                  {/* Terms section - Cleaner layout */}
+                  <div className={`bg-gray-50 rounded-xl shadow-sm p-6 transition-all duration-300 ${
+                    highlightedElement === 'terms-section' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
                   }`} data-tour-id="terms-section">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-6 w-full mb-8">
-                      <h1 className="text-3xl font-bold flex-shrink-0">Terms in this set ({cards.length})</h1>
-                      <form className="relative flex-1 max-w-lg"> 
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Terms in this set ({cards.length})</h2>
+                      <form className="relative flex-1 max-w-md"> 
                         <Input  
                           type="text" 
                           placeholder="Find any term/definition..." 
-                          className="w-full pl-3 pr-10 py-2 rounded-full
-                          border border-transparent
-                          focus:outline-none focus:border-gray-300 focus:ring-2 focus:ring-gray-500
-                          transition-all duration-200 ease-in-out"
+                          className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-gray-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:bg-white transition-all duration-200"
                           value={searchTerm}
                           onChange={handleSearchChange} 
                         />
-                        <button disabled={isSearching} className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <button disabled={isSearching} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                           {isSearching ? (
                             "..."
                           ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-5 w-5 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-5 w-5">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>                          
                           )}
@@ -292,7 +295,7 @@ export const DeckDetailsPage: React.FC = () => {
                       </form>
                     </div>
                     
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       {searchTerm ? (
                         <CardCategory categoryName="Search Results" cards={results} id={id!} />
                       ) : (
@@ -306,18 +309,20 @@ export const DeckDetailsPage: React.FC = () => {
                   </div>
                 </>
               ) : (
-                <>
+                <div className="bg-white rounded-xl shadow-sm p-8">
                   <NoCard />
-                  <CreatorBar id={id!} />
-                </>
+                  <div className="mt-8">
+                    <CreatorBar id={id!} />
+                  </div>
+                </div>
               )}
             </div>
             
-            {/* Sidebar for learning history */}
-            <div className={`w-full -mr-8 xl:w-[350px] xl:flex-shrink-0 transition-all duration-300 ${
+            {/* Sidebar for learning history - Better spacing */}
+            <div className={`w-full xl:w-[320px] xl:flex-shrink-0 transition-all duration-300 ${
               highlightedElement === 'learning-history' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg rounded-lg p-2' : ''
             }`} data-tour-id="learning-history">
-              <div className="xl:sticky xl:top-5">
+              <div className="xl:sticky xl:top-6">
                 <LearningHistory deckId={id!} />
               </div>
             </div>

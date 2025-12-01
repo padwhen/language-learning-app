@@ -26,7 +26,7 @@ export const FrontCard = ({ word, hint, onGenerateHint, favorite, onToggleFavori
     }
 
     return (
-        <div className="min-h-[250px] md:h-[350px] shadow-md">
+        <div className="min-h-[250px] md:h-[350px] bg-white rounded-lg shadow-md border border-gray-200">
             <header className="mt-2 ml-2 flex flex-col sm:flex-row justify-between items-center">
                 <div className="inline-flex flex-row gap-2 items-center justify-center sm:ml-5 ml-2 mb-2 sm:mb-0">
                     <ToolTip trigger={<Pencil />} content="Edit the flashcard" />

@@ -1,6 +1,7 @@
 const express = require('express')
 const deckRouter = express.Router()
 const Deck = require('../models/Deck')
+const Card = require('../models/Card')
 const LearningHistory = require('../models/LearningHistory')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../utils/config')
@@ -215,6 +216,89 @@ deckRouter.put('/decks/:id/add-card', async (request, response) => {
       response.json(updatedDeck)
     } catch (error) {
       console.error('Error adding card to deck:', error)
+      response.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+// POST endpoint to save all words to a deck at once
+deckRouter.post('/decks/:id/save-all', async (request, response) => {
+    try {
+      const { token } = request.cookies
+      if (!token) {
+        return response.status(401).json({ error: 'Unauthorized' })
+      }
+      const { id } = request.params
+      const { words } = request.body // Array of words with engCard and userLangCard
+      const userData = jwt.verify(token, JWT_SECRET)
+      
+      if (!words || !Array.isArray(words) || words.length === 0) {
+        return response.status(400).json({ error: 'Words array is required' })
+      }
+      
+      // Verify deck exists and belongs to user
+      const deck = await Deck.findOne({ _id: id, owner: userData.id })
+      if (!deck) {
+        return response.status(404).json({ error: 'Deck not found' })
+      }
+      
+      // Filter out invalid words (empty engCard or userLangCard)
+      const validWords = words.filter(word => 
+        word.engCard && 
+        word.engCard.trim() !== '' && 
+        word.userLangCard && 
+        word.userLangCard.trim() !== ''
+      )
+      
+      if (validWords.length === 0) {
+        return response.status(400).json({ error: 'No valid words to save' })
+      }
+      
+      // Prepare cards to add (avoiding duplicates)
+      const existingCards = deck.cards || []
+      const cardsToAdd = []
+      
+      for (const word of validWords) {
+        // Check if card already exists
+        const exists = existingCards.some(existing => 
+          existing.engCard === word.engCard && 
+          existing.userLangCard === word.userLangCard
+        )
+        
+        if (!exists) {
+          // Create card
+          const cardResponse = await Card.create({
+            engCard: word.engCard.trim(),
+            userLangCard: word.userLangCard.trim(),
+            cardScore: 0
+          })
+          cardsToAdd.push({
+            _id: cardResponse._id,
+            engCard: word.engCard.trim(),
+            userLangCard: word.userLangCard.trim(),
+            cardScore: 0,
+            favorite: false
+          })
+        }
+      }
+      
+      // Add all new cards to deck
+      if (cardsToAdd.length > 0) {
+        await Deck.findOneAndUpdate(
+          { _id: id, owner: userData.id },
+          { $push: { cards: { $each: cardsToAdd } } },
+          { new: true }
+        )
+      }
+      
+      const updatedDeck = await Deck.findById(id)
+      
+      response.json({ 
+        success: true, 
+        added: cardsToAdd.length,
+        total: updatedDeck.cards.length
+      })
+    } catch (error) {
+      console.error('Error saving all words to deck:', error)
       response.status(500).json({ error: 'Internal Server Error' })
     }
 })

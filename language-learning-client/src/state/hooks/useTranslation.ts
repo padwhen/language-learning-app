@@ -72,7 +72,20 @@ const useTranslation = () => {
                                 ...word, 
                                 id: word.id || uuidv4() // Keep existing ID if present
                             }));
-                            newResponse.words = wordsWithUUID;
+                            
+                            // Deduplicate words based on fi (Finnish word) to prevent duplicates
+                            const existingWords = newResponse.words || [];
+                            const seenFi = new Set(existingWords.map((w: any) => w.fi?.toLowerCase().trim()).filter(Boolean));
+                            
+                            const newUniqueWords = wordsWithUUID.filter((word: any) => {
+                                const key = word.fi?.toLowerCase().trim();
+                                if (!key) return false;
+                                if (seenFi.has(key)) return false;
+                                seenFi.add(key);
+                                return true;
+                            });
+                            
+                            newResponse.words = [...existingWords, ...newUniqueWords];
                         }
                         
                         return newResponse;
@@ -199,6 +212,16 @@ const useTranslation = () => {
         }
     }, [])
 
+    // Function to refresh response from localStorage
+    const refreshResponseFromStorage = () => {
+        const storedResponse = localStorage.getItem('response');
+        if (storedResponse) {
+            setResponse(JSON.parse(storedResponse));
+        } else {
+            setResponse(null);
+        }
+    };
+
     return { 
         fromLanguage, 
         setFromLanguage, 
@@ -210,7 +233,8 @@ const useTranslation = () => {
         validationError,
         response, 
         handleTranslation,
-        handleTranslationStream
+        handleTranslationStream,
+        refreshResponseFromStorage
     }
 }
 

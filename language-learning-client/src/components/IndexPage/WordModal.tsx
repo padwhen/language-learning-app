@@ -83,7 +83,7 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="m-1 py-1 px-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white text-md hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+          className="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none transition-colors"
           onMouseEnter={() => {
             // Highlight the corresponding text in the sentence when hovering
             if (word.sentenceText) {
