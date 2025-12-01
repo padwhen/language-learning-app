@@ -1,9 +1,0 @@
-.env
-
-
-node_modules
-.git
-
-dist
-
-node_modules/
