@@ -27,25 +27,33 @@ const useTranslation = () => {
         setResponse(null)
         
         if (inputText.trim().toLowerCase() === 'test') {
-            const parsedResponse = jsonData;
-            const { sentence, words } = parsedResponse
+            const parsedResponse: any = jsonData;
+            const { sentence, words } = parsedResponse;
+            const confidence = (parsedResponse as any).confidence;
+            const confidenceDetails = (parsedResponse as any).confidenceDetails;
+            const testResponse: any = {};
+            
             if (sentence) {
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, sentence: sentence 
-                }))
+                testResponse.sentence = sentence;
             }
             if (words) {
-                const wordsWithUUID = words.map(word => ({
+                const wordsWithUUID = words.map((word: any) => ({
                     ...word, id: uuidv4()
                 }))
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, words: wordsWithUUID
-                }))
+                testResponse.words = wordsWithUUID;
             }
-            localStorage.setItem("response", JSON.stringify(parsedResponse))
-            localStorage.setItem("fromLanguage", fromLanguage)
-            setReady(true)
-            setIsStreaming(false)
+            if (confidence !== undefined && confidence !== null) {
+                testResponse.confidence = confidence;
+            }
+            if (confidenceDetails) {
+                testResponse.confidenceDetails = confidenceDetails;
+            }
+            
+            setResponse(testResponse);
+            localStorage.setItem("response", JSON.stringify(testResponse));
+            localStorage.setItem("fromLanguage", fromLanguage);
+            setReady(true);
+            setIsStreaming(false);
         } else {
             try {
                 const stream = chatCompletionStream({ language: fromLanguage, text: inputText });
@@ -53,7 +61,7 @@ const useTranslation = () => {
                 let chunkNumber = 0;
                 for await (const chunk of stream) {
                     chunkNumber++;
-                    const { sentence, words, isComplete, currentWordIndex: streamWordIndex } = chunk;
+                    const { sentence, words, isComplete, currentWordIndex: streamWordIndex, confidence, confidenceDetails } = chunk;
                     // Update current word index for highlighting
                     if (typeof streamWordIndex === 'number') {
                         setCurrentWordIndex(streamWordIndex);
@@ -72,7 +80,28 @@ const useTranslation = () => {
                                 ...word, 
                                 id: word.id || uuidv4() // Keep existing ID if present
                             }));
-                            newResponse.words = wordsWithUUID;
+                            
+                            // Deduplicate words based on fi (Finnish word) to prevent duplicates
+                            const existingWords = newResponse.words || [];
+                            const seenFi = new Set(existingWords.map((w: any) => w.fi?.toLowerCase().trim()).filter(Boolean));
+                            
+                            const newUniqueWords = wordsWithUUID.filter((word: any) => {
+                                const key = word.fi?.toLowerCase().trim();
+                                if (!key) return false;
+                                if (seenFi.has(key)) return false;
+                                seenFi.add(key);
+                                return true;
+                            });
+                            
+                            newResponse.words = [...existingWords, ...newUniqueWords];
+                        }
+                        
+                        // Update confidence and confidenceDetails if present
+                        if (confidence !== undefined && confidence !== null) {
+                            newResponse.confidence = confidence;
+                        }
+                        if (confidenceDetails) {
+                            newResponse.confidenceDetails = confidenceDetails;
                         }
                         
                         return newResponse;
@@ -81,15 +110,31 @@ const useTranslation = () => {
                     // If this is the final chunk, save to localStorage
                     if (isComplete) {
                         setCurrentWordIndex(-1); // Reset highlighting
-                        const finalResponse = {
-                            sentence,
-                            words: words?.map((word: any) => ({
-                                ...word, 
-                                id: word.id || uuidv4()
-                            })) || []
-                        };
-                        localStorage.setItem('response', JSON.stringify(finalResponse));
-                        localStorage.setItem('fromLanguage', fromLanguage);
+                        
+                        // Use the accumulated response state to ensure we have all data including confidence details
+                        setResponse((prevResponse: any) => {
+                            const finalResponse: any = {
+                                sentence: prevResponse?.sentence || sentence,
+                                words: prevResponse?.words || []
+                            };
+                            
+                            // Include confidence and confidenceDetails from accumulated state or current chunk
+                            const finalConfidence = prevResponse?.confidence ?? confidence;
+                            const finalConfidenceDetails = prevResponse?.confidenceDetails ?? confidenceDetails;
+                            
+                            if (finalConfidence !== undefined && finalConfidence !== null) {
+                                finalResponse.confidence = finalConfidence;
+                            }
+                            if (finalConfidenceDetails) {
+                                finalResponse.confidenceDetails = finalConfidenceDetails;
+                            }
+                            
+                            // Save to localStorage with all data including confidence details
+                            localStorage.setItem('response', JSON.stringify(finalResponse));
+                            localStorage.setItem('fromLanguage', fromLanguage);
+                            
+                            return finalResponse;
+                        });
                     }
                 }
                 
@@ -107,24 +152,32 @@ const useTranslation = () => {
                 }
                 
                 // Fallback to non-streaming
-                try {
-                    const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
-                    if (response_json !== null) {
-                        const parsedResponse = JSON.parse(response_json);
-                        const { sentence, words } = parsedResponse;
-                        
-                        const finalResponse = {
-                            sentence,
-                            words: words?.map((word: any) => ({
-                                ...word, 
-                                id: uuidv4()
-                            })) || []
-                        };
-                        
-                        setResponse(finalResponse);
-                        localStorage.setItem('response', JSON.stringify(finalResponse));
-                        localStorage.setItem('fromLanguage', fromLanguage);
+            try {
+                const response_json = await chatCompletion({ language: fromLanguage, text: inputText });
+                if (response_json !== null) {
+                    const parsedResponse = JSON.parse(response_json);
+                    const { sentence, words, confidence, confidenceDetails } = parsedResponse;
+                    
+                    const finalResponse: any = {
+                        sentence,
+                        words: words?.map((word: any) => ({
+                            ...word, 
+                            id: uuidv4()
+                        })) || []
+                    };
+                    
+                    // Include confidence and confidenceDetails if present
+                    if (confidence !== undefined && confidence !== null) {
+                        finalResponse.confidence = confidence;
                     }
+                    if (confidenceDetails) {
+                        finalResponse.confidenceDetails = confidenceDetails;
+                    }
+                    
+                    setResponse(finalResponse);
+                    localStorage.setItem('response', JSON.stringify(finalResponse));
+                    localStorage.setItem('fromLanguage', fromLanguage);
+                }
                 } catch (fallbackError) {
                     console.error('Fallback translation error:', fallbackError);
                     // Error handling will be done at the UI level
@@ -141,47 +194,61 @@ const useTranslation = () => {
         
         setReady(false)
         if (inputText.trim().toLowerCase() === 'test') {
-            const parsedResponse = jsonData;
-            const { sentence, words } = parsedResponse
+            const parsedResponse: any = jsonData;
+            const { sentence, words } = parsedResponse;
+            const confidence = (parsedResponse as any).confidence;
+            const confidenceDetails = (parsedResponse as any).confidenceDetails;
+            const testResponse: any = {};
+            
             if (sentence) {
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, sentence: sentence 
-                }))
+                testResponse.sentence = sentence;
             }
             if (words) {
-                const wordsWithUUID = words.map(word => ({
+                const wordsWithUUID = words.map((word: any) => ({
                     ...word, id: uuidv4()
                 }))
-                setResponse((prevResponse: any) => ({
-                    ...prevResponse, words: wordsWithUUID
-                }))
+                testResponse.words = wordsWithUUID;
             }
-            localStorage.setItem("response", JSON.stringify(parsedResponse))
-            localStorage.setItem("fromLanguage", fromLanguage)
-            setReady(true)
+            if (confidence !== undefined && confidence !== null) {
+                testResponse.confidence = confidence;
+            }
+            if (confidenceDetails) {
+                testResponse.confidenceDetails = confidenceDetails;
+            }
+            
+            setResponse(testResponse);
+            localStorage.setItem("response", JSON.stringify(testResponse));
+            localStorage.setItem("fromLanguage", fromLanguage);
+            setReady(true);
         } else {
             try {
                 const response_json = await chatCompletion({ language: fromLanguage, text: inputText })
                 if (response_json !== null) {
                     const parsedResponse = JSON.parse(response_json)
-                    const { sentence, words } = parsedResponse
+                    const { sentence, words, confidence, confidenceDetails } = parsedResponse
+                    const finalResponse: any = {};
+                    
                     if (sentence) {
-                        setResponse((prevResponse: any) => ({
-                            ...prevResponse, sentence: sentence
-                        }))
+                        finalResponse.sentence = sentence;
                     }
                     if (words) {
                         const wordsWithUUID = words.map((word: any) => ({
                             ...word, id: uuidv4()
                         }))
-                        setResponse((prevResponse: any) => ({
-                            ...prevResponse, words: wordsWithUUID
-                        }))
+                        finalResponse.words = wordsWithUUID;
                     }
-                    localStorage.setItem('response', JSON.stringify(parsedResponse))
-                    localStorage.setItem('fromLanguage', fromLanguage)
+                    if (confidence !== undefined && confidence !== null) {
+                        finalResponse.confidence = confidence;
+                    }
+                    if (confidenceDetails) {
+                        finalResponse.confidenceDetails = confidenceDetails;
+                    }
+                    
+                    setResponse(finalResponse);
+                    localStorage.setItem('response', JSON.stringify(finalResponse));
+                    localStorage.setItem('fromLanguage', fromLanguage);
                 }
-                setReady(true)
+                setReady(true);
             } catch (error) {
                 console.error('Translation error:', error);
                 if (error instanceof Error) {
@@ -199,6 +266,16 @@ const useTranslation = () => {
         }
     }, [])
 
+    // Function to refresh response from localStorage
+    const refreshResponseFromStorage = () => {
+        const storedResponse = localStorage.getItem('response');
+        if (storedResponse) {
+            setResponse(JSON.parse(storedResponse));
+        } else {
+            setResponse(null);
+        }
+    };
+
     return { 
         fromLanguage, 
         setFromLanguage, 
@@ -210,7 +287,8 @@ const useTranslation = () => {
         validationError,
         response, 
         handleTranslation,
-        handleTranslationStream
+        handleTranslationStream,
+        refreshResponseFromStorage
     }
 }
 

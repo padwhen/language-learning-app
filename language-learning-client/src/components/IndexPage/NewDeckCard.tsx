@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
 import { useDeckContext } from "@/contexts/DeckContext"
 
-export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = ({setOpenNewDeck}) => {
+export const NewDeckCard: React.FC<{setOpenNewDeck: (isOpen: boolean) => void;}> = ({setOpenNewDeck}) => {
   const [name, setName] = useState<string>('');
   const [tags, setTags] = useState<string[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -55,16 +55,13 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full md:w-[350px]">
-      <Card>
-        <CardHeader>
-          <CardTitle>New Deck</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="flex flex-col gap-4 w-full">
+      <Card className="border border-gray-200 shadow-sm">
+        <CardContent className="pt-6">
           <form className="grid grid-cols-1 gap-y-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Name of the new deck" onChange={handleNameChange} />
+              <Input id="name" placeholder="Name of the new deck" onChange={handleNameChange} value={name} />
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="languages">Languages</Label>
@@ -91,9 +88,8 @@ export const NewDeckCard: React.FC<{setOpenNewDeck: (arg: boolean) => void;}> = 
             </div>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-end gap-4">
-          <Button variant="outline" onClick={() => setOpenNewDeck(false)}>Cancel</Button>
-          <Button onClick={handleAddDeck}>Add Deck</Button>
+        <CardFooter className="flex justify-end gap-4 pt-4">
+          <Button onClick={handleAddDeck} className="bg-blue-600 hover:bg-blue-700">Add Deck</Button>
         </CardFooter>
       </Card>
     </div>

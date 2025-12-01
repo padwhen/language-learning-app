@@ -1,7 +1,16 @@
 import { Word } from "@/types"
-import { Modal } from "./WordModal"
-import React, { useEffect, useState, useMemo } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
+import { ChevronDown, ChevronUp, CheckCircle2, Sparkles } from "lucide-react";
+import { useTranslationHover } from "@/contexts/TranslationHoverContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { UserContext } from "@/contexts/UserContext";
+import { DisplayCurrentDecks } from "./DisplayCurrentDecks";
+import { LoginPage } from "../UsersComponents/LoginPage";
+import { useToast } from "../ui/use-toast";
+import { ContextTip } from "./ContextTip";
+import { cookieDismissed } from "@/utils/cookie";
+import axios from "axios";
 
 interface WordCategoryProps {
     title: string;
@@ -10,6 +19,7 @@ interface WordCategoryProps {
     isMockData?: boolean;
     isStreaming?: boolean;
     translationKey?: number; // Key that changes only on new translations
+    onWordRemoved?: () => void;
 }
 
 // Helper function to check if a string is only punctuation
@@ -23,24 +33,32 @@ const isPunctuationOnly = (str: string): boolean => {
 
 // Helper function to deduplicate words based on Finnish word (fi) and filter out punctuation
 const deduplicateWords = (words: Word[]): Word[] => {
+    if (!words || !Array.isArray(words)) return [];
+    
     const seen = new Map<string, Word>();
     const seenIds = new Set<string>();
     
     words.forEach(word => {
+        if (!word) return;
+        
         const key = word.fi?.toLowerCase().trim() || '';
         // Skip if empty, punctuation only, or already seen
         if (key && !isPunctuationOnly(key)) {
             // If we haven't seen this word before, add it
             if (!seen.has(key)) {
-                // Ensure unique ID - if ID already exists, generate a new one
+                // Use existing ID if available, otherwise generate one
                 let uniqueId = word.id || `${word.fi}-${word.en}`;
-                let counter = 0;
-                while (seenIds.has(uniqueId)) {
-                    uniqueId = `${word.fi}-${word.en}-${counter}`;
-                    counter++;
-                }
-                seenIds.add(uniqueId);
                 
+                // If ID already exists, generate a new one
+                if (seenIds.has(uniqueId)) {
+                    let counter = 0;
+                    do {
+                        uniqueId = `${word.fi}-${word.en}-${counter}`;
+                        counter++;
+                    } while (seenIds.has(uniqueId));
+                }
+                
+                seenIds.add(uniqueId);
                 seen.set(key, { ...word, id: uniqueId });
             }
         }
@@ -48,7 +66,268 @@ const deduplicateWords = (words: Word[]): Word[] => {
     return Array.from(seen.values());
 };
 
-const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, translationKey = 0 }) => {
+// Word pill component with clickable dialog for word details and save functionality
+const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => void }> = ({ word, wordIndex, onWordRemoved }) => {
+    const { setHoveredText } = useTranslationHover();
+    const { user } = useContext(UserContext);
+    const { toast } = useToast();
+    const { fi, en, en_base, pronunciation, original_word, comment } = word;
+    const [showDeckSelection, setShowDeckSelection] = useState(false);
+    const [isCreatingNewDeck, setIsCreatingNewDeck] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState<{ deckName: string; word: string; translation: string } | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    
+    // Context tip state
+    const defaultSaveAs = (user?.flashcardWordForm as 'original' | 'base') === 'base' ? 'base' : 'original';
+    const [saveAs, setSaveAs] = useState<'original' | 'base'>(defaultSaveAs);
+    
+    // Compute if tip should show
+    const shouldShowTip = 
+        original_word?.trim().toLowerCase() !== fi?.trim().toLowerCase() &&
+        (user?.flashcardWordForm as 'original' | 'base') !== 'base' &&
+        !cookieDismissed();
+
+    const fetchDeckName = async (deckId: string): Promise<string> => {
+        try {
+            const response = await axios.get(`/decks/${deckId}`)
+            return response.data.deckName;
+        } catch (error) {
+            console.error('Error fetching deck name: ', error)
+            return ''
+        }
+    }
+
+    const saveWordToDeck = async (deckId: string) => {
+        try {
+            // Determine what to save based on user choice
+            const isBase = saveAs === 'base';
+            const userLangCard = isBase ? original_word : fi;
+            const engCard = isBase ? (en_base || en) : en;
+
+            const wordResponse = await axios.post('/cards', { engCard, userLangCard });
+            const newCard = { 
+                _id: wordResponse.data._id,
+                engCard,
+                userLangCard,
+                cardScore: 0,
+                favorite: false
+            };
+            await axios.put(`/decks/${deckId}/add-card`, newCard);
+            
+            const deckName = await fetchDeckName(deckId);
+            
+            // Remove word from localStorage
+            const localStorageKey = "response";
+            const storedResponse = localStorage.getItem(localStorageKey);
+            if (storedResponse) {
+                const response = JSON.parse(storedResponse);
+                if (response.words) {
+                    // Remove the word by matching original_word (to handle both base and surface forms)
+                    const updatedWords = response.words.filter((w: Word) => 
+                        w.original_word !== original_word && w.fi !== fi
+                    );
+                    localStorage.setItem(localStorageKey, JSON.stringify({ ...response, words: updatedWords }));
+                    
+                    // Trigger UI update by calling the callback
+                    if (onWordRemoved) {
+                        onWordRemoved();
+                    }
+                }
+            }
+            
+            // Show success state
+            setSaveSuccess({
+                deckName,
+                word: userLangCard,
+                translation: engCard
+            });
+            setShowDeckSelection(false);
+            
+            // Show toast notification
+            toast({
+                title: `${userLangCard} just added!`,
+                description: `Added to deck ${deckName}: ${userLangCard} - Translated as ${engCard}`
+            });
+            
+            // Auto-close dialog after 2.5 seconds
+            setTimeout(() => {
+                setSaveSuccess(null);
+                setDialogOpen(false);
+            }, 2500);
+        } catch (error) {
+            console.error('Error saving word: ', error);
+            toast({
+                title: "Error",
+                description: "Failed to save word to deck. Please try again.",
+                variant: "destructive"
+            });
+        }
+    };
+    
+    return (
+        <div
+            className="relative animate-fadeInUp inline-block"
+            style={{
+                animationDelay: `${wordIndex * 0.05}s`,
+                animationFillMode: 'both',
+                animationDuration: '0.4s'
+            }}
+        >
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (!open) {
+                    // Reset states when dialog closes
+                    setSaveSuccess(null);
+                    setShowDeckSelection(false);
+                    setIsCreatingNewDeck(false);
+                }
+            }}>
+                <DialogTrigger asChild>
+                    <button
+                        className="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer"
+                        onMouseEnter={() => {
+                            // Highlight the corresponding text in the sentence when hovering
+                            if (word.sentenceText) {
+                                setHoveredText(word.sentenceText);
+                            }
+                        }}
+                        onMouseLeave={() => {
+                            setHoveredText(null);
+                        }}
+                    >
+                        {fi}
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] w-full max-w-6xl max-h-[90vh] overflow-hidden p-0 flex flex-col bg-white">
+                    <DialogHeader className="px-8 pt-6 pb-5 border-b border-gray-200">
+                        <DialogTitle className="text-2xl font-bold text-gray-900">{fi}</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+                        {/* Left side - Word Details */}
+                        <div className={`${showDeckSelection && !saveSuccess ? 'md:w-1/2' : 'w-full'} p-8 overflow-y-auto transition-all duration-300 flex items-start`}>
+                            {saveSuccess ? (
+                                <div className="w-full flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in-0 zoom-in-95 duration-300">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Sparkles className="h-24 w-24 text-yellow-400 animate-pulse opacity-50" />
+                                        </div>
+                                        <CheckCircle2 className="h-20 w-20 text-green-500 relative z-10" />
+                                    </div>
+                                    <div className="text-center space-y-2">
+                                        <h3 className="text-2xl font-bold text-gray-900">Successfully Added!</h3>
+                                        <p className="text-lg text-gray-700">
+                                            <span className="font-semibold text-blue-600">{saveSuccess.word}</span> has been added to
+                                        </p>
+                                        <p className="text-xl font-semibold text-green-600">{saveSuccess.deckName}</p>
+                                        <p className="text-sm text-gray-500 mt-2">
+                                            {saveSuccess.word} - {saveSuccess.translation}
+                                        </p>
+                                    </div>
+                                    <Button 
+                                        onClick={() => {
+                                            setSaveSuccess(null);
+                                            setDialogOpen(false);
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                            ) : (
+                            <div className="space-y-6 w-full">
+                                <div className="flex flex-col gap-2">
+                                    <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Base word</h4>
+                                    <p className="text-base text-gray-900">{original_word} {(en_base && en_base !== en) ? `- ${en_base}` : ''}</p>
+                                </div>
+                                {pronunciation && (
+                                    <div className="flex flex-col gap-2">
+                                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Pronunciation</h4>
+                                        <p className="text-base text-gray-900">{pronunciation}</p>
+                                    </div>
+                                )}
+                                <div className="flex flex-col gap-2">
+                                    <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Meaning</h4>
+                                    <p className="text-base text-gray-900">{en}</p>
+                                </div>
+                                {comment && (
+                                    <div className="flex flex-col gap-2">
+                                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Explanation</h4>
+                                        <p className="text-sm text-gray-700 break-words">{comment}</p>
+                                    </div>
+                                )}
+                                
+                                {/* Context Tip */}
+                                {shouldShowTip && (
+                                    <ContextTip
+                                        surfaceForm={fi}
+                                        en={en}
+                                        en_base={en_base!}
+                                        lemma={original_word}
+                                        defaultSaveAs={defaultSaveAs}
+                                        onChange={setSaveAs}
+                                    />
+                                )}
+                                
+                                {/* Add to deck button */}
+                                {!showDeckSelection && (
+                                    <div className="pt-2">
+                                        {user ? (
+                                            <Button 
+                                                onClick={() => setShowDeckSelection(true)}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                            >
+                                                Add to deck
+                                            </Button>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <p className="text-sm text-gray-600 text-center">Please log in to save words</p>
+                                                <LoginPage />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            )}
+                        </div>
+                        
+                        {/* Right side - Deck Selection (only shown when showDeckSelection is true and not in success state) */}
+                        {showDeckSelection && !saveSuccess && (
+                            <>
+                                <div className="hidden md:block w-px bg-gray-200 flex-shrink-0"></div>
+                                <div className="md:w-1/2 p-8 overflow-hidden bg-white flex-shrink-0 flex flex-col">
+                                    {!isCreatingNewDeck && (
+                                        <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                                            <h3 className="text-lg font-semibold text-gray-900">Save to deck</h3>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => setShowDeckSelection(false)}
+                                                className="text-gray-600 hover:text-gray-900"
+                                            >
+                                                ← Back
+                                            </Button>
+                                        </div>
+                                    )}
+                                    <DisplayCurrentDecks 
+                                        onSelectDeck={saveWordToDeck}
+                                        onNewDeckStateChange={setIsCreatingNewDeck}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    <DialogFooter className="px-8 py-4 border-t border-gray-200 bg-white">
+                        <DialogClose asChild>
+                            <Button variant="outline" className="w-full sm:w-auto">Close</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+};
+
+const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved }) => {
     const [visibleWords, setVisibleWords] = useState<Word[]>([]);
     const [lastTranslationKey, setLastTranslationKey] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -76,23 +355,41 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                 ? uniqueWords.slice(0, MAX_VISIBLE_WORDS)
                 : uniqueWords;
             
+            // Clear any existing timeouts
+            const timeouts: NodeJS.Timeout[] = [];
+            
             // Animate words in with staggered delay for smooth transition
             initialWords.forEach((word, i) => {
-                setTimeout(() => {
-                    setVisibleWords(prev => [...prev, word]);
+                const timeout = setTimeout(() => {
+                    setVisibleWords(prev => {
+                        // Check if word already exists to prevent duplicates
+                        const exists = prev.some(w => w.id === word.id || (w.fi === word.fi && w.en === word.en));
+                        if (exists) return prev;
+                        return [...prev, word];
+                    });
                 }, i * 50); // Staggered animation: 50ms per word
+                timeouts.push(timeout);
             });
+            
+            // Cleanup function
+            return () => {
+                timeouts.forEach(timeout => clearTimeout(timeout));
+            };
         } else if (uniqueWords.length === 0) {
             setVisibleWords([]);
         } else if (!isStreaming && uniqueWords.length > 0 && translationKey === lastTranslationKey) {
             // Update visible words when expansion changes or words update
-            setVisibleWords(displayedWords);
+            // Deduplicate displayedWords before setting
+            const deduplicated = displayedWords.filter((word, index, self) => 
+                index === self.findIndex(w => w.id === word.id || (w.fi === word.fi && w.en === word.en))
+            );
+            setVisibleWords(deduplicated);
         }
     }, [uniqueWords, displayedWords, isStreaming, translationKey, lastTranslationKey]);
     
     return (
         <div 
-            className={`w-full border rounded flex flex-col justify-center items-center ${
+            className={`w-full ${
                 isMockData ? 'animate-fadeIn' : ''
             }`}
             style={isMockData ? { 
@@ -100,17 +397,17 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                 animationFillMode: 'both'
             } : {}}
         >
-            <div className="text-lg font-bold py-2 flex items-center justify-between w-full px-4">
+            <div className="text-base font-semibold mb-3 flex items-center justify-between">
                 <div className="flex items-center">
                     {title}
+                    {uniqueWords.length > 0 && (
+                        <span className="ml-2 text-sm text-gray-500 font-normal">
+                            ({uniqueWords.length})
+                        </span>
+                    )}
                     {isStreaming && uniqueWords.length === 0 && (
                         <span className="ml-2 text-sm text-gray-500">
                             <div className="inline-block animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
-                        </span>
-                    )}
-                    {uniqueWords.length > 0 && (
-                        <span className="ml-2 text-sm text-gray-600">
-                            ({uniqueWords.length})
                         </span>
                     )}
                 </div>
@@ -134,31 +431,32 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                     </button>
                 )}
             </div>
-            <div className="w-full border-b border-gray-300"></div>
-            <div className="flex flex-wrap justify-center p-2 min-h-[60px]">
-                {visibleWords.map((word, wordIndex) => {
-                    // Create a truly unique key combining multiple fields
-                    const uniqueKey = `${word.id || 'no-id'}-${word.fi}-${word.en}-${wordIndex}`;
-                    return (
-                        <div
-                            key={uniqueKey}
-                            className="relative animate-fadeInUp"
-                            style={{
-                                animationDelay: `${wordIndex * 0.05}s`,
-                                animationFillMode: 'both',
-                                animationDuration: '0.4s'
-                            }}
-                        >
-                            <Modal word={word} />
-                        </div>
-                    );
-                })}
+            <div className="flex flex-wrap gap-2">
+                {visibleWords
+                    .filter((word, index, self) => {
+                        // Deduplicate: keep only first occurrence of each unique fi+en combination
+                        return index === self.findIndex(w => w.fi === word.fi && w.en === word.en);
+                    })
+                    .map((word, wordIndex) => {
+                        // Create a truly unique key combining multiple fields
+                        const uniqueKey = `${word.id || 'no-id'}-${word.fi}-${word.en}-${wordIndex}`;
+                        return (
+                            <WordPill key={uniqueKey} word={word} wordIndex={wordIndex} onWordRemoved={onWordRemoved} />
+                        );
+                    })}
             </div>
         </div>
     );
 };
 
-export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMockData?: boolean; isStreaming?: boolean; translationKey?: number}> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0 }) => {
+export const WordDetails: React.FC<{
+    words: Word[]; 
+    highlighted?: boolean; 
+    isMockData?: boolean; 
+    isStreaming?: boolean; 
+    translationKey?: number;
+    onWordRemoved?: () => void;
+}> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved }) => {
     // Deduplicate words first, then categorize
     const uniqueWords = deduplicateWords(words);
     const categories = [
@@ -168,18 +466,21 @@ export const WordDetails: React.FC<{words: Word[]; highlighted?: boolean; isMock
         { title: 'Others', words: uniqueWords.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
     ]
     return (
-        <div className={`mt-5 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className={`mt-6 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
+            <div className="space-y-6">
                 {categories.map((category, index) => (
-                    <WordCategory 
-                        key={index} 
-                        title={category.title} 
-                        words={category.words} 
-                        index={index}
-                        isMockData={isMockData}
-                        isStreaming={isStreaming}
-                        translationKey={translationKey}
-                    />
+                    category.words.length > 0 && (
+                        <WordCategory 
+                            key={index} 
+                            title={category.title} 
+                            words={category.words} 
+                            index={index}
+                            isMockData={isMockData}
+                            isStreaming={isStreaming}
+                            translationKey={translationKey}
+                            onWordRemoved={onWordRemoved}
+                        />
+                    )
                 ))}
             </div>
         </div>
