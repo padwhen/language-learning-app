@@ -2,20 +2,30 @@ import { TranslationBar } from "../components/IndexPage/TranslationBar";
 import { InputBar } from "../components/IndexPage/InputBar";
 import { Translation } from "../components/IndexPage/Translation";
 import { WordDetails } from "../components/IndexPage/Details";
-import { DeckInfo } from "../components/IndexPage/DeckInfo";
-import { Header } from "../components/Header";
 import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TranslationHoverProvider } from "@/contexts/TranslationHoverContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { useDeckContext } from "@/contexts/DeckContext";
+import { UserContext } from "@/contexts/UserContext";
+import axios from "axios";
+import { useToast } from "@/components/ui/use-toast";
 
 
 export const IndexPage = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, translationKey, response, handleTranslationStream } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, response, handleTranslationStream, refreshResponseFromStorage } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
+    const { decks } = useDeckContext();
+    const { user } = useContext(UserContext);
+    const { toast } = useToast();
+    const [createFlashcardsOpen, setCreateFlashcardsOpen] = useState(false);
+    const [selectedDeckId, setSelectedDeckId] = useState<string>("");
+    const [saving, setSaving] = useState(false);
     
     // Check URL for tour parameter
     const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
@@ -103,122 +113,256 @@ export const IndexPage = () => {
         setHighlightedElement(null);
     };
 
+    const handleSaveAll = async () => {
+        if (!selectedDeckId || !response?.words || response.words.length === 0) {
+            toast({
+                title: "Error",
+                description: "Please select a deck and ensure you have words to save.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const defaultSaveAs = (user?.flashcardWordForm as 'original' | 'base') === 'base' ? 'base' : 'original';
+            
+            // Prepare words array and filter out invalid entries
+            const wordsToSave = response.words
+                .map((word: any) => {
+                    const isBase = defaultSaveAs === 'base';
+                    return {
+                        engCard: isBase ? (word.en_base || word.en) : word.en,
+                        userLangCard: isBase ? word.original_word : word.fi
+                    };
+                })
+                .filter((word: any) => 
+                    word.engCard && 
+                    word.engCard.trim() !== '' && 
+                    word.userLangCard && 
+                    word.userLangCard.trim() !== ''
+                );
+
+            // Use the new save-all endpoint
+            const result = await axios.post(`/decks/${selectedDeckId}/save-all`, { words: wordsToSave });
+
+            toast({
+                title: "Success!",
+                description: `Saved ${result.data.added} flashcards to your deck.`
+            });
+            
+            setCreateFlashcardsOpen(false);
+            setSelectedDeckId("");
+            // Clear the response to reset the page
+            setInputText("");
+            window.location.reload();
+        } catch (error) {
+            console.error('Error saving all words:', error);
+            toast({
+                title: "Error",
+                description: "Failed to save words. Please try again.",
+                variant: "destructive"
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Filter decks by current language
+    const filteredDecks = decks.filter(deck => 
+        deck.deckTags && deck.deckTags.length > 0 && 
+        deck.deckTags[0].toLowerCase() === fromLanguage.toLowerCase()
+    );
+
     return (
         <TranslationHoverProvider>
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-                <Header 
-                    highlightUser={highlightedElement === 'user-header'}
-                />
-                <div className="flex flex-col lg:flex-row max-w-7xl mx-auto gap-32">
-                    <div className="w-full max-w-4xl px-4 lg:px-7 flex flex-col items-center py-6">
-                        <div className="w-full max-w-4xl bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-2xl shadow-sm">
-                            <TranslationBar 
-                                fromLanguage={fromLanguage} 
-                                setFromLanguage={setFromLanguage}
-                                highlighted={highlightedElement === 'translation-bar'}
-                            />
-                            <InputBar 
-                                inputText={inputText} 
-                                setInputText={setInputText} 
-                                handleTranslation={handleTranslationStream} 
-                                ready={ready}
-                                highlighted={highlightedElement === 'input-bar'}
-                                isStreaming={isStreaming}
-                                currentWords={response?.words}
-                                currentWordIndex={-1}
-                                confidence={response?.confidence}
-                                confidenceDetails={response?.confidenceDetails}
-                                onRerun={handleTranslationStream}
-                            />
-                            
-                            {/* Validation Error Display */}
-                            {validationError && (
-                                <div className="px-6 py-4">
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                                <span className="text-white text-sm font-bold">!</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-red-800 font-medium">Input Error</p>
-                                                <p className="text-red-600 text-sm">{validationError}</p>
-                                            </div>
-                                        </div>
+            <div className="min-h-screen bg-white">
+                <div className="max-w-5xl mx-auto px-6 md:px-8 py-8 md:py-12">
+                    {/* Title Section */}
+                    <div className="mb-8">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-3">Translate & Create</h1>
+                        <p className="text-gray-600 text-lg">Enter a sentence to translate and generate flashcards instantly.</p>
+                    </div>
+                    {/* Language Selection */}
+                    <div className="mb-6">
+                        <TranslationBar 
+                            fromLanguage={fromLanguage} 
+                            setFromLanguage={setFromLanguage}
+                            highlighted={highlightedElement === 'translation-bar'}
+                        />
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="mb-6">
+                        <InputBar 
+                            inputText={inputText} 
+                            setInputText={setInputText} 
+                            handleTranslation={handleTranslationStream} 
+                            ready={ready}
+                            highlighted={highlightedElement === 'input-bar'}
+                            isStreaming={isStreaming}
+                            currentWords={response?.words}
+                            currentWordIndex={-1}
+                            confidence={response?.confidence}
+                            confidenceDetails={response?.confidenceDetails}
+                            onRerun={handleTranslationStream}
+                        />
+                    </div>
+                    
+                    {/* Validation Error Display */}
+                    {validationError && (
+                        <div className="mb-6">
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm font-bold">!</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-red-800 font-medium">Input Error</p>
+                                        <p className="text-red-600 text-sm">{validationError}</p>
                                     </div>
                                 </div>
-                            )}
-                            
-                            {/* Loading indicator when streaming */}
-                            {isStreaming && !response?.sentence && (
-                                <div className="px-6 py-4">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                        <span className="text-gray-600">Translating...</span>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {(response?.sentence || isTourActive) && (
-                                <div 
-                                    className={`transition-all duration-700 ease-out transform ${
-                                        isTourActive && !response?.sentence 
-                                            ? 'animate-in fade-in slide-in-from-bottom-4' 
-                                            : ''
-                                    }`}
-                                    style={{ 
-                                        animationDelay: isTourActive && !response?.sentence ? '0.3s' : '0s',
-                                        animationFillMode: 'both'
-                                    }}
-                                >
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Loading indicator when streaming */}
+                    {isStreaming && !response?.sentence && (
+                        <div className="mb-6">
+                            <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                <span className="text-gray-600">Translating...</span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Output Translation Area */}
+                    {(response?.sentence || isTourActive) && (
+                        <div 
+                            className={`mb-6 transition-all duration-700 ease-out transform ${
+                                isTourActive && !response?.sentence 
+                                    ? 'animate-in fade-in slide-in-from-bottom-4' 
+                                    : ''
+                            }`}
+                            style={{ 
+                                animationDelay: isTourActive && !response?.sentence ? '0.3s' : '0s',
+                                animationFillMode: 'both'
+                            }}
+                        >
                                     <Translation 
                                         text={isTourActive ? mockTranslation : response?.sentence}
                                         highlighted={highlightedElement === 'translation'}
-                                        translationKey={translationKey}
                                     />
-                                </div>
-                            )}
-                            
-                            {/* Loading indicator for words when streaming */}
-                            {isStreaming && response?.sentence && !response?.words?.length && (
-                                <div className="px-6 py-4">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                        <span className="text-gray-600">Analyzing words...</span>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {(response?.words || isTourActive) && (
-                                <div 
-                                    className={`transition-all duration-700 ease-out transform ${
-                                        isTourActive && !response?.words 
-                                            ? 'animate-in fade-in slide-in-from-bottom-4' 
-                                            : ''
-                                    }`}
-                                    style={{ 
-                                        animationDelay: isTourActive && !response?.words ? '0.6s' : '0s',
-                                        animationFillMode: 'both'
-                                    }}
-                                >
-                                    <WordDetails 
-                                        words={isTourActive ? mockWords : response?.words}
-                                        highlighted={highlightedElement === 'word-details'}
-                                        isMockData={isTourActive && !response?.words}
-                                        isStreaming={isStreaming}
-                                        translationKey={translationKey}
-                                    />
-                                </div>
-                            )}
                         </div>
-                    </div>
-                    <div className="w-full lg:w-1/3 flex flex-col px-4 lg:px-0 py-8 lg:ml-8">
-                        <div className="lg:sticky lg:top-8">
-                            <DeckInfo 
-                                mockData={isTourActive}
-                                highlighted={highlightedElement === 'deck-info'}
+                    )}
+                    
+                    {/* Loading indicator for words when streaming */}
+                    {isStreaming && response?.sentence && !response?.words?.length && (
+                        <div className="mb-6">
+                            <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                <span className="text-gray-600">Analyzing words...</span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Word Details */}
+                    {(response?.words || isTourActive) && (
+                        <div 
+                            className={`mb-6 transition-all duration-700 ease-out transform ${
+                                isTourActive && !response?.words 
+                                    ? 'animate-in fade-in slide-in-from-bottom-4' 
+                                    : ''
+                            }`}
+                            style={{ 
+                                animationDelay: isTourActive && !response?.words ? '0.6s' : '0s',
+                                animationFillMode: 'both'
+                            }}
+                        >
+                            <WordDetails 
+                                words={isTourActive ? mockWords : response?.words}
+                                highlighted={highlightedElement === 'word-details'}
+                                isMockData={isTourActive && !response?.words}
+                                isStreaming={isStreaming}
+                                translationKey={response?.sentence ? response.sentence.length : 0}
+                                onWordRemoved={refreshResponseFromStorage}
                             />
                         </div>
-                    </div>
+                    )}
+
+                    {/* Save All Button */}
+                    {response?.words && response.words.length > 0 && (
+                        <div className="flex justify-end mt-6">
+                            <Dialog open={createFlashcardsOpen} onOpenChange={setCreateFlashcardsOpen}>
+                                <DialogTrigger asChild>
+                                    <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Save all
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Create Flashcards</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <p className="text-sm text-gray-600">
+                                            Select a deck to save {response.words.length} flashcards:
+                                        </p>
+                                        {filteredDecks.length === 0 ? (
+                                            <div className="text-center py-4">
+                                                <p className="text-gray-500 mb-4">No decks found for {fromLanguage}.</p>
+                                                <Button 
+                                                    onClick={() => {
+                                                        setCreateFlashcardsOpen(false);
+                                                        navigate('/view-all-decks');
+                                                    }}
+                                                    variant="outline"
+                                                >
+                                                    Create a new deck
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {filteredDecks.map((deck) => (
+                                                    <button
+                                                        key={deck._id}
+                                                        onClick={() => setSelectedDeckId(deck._id)}
+                                                        className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
+                                                            selectedDeckId === deck._id
+                                                                ? 'border-blue-500 bg-blue-50'
+                                                                : 'border-gray-200 hover:border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <div className="font-medium">{deck.deckName}</div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {deck.cards?.length || 0} cards
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setCreateFlashcardsOpen(false)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={handleSaveAll}
+                                                disabled={!selectedDeckId || saving || filteredDecks.length === 0}
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                {saving ? "Saving..." : "Save all"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    )}
                 </div>
             </div>
 

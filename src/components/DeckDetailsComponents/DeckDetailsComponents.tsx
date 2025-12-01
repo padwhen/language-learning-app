@@ -150,9 +150,9 @@ export const DeckLinks: React.FC<DeckLinksProps> = ({ id, cardsLength }) => {
 export const FlashCard: React.FC<FlashCardProps> = ({
     card, isFlipped, onFlip, hint, onGenerateHint, onToggleFavorite
 }) => (
-    <div className="w-full max-w-[875px] mx-auto border mt-8" data-testid="card-flip-container">
+    <div className="w-full max-w-[875px] mx-auto" data-testid="card-flip-container">
         <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
-            <div key="front" onClick={onFlip}>
+            <div key="front" onClick={onFlip} className="cursor-pointer">
                 <FrontCard 
                     word={card.userLangCard} 
                     hint={hint} 
@@ -161,7 +161,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
                     onToggleFavorite={onToggleFavorite}
                 />
             </div>
-            <div key="back" onClick={onFlip}>
+            <div key="back" onClick={onFlip} className="cursor-pointer">
                 <BackCard word={card.engCard} />
             </div>
         </ReactCardFlip>

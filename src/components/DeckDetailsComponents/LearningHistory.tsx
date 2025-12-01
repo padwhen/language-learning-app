@@ -134,7 +134,7 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                     )}
                 </CardContent>
             </Card>
-            <Card className="mt-6">
+            <Card className="mt-6 bg-pink-50 border-pink-200">
                 <CardHeader>
                     <CardTitle>Next Quiz</CardTitle>
                 </CardHeader>

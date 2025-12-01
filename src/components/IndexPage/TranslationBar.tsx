@@ -11,37 +11,32 @@ export const TranslationBar: React.FC<{
         setFromLanguage(language);
     }
     return (
-        <div className={`flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 lg:gap-8 w-full mt-4 mb-2 p-2 rounded-lg transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 shadow-lg' : ''}`}>
-            <div className="relative inline-flex w-full md:flex-1">
-                <div className="w-full">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="w-full py-2 px-3 lg:py-3 lg:px-4 border border-gray-300 rounded-lg bg-white text-gray-800 font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <div className="text-lg lg:text-xl">{fromLanguage}</div>
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-full">
-                            <DropdownMenuRadioGroup>
-                                {languages.map(language => (
-                                    language !== fromLanguage && (
-                                        <DropdownMenuRadioItem onClick={() => handleLanguageChange(language)} key={language} value={language}>
-                                            <div className="text-base lg:text-lg">{language}</div>
-                                        </DropdownMenuRadioItem>
-                                    )
-                                ))}
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+        <div className={`flex items-center gap-4 w-full ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
+            <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">From</label>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="w-full py-2.5 px-4 border border-gray-300 rounded-lg bg-white text-gray-800 font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div className="text-base">{fromLanguage}</div>
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                        <DropdownMenuRadioGroup>
+                            {languages.map(language => (
+                                language !== fromLanguage && (
+                                    <DropdownMenuRadioItem onClick={() => handleLanguageChange(language)} key={language} value={language}>
+                                        <div className="text-base">{language}</div>
+                                    </DropdownMenuRadioItem>
+                                )
+                            ))}
+                        </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
-            <div className="flex justify-center md:justify-start flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-            </div>
-            <div className="relative inline-flex w-full md:flex-1">
-                <button type="button" className="w-full py-2 px-3 lg:py-3 lg:px-4 inline-flex items-center justify-center gap-x-2 text-base lg:text-lg font-medium rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <div className="text-lg lg:text-xl">English</div>
+            <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">To</label>
+                <button type="button" className="w-full py-2.5 px-4 inline-flex items-center justify-center text-base font-medium rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div className="text-base">English</div>
                 </button>
             </div>
         </div>

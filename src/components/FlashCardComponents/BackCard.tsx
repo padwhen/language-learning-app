@@ -9,7 +9,7 @@ interface Props {
 
 export const BackCard = ({ word }: Props) => {
     return (
-        <div className="min-h-[250px] md:h-[350px] shadow-md">
+        <div className="min-h-[250px] md:h-[350px] bg-white rounded-lg shadow-md border border-gray-200">
             <header className="mt-2 ml-2 flex justify-start items-center">
                 <div className="inline-flex flex-row gap-2 items-center justify-center sm:ml-5 ml-2 mt-2">
                     <ToolTip trigger={<Pencil />} content="Edit the flashcard" />

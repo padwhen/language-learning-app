@@ -1,7 +1,12 @@
 import { useTranslationHover } from '@/contexts/TranslationHoverContext';
+import { Volume2, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { textToSpeech } from '@/chatcompletion/ChatCompletion';
 
 export const Translation: React.FC<{text: string; highlighted?: boolean; translationKey?: number}> = ({ text, highlighted, translationKey = 0 }) => {
     const { hoveredText } = useTranslationHover();
+    const [copied, setCopied] = useState(false);
+    const [loadingTTS, setLoadingTTS] = useState(false);
     
     // Highlight the hovered text in the sentence
     const renderHighlightedText = () => {
@@ -64,19 +69,68 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
             </em>
         );
     };
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (error) {
+            console.error('Failed to copy:', error);
+        }
+    };
+
+    const handleSpeak = async () => {
+        if (!text) return;
+        setLoadingTTS(true);
+        try {
+            const url = await textToSpeech(text);
+            const audio = new Audio(url);
+            await audio.play();
+        } catch (error) {
+            console.error('Error generating speech:', error);
+        } finally {
+            setLoadingTTS(false);
+        }
+    };
     
     return (
         <div 
             key={translationKey}
-            className={`mt-8 w-full px-0 mx-auto transition-all duration-500 animate-fadeInUp ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}
+            className={`relative w-full bg-blue-50 border border-gray-200 rounded-lg p-6 transition-all duration-500 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''}`}
         >
-            <blockquote className="relative">
-                <div className="relative z-10">
-                    <p className="text-gray-800">
-                        {renderHighlightedText()}
-                    </p>
+            {/* Icons in top right */}
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <button
+                    onClick={handleSpeak}
+                    disabled={loadingTTS}
+                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                    title="Speak"
+                >
+                    {loadingTTS ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    ) : (
+                        <Volume2 className="w-5 h-5 text-gray-600" />
+                    )}
+                </button>
+                <button
+                    onClick={handleCopy}
+                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                    title="Copy"
+                >
+                    <Copy className="w-5 h-5 text-gray-600" />
+                </button>
+            </div>
+            {copied && (
+                <div className="absolute top-12 right-4 bg-green-500 text-white px-3 py-1 rounded text-sm">
+                    Copied!
                 </div>
-            </blockquote>
+            )}
+            <div className="pr-20">
+                <p className="text-gray-800 text-lg">
+                    {renderHighlightedText()}
+                </p>
+            </div>
         </div>
     )
 }
