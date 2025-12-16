@@ -5,7 +5,7 @@ import { WordDetails } from "../components/IndexPage/Details";
 import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TranslationHoverProvider } from "@/contexts/TranslationHoverContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
@@ -26,6 +26,7 @@ export const IndexPage = () => {
     const [createFlashcardsOpen, setCreateFlashcardsOpen] = useState(false);
     const [selectedDeckId, setSelectedDeckId] = useState<string>("");
     const [saving, setSaving] = useState(false);
+    const lastAutoSavedSentenceRef = useRef<string | null>(null);
     
     // Check URL for tour parameter
     const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
@@ -82,6 +83,22 @@ export const IndexPage = () => {
             setHighlightedElement(null);
         }
     }, [currentStep, isTourActive]);
+
+    // If navigated from Saved Sentences, restore that sentence and load from localStorage
+    useEffect(() => {
+        const state = location.state as any;
+        if (state?.fromSavedSentence && state.originalText) {
+            if (state.fromLanguage) {
+                setFromLanguage(state.fromLanguage);
+            }
+            setInputText(state.originalText);
+            // Use existing response saved in localStorage (set by SavedSentencesPage)
+            refreshResponseFromStorage();
+            // Clear navigation state to avoid re-triggering on back/forward
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleNext = () => {
         if (currentStep < totalSteps - 1) {
@@ -174,6 +191,70 @@ export const IndexPage = () => {
         deck.deckTags[0].toLowerCase() === fromLanguage.toLowerCase()
     );
 
+    // Pre-compute which decks each saved word appears in (by userLangCard)
+    const savedWordDecks = useMemo(() => {
+        const map: Record<string, string[]> = {};
+        filteredDecks.forEach((deck: any) => {
+            (deck.cards || []).forEach((card: any) => {
+                if (!card.userLangCard) return;
+                const key = String(card.userLangCard).toLowerCase().trim();
+                if (!map[key]) {
+                    map[key] = [];
+                }
+                if (!map[key].includes(deck.deckName)) {
+                    map[key].push(deck.deckName);
+                }
+            });
+        });
+        return map;
+    }, [filteredDecks]);
+
+    // Convenience set of saved word keys for quick membership checks
+    const savedWordKeys = useMemo(() => {
+        return new Set<string>(Object.keys(savedWordDecks));
+    }, [savedWordDecks]);
+
+    // Auto-save translated sentence for logged-in users
+    useEffect(() => {
+        const autoSave = async () => {
+            if (!user || !response?.sentence || !inputText.trim()) return;
+
+            if (lastAutoSavedSentenceRef.current === response.sentence) {
+                return;
+            }
+
+            // Count how many words are already saved as flashcards
+            let wordsSavedCount = 0;
+            if (Array.isArray(response.words) && savedWordKeys.size > 0) {
+                for (const word of response.words as any[]) {
+                    const forms = [
+                        word.fi?.toLowerCase?.().trim(),
+                        word.original_word?.toLowerCase?.().trim()
+                    ].filter(Boolean) as string[];
+                    if (forms.some(form => savedWordKeys.has(form))) {
+                        wordsSavedCount += 1;
+                    }
+                }
+            }
+
+            try {
+                await axios.post('/saved-sentences', {
+                    originalText: inputText.trim(),
+                    translatedText: response.sentence,
+                    fromLanguage,
+                    toLanguage: 'English',
+                    wordsSavedCount,
+                    responsePayload: response
+                });
+                lastAutoSavedSentenceRef.current = response.sentence;
+            } catch (error) {
+                console.error('Error auto-saving sentence:', error);
+            }
+        };
+
+        autoSave();
+    }, [user, response, inputText, fromLanguage, savedWordKeys]);
+
     return (
         <TranslationHoverProvider>
             <div className="min-h-screen bg-white">
@@ -249,10 +330,14 @@ export const IndexPage = () => {
                                 animationFillMode: 'both'
                             }}
                         >
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
                                     <Translation 
                                         text={isTourActive ? mockTranslation : response?.sentence}
                                         highlighted={highlightedElement === 'translation'}
                                     />
+                                </div>
+                            </div>
                         </div>
                     )}
                     
@@ -279,14 +364,16 @@ export const IndexPage = () => {
                                 animationFillMode: 'both'
                             }}
                         >
-                            <WordDetails 
-                                words={isTourActive ? mockWords : response?.words}
-                                highlighted={highlightedElement === 'word-details'}
-                                isMockData={isTourActive && !response?.words}
-                                isStreaming={isStreaming}
-                                translationKey={response?.sentence ? response.sentence.length : 0}
-                                onWordRemoved={refreshResponseFromStorage}
-                            />
+                                <WordDetails 
+                                    words={isTourActive ? mockWords : response?.words}
+                                    highlighted={highlightedElement === 'word-details'}
+                                    isMockData={isTourActive && !response?.words}
+                                    isStreaming={isStreaming}
+                                    translationKey={response?.sentence ? response.sentence.length : 0}
+                                    onWordRemoved={refreshResponseFromStorage}
+                                    savedWordKeys={savedWordKeys}
+                                    savedWordDecks={savedWordDecks}
+                                />
                         </div>
                     )}
 

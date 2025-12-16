@@ -20,6 +20,8 @@ interface WordCategoryProps {
     isStreaming?: boolean;
     translationKey?: number; // Key that changes only on new translations
     onWordRemoved?: () => void;
+    isWordSaved?: (word: Word) => boolean;
+    getWordDecks?: (word: Word) => string[];
 }
 
 // Helper function to check if a string is only punctuation
@@ -67,7 +69,7 @@ const deduplicateWords = (words: Word[]): Word[] => {
 };
 
 // Word pill component with clickable dialog for word details and save functionality
-const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => void }> = ({ word, wordIndex, onWordRemoved }) => {
+const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => void; isSaved?: boolean; savedDeckNames?: string[] }> = ({ word, wordIndex, onWordRemoved, isSaved, savedDeckNames }) => {
     const { setHoveredText } = useTranslationHover();
     const { user } = useContext(UserContext);
     const { toast } = useToast();
@@ -184,7 +186,7 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
             }}>
                 <DialogTrigger asChild>
                     <button
-                        className="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer"
+                        className={`py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer ${isSaved ? 'opacity-50' : ''}`}
                         onMouseEnter={() => {
                             // Highlight the corresponding text in the sentence when hovering
                             if (word.sentenceText) {
@@ -253,6 +255,27 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
                                     <div className="flex flex-col gap-2">
                                         <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide">Explanation</h4>
                                         <p className="text-sm text-gray-700 break-words">{comment}</p>
+                                    </div>
+                                )}
+
+                                {/* Duplicate word notice */}
+                                {isSaved && (
+                                    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex gap-3">
+                                        <div className="mt-0.5 h-5 w-5 flex items-center justify-center rounded-full bg-amber-400 text-white text-xs font-bold">
+                                            !
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">
+                                                {savedDeckNames && savedDeckNames.length > 0
+                                                    ? savedDeckNames.length === 1
+                                                        ? `This term is already saved in this deck: ${savedDeckNames[0]}.`
+                                                        : `This term is already saved in these decks: ${savedDeckNames.join(", ")}.`
+                                                    : "This term is already saved in one of your decks."}
+                                            </p>
+                                            <p className="text-xs text-amber-800 mt-1">
+                                                You can still add it to another deck, but it may appear multiple times.
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
                                 
@@ -327,7 +350,7 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
     );
 };
 
-const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved }) => {
+const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved, isWordSaved, getWordDecks }) => {
     const [visibleWords, setVisibleWords] = useState<Word[]>([]);
     const [lastTranslationKey, setLastTranslationKey] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -440,8 +463,17 @@ const WordCategory: React.FC<WordCategoryProps> = ({ title, words, index = 0, is
                     .map((word, wordIndex) => {
                         // Create a truly unique key combining multiple fields
                         const uniqueKey = `${word.id || 'no-id'}-${word.fi}-${word.en}-${wordIndex}`;
+                        const saved = isWordSaved ? isWordSaved(word) : false;
+                        const decks = getWordDecks ? getWordDecks(word) : [];
                         return (
-                            <WordPill key={uniqueKey} word={word} wordIndex={wordIndex} onWordRemoved={onWordRemoved} />
+                            <WordPill
+                                key={uniqueKey}
+                                word={word}
+                                wordIndex={wordIndex}
+                                onWordRemoved={onWordRemoved}
+                                isSaved={saved}
+                                savedDeckNames={decks}
+                            />
                         );
                     })}
             </div>
@@ -456,9 +488,34 @@ export const WordDetails: React.FC<{
     isStreaming?: boolean; 
     translationKey?: number;
     onWordRemoved?: () => void;
-}> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved }) => {
+    savedWordKeys?: Set<string>;
+    savedWordDecks?: Record<string, string[]>;
+}> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved, savedWordKeys, savedWordDecks }) => {
     // Deduplicate words first, then categorize
     const uniqueWords = deduplicateWords(words);
+
+    const isWordSaved = (word: Word) => {
+        if (!savedWordKeys) return false;
+        const forms = [
+            word.fi?.toLowerCase().trim(),
+            word.original_word?.toLowerCase().trim()
+        ].filter(Boolean) as string[];
+        return forms.some(form => savedWordKeys.has(form));
+    };
+    const getWordDecks = (word: Word): string[] => {
+        if (!savedWordDecks) return [];
+        const forms = [
+            word.fi?.toLowerCase().trim(),
+            word.original_word?.toLowerCase().trim()
+        ].filter(Boolean) as string[];
+        const names = new Set<string>();
+        forms.forEach(form => {
+            const decks = savedWordDecks[form];
+            decks?.forEach(name => names.add(name));
+        });
+        return Array.from(names);
+    };
+
     const categories = [
         { title: 'Verbs', words: uniqueWords.filter(word => word.type === 'verb' )},
         { title: 'Nouns', words: uniqueWords.filter(word => word.type === 'noun' )},
@@ -479,6 +536,8 @@ export const WordDetails: React.FC<{
                             isStreaming={isStreaming}
                             translationKey={translationKey}
                             onWordRemoved={onWordRemoved}
+                            isWordSaved={isWordSaved}
+                            getWordDecks={getWordDecks}
                         />
                     )
                 ))}

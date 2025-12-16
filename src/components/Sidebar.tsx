@@ -14,7 +14,8 @@ import {
     ChevronRight,
     Compass,
     LogIn,
-    ChevronLeft
+    ChevronLeft,
+    Bookmark
 } from "lucide-react";
 import axios from "axios";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
@@ -75,6 +76,7 @@ export const Sidebar = ({ onStartTour }: SidebarProps) => {
         ...(user ? [
             { path: '/view-all-decks', label: 'All Decks', icon: Library },
             { path: '/vocabulary', label: 'All saved terms', icon: Compass },
+            { path: '/saved-sentences', label: 'Saved sentences', icon: Bookmark },
         ] : []),
     ];
 
