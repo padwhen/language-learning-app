@@ -31,7 +31,7 @@ const useTranslation = () => {
             const { sentence, words } = parsedResponse;
             const confidence = (parsedResponse as any).confidence;
             const confidenceDetails = (parsedResponse as any).confidenceDetails;
-            const testResponse: any = {};
+            const testResponse: any = { originalText: inputText };
             
             if (sentence) {
                 testResponse.sentence = sentence;
@@ -114,6 +114,7 @@ const useTranslation = () => {
                         // Use the accumulated response state to ensure we have all data including confidence details
                         setResponse((prevResponse: any) => {
                             const finalResponse: any = {
+                                originalText: inputText,
                                 sentence: prevResponse?.sentence || sentence,
                                 words: prevResponse?.words || []
                             };
@@ -159,6 +160,7 @@ const useTranslation = () => {
                     const { sentence, words, confidence, confidenceDetails } = parsedResponse;
                     
                     const finalResponse: any = {
+                        originalText: inputText,
                         sentence,
                         words: words?.map((word: any) => ({
                             ...word, 
@@ -198,7 +200,7 @@ const useTranslation = () => {
             const { sentence, words } = parsedResponse;
             const confidence = (parsedResponse as any).confidence;
             const confidenceDetails = (parsedResponse as any).confidenceDetails;
-            const testResponse: any = {};
+            const testResponse: any = { originalText: inputText };
             
             if (sentence) {
                 testResponse.sentence = sentence;
@@ -226,7 +228,7 @@ const useTranslation = () => {
                 if (response_json !== null) {
                     const parsedResponse = JSON.parse(response_json)
                     const { sentence, words, confidence, confidenceDetails } = parsedResponse
-                    const finalResponse: any = {};
+                    const finalResponse: any = { originalText: inputText };
                     
                     if (sentence) {
                         finalResponse.sentence = sentence;

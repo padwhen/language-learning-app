@@ -1,6 +1,6 @@
 import { textToSpeech } from "@/chatcompletion/ChatCompletion";
 import { useState, useEffect } from "react";
-import { Volume2, Send, Loader2, Sparkles } from "lucide-react";
+import { Volume2, Send, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 interface WordTiming {
@@ -27,6 +27,7 @@ interface InputBarProps {
         concerns?: string[];
     } | null;
     onRerun?: () => void;
+    onClear?: () => void;
 }
 
 const cleanWord = (word: string) => {
@@ -150,7 +151,8 @@ export const InputBar: React.FC<InputBarProps> = ({
     currentWordIndex = -1,
     confidence,
     confidenceDetails,
-    onRerun
+    onRerun,
+    onClear
 }) => {
     const [countdown, setCountdown] = useState(60);
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -315,19 +317,15 @@ export const InputBar: React.FC<InputBarProps> = ({
                     disabled={!ready}
                     data-testid="input-bar"
                 />
-                {/* Speaker icon in top right */}
+                {/* Clear icon in top right */}
                 <div className="absolute top-3 right-3">
                     <button
-                        onClick={handleSpeak}
-                        disabled={loadingTTS || !inputText || isPlaying}
+                        onClick={onClear}
+                        disabled={!onClear || (!inputText && !localStorage.getItem('response')) || isStreaming || isPlaying}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Speak"
+                        title="Clear"
                     >
-                        {loadingTTS ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                        ) : (
-                            <Volume2 className="w-5 h-5 text-gray-400" />
-                        )}
+                        <Trash2 className="w-5 h-5 text-gray-400" />
                     </button>
                 </div>
             </div>

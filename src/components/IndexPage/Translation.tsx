@@ -1,12 +1,10 @@
 import { useTranslationHover } from '@/contexts/TranslationHoverContext';
-import { Volume2, Copy } from 'lucide-react';
+import { Copy, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { textToSpeech } from '@/chatcompletion/ChatCompletion';
 
-export const Translation: React.FC<{text: string; highlighted?: boolean; translationKey?: number}> = ({ text, highlighted, translationKey = 0 }) => {
+export const Translation: React.FC<{text: string; highlighted?: boolean; translationKey?: number; onClear?: () => void}> = ({ text, highlighted, translationKey = 0, onClear }) => {
     const { hoveredText } = useTranslationHover();
     const [copied, setCopied] = useState(false);
-    const [loadingTTS, setLoadingTTS] = useState(false);
     
     // Highlight the hovered text in the sentence
     const renderHighlightedText = () => {
@@ -80,20 +78,6 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
         }
     };
 
-    const handleSpeak = async () => {
-        if (!text) return;
-        setLoadingTTS(true);
-        try {
-            const url = await textToSpeech(text);
-            const audio = new Audio(url);
-            await audio.play();
-        } catch (error) {
-            console.error('Error generating speech:', error);
-        } finally {
-            setLoadingTTS(false);
-        }
-    };
-    
     return (
         <div 
             key={translationKey}
@@ -102,16 +86,12 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
             {/* Icons in top right */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
                 <button
-                    onClick={handleSpeak}
-                    disabled={loadingTTS}
+                    onClick={onClear}
+                    disabled={!onClear}
                     className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                    title="Speak"
+                    title="Clear"
                 >
-                    {loadingTTS ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    ) : (
-                        <Volume2 className="w-5 h-5 text-gray-600" />
-                    )}
+                    <Trash2 className="w-5 h-5 text-gray-600" />
                 </button>
                 <button
                     onClick={handleCopy}

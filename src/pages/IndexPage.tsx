@@ -100,6 +100,14 @@ export const IndexPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // If response in localStorage includes the original text, populate the input (useful when restoring)
+    useEffect(() => {
+        const original = (response as any)?.originalText;
+        if (original && typeof original === 'string' && inputText.trim() === '') {
+            setInputText(original);
+        }
+    }, [response, inputText, setInputText]);
+
     const handleNext = () => {
         if (currentStep < totalSteps - 1) {
             setCurrentStep(currentStep + 1);
@@ -217,11 +225,17 @@ export const IndexPage = () => {
     // Auto-save translated sentence for logged-in users
     useEffect(() => {
         const autoSave = async () => {
-            if (!user || !response?.sentence || !inputText.trim()) return;
+            if (!user || !response?.sentence) return;
 
             if (lastAutoSavedSentenceRef.current === response.sentence) {
                 return;
             }
+
+            // IMPORTANT: use the original text that produced this response (prevents mismatched saves)
+            const originalText =
+                (response as any)?.originalText?.trim?.() ||
+                inputText.trim();
+            if (!originalText) return;
 
             // Count how many words are already saved as flashcards
             let wordsSavedCount = 0;
@@ -239,7 +253,7 @@ export const IndexPage = () => {
 
             try {
                 await axios.post('/saved-sentences', {
-                    originalText: inputText.trim(),
+                    originalText,
                     translatedText: response.sentence,
                     fromLanguage,
                     toLanguage: 'English',
@@ -287,6 +301,11 @@ export const IndexPage = () => {
                             confidence={response?.confidence}
                             confidenceDetails={response?.confidenceDetails}
                             onRerun={handleTranslationStream}
+                            onClear={() => {
+                                localStorage.removeItem('response');
+                                setInputText('');
+                                refreshResponseFromStorage();
+                            }}
                         />
                     </div>
                     
@@ -335,6 +354,11 @@ export const IndexPage = () => {
                                     <Translation 
                                         text={isTourActive ? mockTranslation : response?.sentence}
                                         highlighted={highlightedElement === 'translation'}
+                                        onClear={() => {
+                                            localStorage.removeItem('response');
+                                            setInputText('');
+                                            refreshResponseFromStorage();
+                                        }}
                                     />
                                 </div>
                             </div>
