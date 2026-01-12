@@ -81,15 +81,15 @@ const useTranslation = () => {
                                 id: word.id || uuidv4() // Keep existing ID if present
                             }));
                             
-                            // Deduplicate words based on fi (Finnish word) to prevent duplicates
+                            // Deduplicate words based on id to prevent duplicates (each word should have unique id)
                             const existingWords = newResponse.words || [];
-                            const seenFi = new Set(existingWords.map((w: any) => w.fi?.toLowerCase().trim()).filter(Boolean));
+                            const seenIds = new Set(existingWords.map((w: any) => w.id).filter(Boolean));
                             
                             const newUniqueWords = wordsWithUUID.filter((word: any) => {
-                                const key = word.fi?.toLowerCase().trim();
-                                if (!key) return false;
-                                if (seenFi.has(key)) return false;
-                                seenFi.add(key);
+                                // Keep words that have an id and haven't been seen before
+                                if (!word.id) return false;
+                                if (seenIds.has(word.id)) return false;
+                                seenIds.add(word.id);
                                 return true;
                             });
                             

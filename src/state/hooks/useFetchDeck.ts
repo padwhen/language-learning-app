@@ -12,6 +12,13 @@ const useFetchDeck = (id: string | undefined) => {
     useEffect(() => {
         if (!id) return;
 
+        // Reset derived state immediately so route changes feel responsive
+        setDeck(null);
+        setCards([]);
+        setDeckName('');
+        setDeckTags([]);
+        setUserLang('');
+
         const fetchData = async () => {
             try {
                 const response = await axios.get<Deck>(`/decks/${id}`);
@@ -29,7 +36,7 @@ const useFetchDeck = (id: string | undefined) => {
             }
         };
         fetchData();
-    }, []);
+    }, [id]);
 
     return { deck, cards, deckName, deckTags, userLang, setDeck, setCards, setDeckName, setDeckTags, setUserLang };
 };

@@ -93,6 +93,16 @@ export const DeckDetailsPage: React.FC = () => {
       setIsFlipped(false);
     }, [currentCardIndex]);
 
+    // When switching decks via sidebar (same route, new :id), reset per-deck UI state
+    useEffect(() => {
+      setCurrentCardIndex(0);
+      setIsFlipped(false);
+      setAutoPlay(false);
+      clearHint();
+      setSearchTerm('');
+      setResults([]);
+    }, [id]);
+
     // Tour step highlights
     useEffect(() => {
       if (isTourActive) {

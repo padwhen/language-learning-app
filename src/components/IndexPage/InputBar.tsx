@@ -1,7 +1,8 @@
 import { textToSpeech } from "@/chatcompletion/ChatCompletion";
-import { useState, useEffect } from "react";
-import { Volume2, Send, Loader2, Sparkles, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Volume2, Send, Loader2, Trash2 } from "lucide-react";
 import { ConfidenceBadge } from "./ConfidenceBadge";
+import { useTranslationHover } from "@/contexts/TranslationHoverContext";
 
 interface WordTiming {
     word: string;
@@ -140,6 +141,62 @@ const highlightTextForSpeech = (text: string, currentWordIndex: number) => {
     return <>{highlightedElements}</>;
 };
 
+// Helper function to highlight hovered Finnish words in the original text
+const highlightHoveredOriginalText = (text: string, hoveredText: string | null) => {
+    if (!hoveredText || !text) {
+        return <span className="whitespace-pre-wrap">{text}</span>;
+    }
+    
+    const normalizedHovered = hoveredText.trim();
+    if (!normalizedHovered) {
+        return <span className="whitespace-pre-wrap">{text}</span>;
+    }
+    
+    // Escape special regex characters
+    const escapedText = normalizedHovered.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Create regex that matches whole words/phrases
+    const isSingleWord = !normalizedHovered.includes(' ');
+    const regexPattern = isSingleWord
+        ? `\\b${escapedText}\\b`
+        : escapedText.replace(/\s+/g, '\\s+');
+    
+    const regex = new RegExp(`(${regexPattern})`, 'gi');
+    const parts = text.split(regex);
+    
+    return (
+        <span className="whitespace-pre-wrap">
+            {parts.map((part, index) => {
+                if (isSingleWord) {
+                    const wordBoundaryRegex = new RegExp(`\\b${escapedText}\\b`, 'i');
+                    if (wordBoundaryRegex.test(part)) {
+                        return (
+                            <span 
+                                key={index} 
+                                className="bg-yellow-300 text-yellow-900 px-1 rounded transition-all duration-200 font-semibold"
+                            >
+                                {part}
+                            </span>
+                        );
+                    }
+                } else {
+                    if (part.trim().toLowerCase() === normalizedHovered.toLowerCase()) {
+                        return (
+                            <span 
+                                key={index} 
+                                className="bg-yellow-300 text-yellow-900 px-1 rounded transition-all duration-200 font-semibold"
+                            >
+                                {part}
+                            </span>
+                        );
+                    }
+                }
+                return <span key={index}>{part}</span>;
+            })}
+        </span>
+    );
+};
+
 export const InputBar: React.FC<InputBarProps> = ({ 
     inputText, 
     setInputText, 
@@ -154,8 +211,10 @@ export const InputBar: React.FC<InputBarProps> = ({
     onRerun,
     onClear
 }) => {
+    const { hoveredOriginalText, setHoveredFlashcardFi } = useTranslationHover();
+    const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [countdown, setCountdown] = useState(60);
-    const [audioUrl, setAudioUrl] = useState<string | null>(null)
+    const [_audioUrl, setAudioUrl] = useState<string | null>(null)
     const [loadingTTS, setLoadingTTS] = useState(false)
     const [isFocused, setIsFocused] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -256,7 +315,7 @@ export const InputBar: React.FC<InputBarProps> = ({
     }
 
     // Function to get word timings using Whisper API
-    const getWordTimingsFromAudio = async (audioUrl: string, originalText: string): Promise<WordTiming[] | null> => {
+    const getWordTimingsFromAudio = async (audioUrl: string, _originalText: string): Promise<WordTiming[] | null> => {
         try {
             // Convert audio URL to File object for Whisper
             const response = await fetch(audioUrl);
@@ -303,22 +362,99 @@ export const InputBar: React.FC<InputBarProps> = ({
         <div className={`w-full transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-4 shadow-lg' : ''}`}>
             {/* Textarea container */}
             <div className={`relative border border-gray-300 rounded-lg bg-white ${!ready ? 'opacity-75' : ''}`}>
+                {/* Display highlighted original text when hovering flashcards - simple overlay */}
+                {hoveredOriginalText && inputText && !isStreaming && !isPlaying && (
+                    <div className="absolute inset-0 px-4 py-4 text-base text-gray-700 whitespace-pre-wrap break-words leading-relaxed z-10 pointer-events-none">
+                        {highlightHoveredOriginalText(inputText, hoveredOriginalText)}
+                    </div>
+                )}
                 <textarea 
                     rows={6}
-                    className={`w-full text-base text-gray-700 bg-transparent rounded-lg py-4 px-4 leading-relaxed placeholder:text-gray-400 resize-none transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full text-base bg-transparent rounded-lg py-4 px-4 leading-relaxed placeholder:text-gray-400 resize-none transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 relative z-0 ${
                         !ready ? 'cursor-not-allowed' : ''
-                    }`}
+                    } ${hoveredOriginalText && inputText && !isStreaming && !isPlaying ? 'text-transparent caret-gray-700' : 'text-gray-700'}`}
                     value={inputText}
                     onChange={handleInputChange}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     onKeyDown={handleKeyDown}
+                    onMouseMove={(e) => {
+                        // Only detect word hover when not focused (not typing) and there are flashcards
+                        if (isFocused || !currentWords || currentWords.length === 0 || isStreaming || isPlaying) {
+                            return;
+                        }
+                        
+                        const textarea = e.currentTarget;
+                        const rect = textarea.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        // Get text position from coordinates (approximate)
+                        const style = window.getComputedStyle(textarea);
+                        const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.5;
+                        const paddingLeft = parseFloat(style.paddingLeft);
+                        const paddingTop = parseFloat(style.paddingTop);
+                        const fontSize = parseFloat(style.fontSize);
+                        
+                        const line = Math.floor((y - paddingTop) / lineHeight);
+                        const charInLine = Math.floor((x - paddingLeft) / (fontSize * 0.6)); // Approximate char width
+                        
+                        const lines = inputText.split('\n');
+                        let charIndex = 0;
+                        for (let i = 0; i < Math.min(line, lines.length); i++) {
+                            charIndex += lines[i].length + 1; // +1 for newline
+                        }
+                        charIndex += Math.min(charInLine, lines[line]?.length || 0);
+                        
+                        // Find word at this position
+                        const words = inputText.split(/(\s+|[.,!?;:"'()])/);
+                        let currentPos = 0;
+                        for (const word of words) {
+                            if (currentPos <= charIndex && currentPos + word.length >= charIndex) {
+                                const cleanWord = word.toLowerCase().replace(/[.,!?;:"'()]/g, '').trim();
+                                if (cleanWord) {
+                                    // Find matching flashcard
+                                    for (const flashcardWord of currentWords) {
+                                        const flashcardFi = flashcardWord.fi?.toLowerCase().trim();
+                                        const flashcardOriginal = flashcardWord.original_word?.toLowerCase().trim();
+                                        if (flashcardFi === cleanWord || flashcardOriginal === cleanWord ||
+                                            cleanWord.includes(flashcardFi) || flashcardFi?.includes(cleanWord)) {
+                                            // Debounce to avoid too many updates
+                                            if (hoverTimeoutRef.current) {
+                                                clearTimeout(hoverTimeoutRef.current);
+                                            }
+                                            hoverTimeoutRef.current = setTimeout(() => {
+                                                setHoveredFlashcardFi(flashcardWord.fi || flashcardWord.original_word);
+                                            }, 100);
+                                            return;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                            currentPos += word.length;
+                        }
+                        
+                        // Clear hover if no match
+                        if (hoverTimeoutRef.current) {
+                            clearTimeout(hoverTimeoutRef.current);
+                        }
+                        hoverTimeoutRef.current = setTimeout(() => {
+                            setHoveredFlashcardFi(null);
+                        }, 200);
+                    }}
+                    onMouseLeave={() => {
+                        if (hoverTimeoutRef.current) {
+                            clearTimeout(hoverTimeoutRef.current);
+                        }
+                        setHoveredFlashcardFi(null);
+                    }}
                     placeholder={ready ? "Enter text to translate..." : "Please wait while we prepare the translation service..."}
                     disabled={!ready}
                     data-testid="input-bar"
                 />
                 {/* Clear icon in top right */}
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 z-20">
                     <button
                         onClick={onClear}
                         disabled={!onClear || (!inputText && !localStorage.getItem('response')) || isStreaming || isPlaying}

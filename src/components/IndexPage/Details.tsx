@@ -33,7 +33,7 @@ const isPunctuationOnly = (str: string): boolean => {
     return /^[^\w\s]+$/.test(trimmed);
 };
 
-// Helper function to deduplicate words based on Finnish word (fi) and filter out punctuation
+// Helper function to deduplicate words based on id and filter out punctuation-only words
 const deduplicateWords = (words: Word[]): Word[] => {
     if (!words || !Array.isArray(words)) return [];
     
@@ -43,26 +43,25 @@ const deduplicateWords = (words: Word[]): Word[] => {
     words.forEach(word => {
         if (!word) return;
         
-        const key = word.fi?.toLowerCase().trim() || '';
-        // Skip if empty, punctuation only, or already seen
-        if (key && !isPunctuationOnly(key)) {
-            // If we haven't seen this word before, add it
-            if (!seen.has(key)) {
-                // Use existing ID if available, otherwise generate one
-                let uniqueId = word.id || `${word.fi}-${word.en}`;
-                
-                // If ID already exists, generate a new one
-                if (seenIds.has(uniqueId)) {
-                    let counter = 0;
-                    do {
-                        uniqueId = `${word.fi}-${word.en}-${counter}`;
-                        counter++;
-                    } while (seenIds.has(uniqueId));
-                }
-                
-                seenIds.add(uniqueId);
-                seen.set(key, { ...word, id: uniqueId });
-            }
+        // Use id as the primary key for deduplication (each word should have unique id)
+        const wordId = word.id;
+        if (!wordId) {
+            // Fallback: if no id, generate one based on fi and en
+            const key = word.fi?.toLowerCase().trim() || '';
+            if (!key || isPunctuationOnly(key)) return; // Skip punctuation-only words
+            
+            const fallbackId = `${word.fi}-${word.en}`;
+            if (seenIds.has(fallbackId)) return; // Skip if already seen
+            
+            seenIds.add(fallbackId);
+            seen.set(fallbackId, { ...word, id: fallbackId });
+        } else {
+            // If word has an id, use it for deduplication
+            // Keep the word if it has an id (backend assigned it for a reason)
+            if (seenIds.has(wordId)) return; // Skip if already seen (duplicate id)
+            
+            seenIds.add(wordId);
+            seen.set(wordId, word);
         }
     });
     return Array.from(seen.values());
@@ -70,7 +69,7 @@ const deduplicateWords = (words: Word[]): Word[] => {
 
 // Word pill component with clickable dialog for word details and save functionality
 const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => void; isSaved?: boolean; savedDeckNames?: string[] }> = ({ word, wordIndex, onWordRemoved, isSaved, savedDeckNames }) => {
-    const { setHoveredText } = useTranslationHover();
+    const { setHoveredText, setHoveredOriginalText, hoveredFlashcardFi } = useTranslationHover();
     const { user } = useContext(UserContext);
     const { toast } = useToast();
     const { fi, en, en_base, pronunciation, original_word, comment } = word;
@@ -186,15 +185,27 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
             }}>
                 <DialogTrigger asChild>
                     <button
-                        className={`py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer ${isSaved ? 'opacity-50' : ''}`}
+                        className={`py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer ${
+                            hoveredFlashcardFi && (hoveredFlashcardFi.toLowerCase().trim() === fi?.toLowerCase().trim() || 
+                            fi?.toLowerCase().trim() === hoveredFlashcardFi.toLowerCase().trim())
+                                ? 'border-yellow-400 bg-yellow-200 text-yellow-900 shadow-lg scale-110 z-50' 
+                                : 'border-transparent bg-blue-600 text-white hover:bg-blue-700'
+                        } ${isSaved ? 'opacity-50' : ''}`}
                         onMouseEnter={() => {
-                            // Highlight the corresponding text in the sentence when hovering
-                            if (word.sentenceText) {
-                                setHoveredText(word.sentenceText);
+                            // Highlight the corresponding text in translation (English)
+                            // Use sentenceText if available (more accurate), otherwise fall back to en
+                            const englishText = word.sentenceText || word.en;
+                            if (englishText) {
+                                setHoveredText(englishText);
+                            }
+                            // Highlight the Finnish word in the original sentence
+                            if (fi) {
+                                setHoveredOriginalText(fi);
                             }
                         }}
                         onMouseLeave={() => {
                             setHoveredText(null);
+                            setHoveredOriginalText(null);
                         }}
                     >
                         {fi}
@@ -491,6 +502,18 @@ export const WordDetails: React.FC<{
     savedWordKeys?: Set<string>;
     savedWordDecks?: Record<string, string[]>;
 }> = ({ words, highlighted, isMockData = false, isStreaming = false, translationKey = 0, onWordRemoved, savedWordKeys, savedWordDecks }) => {
+    const [searchInput, setSearchInput] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchInput);
+        }, 300); // 300ms delay
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+    
     // Deduplicate words first, then categorize
     const uniqueWords = deduplicateWords(words);
 
@@ -516,30 +539,56 @@ export const WordDetails: React.FC<{
         return Array.from(names);
     };
 
+    // Filter words by search term (using debounced value)
+    const filterWordsBySearch = (wordList: Word[]) => {
+        if (!debouncedSearchTerm.trim()) return wordList;
+        const searchLower = debouncedSearchTerm.toLowerCase().trim();
+        return wordList.filter(word => 
+            word.fi?.toLowerCase().includes(searchLower) ||
+            word.en?.toLowerCase().includes(searchLower) ||
+            word.original_word?.toLowerCase().includes(searchLower) ||
+            word.en_base?.toLowerCase().includes(searchLower)
+        );
+    };
+
     const categories = [
         { title: 'Verbs', words: uniqueWords.filter(word => word.type === 'verb' )},
         { title: 'Nouns', words: uniqueWords.filter(word => word.type === 'noun' )},
         { title: 'Adjectives', words: uniqueWords.filter(word => word.type === 'adjective') },
         { title: 'Others', words: uniqueWords.filter(word => !["verb", "noun", "adjective"].includes(word.type))}
-    ]
+    ].map(category => ({
+        ...category,
+        words: filterWordsBySearch(category.words)
+    })).filter(category => category.words.length > 0); // Only show categories with matching words
+
     return (
         <div className={`mt-6 w-full px-0 mx-auto transition-all duration-300 ${highlighted ? 'ring-4 ring-blue-500 ring-opacity-75 bg-blue-50 rounded-lg p-6 shadow-lg' : ''}`}>
+            {/* Search box */}
+            {uniqueWords.length > 0 && (
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        placeholder="Search flashcards..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                    />
+                </div>
+            )}
             <div className="space-y-6">
                 {categories.map((category, index) => (
-                    category.words.length > 0 && (
-                        <WordCategory 
-                            key={index} 
-                            title={category.title} 
-                            words={category.words} 
-                            index={index}
-                            isMockData={isMockData}
-                            isStreaming={isStreaming}
-                            translationKey={translationKey}
-                            onWordRemoved={onWordRemoved}
-                            isWordSaved={isWordSaved}
-                            getWordDecks={getWordDecks}
-                        />
-                    )
+                    <WordCategory 
+                        key={index} 
+                        title={category.title} 
+                        words={category.words} 
+                        index={index}
+                        isMockData={isMockData}
+                        isStreaming={isStreaming}
+                        translationKey={translationKey}
+                        onWordRemoved={onWordRemoved}
+                        isWordSaved={isWordSaved}
+                        getWordDecks={getWordDecks}
+                    />
                 ))}
             </div>
         </div>

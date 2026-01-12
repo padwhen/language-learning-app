@@ -6,6 +6,7 @@ import CoachMark from "../components/IndexPage/CoachMark";
 import WelcomeTourModal from "../components/IndexPage/WelcomeTourModal";
 import useTranslation from "../state/hooks/useTranslation";
 import { useState, useEffect, useContext, useMemo, useRef } from "react";
+import { useTranslationHover } from "@/contexts/TranslationHoverContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TranslationHoverProvider } from "@/contexts/TranslationHoverContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
@@ -16,17 +17,19 @@ import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 
 
-export const IndexPage = () => {
+const IndexPageContent = () => {
     const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, response, handleTranslationStream, refreshResponseFromStorage } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { decks } = useDeckContext();
     const { user } = useContext(UserContext);
     const { toast } = useToast();
+    const { hoveredFlashcardFi } = useTranslationHover();
     const [createFlashcardsOpen, setCreateFlashcardsOpen] = useState(false);
     const [selectedDeckId, setSelectedDeckId] = useState<string>("");
     const [saving, setSaving] = useState(false);
     const lastAutoSavedSentenceRef = useRef<string | null>(null);
+    const wordDetailsRef = useRef<HTMLDivElement>(null);
     
     // Check URL for tour parameter
     const isTourActive = new URLSearchParams(location.search).get('tour') === 'true';
@@ -237,6 +240,9 @@ export const IndexPage = () => {
                 inputText.trim();
             if (!originalText) return;
 
+            // Lock immediately to avoid duplicate POSTs (React 18 StrictMode can run effects twice)
+            lastAutoSavedSentenceRef.current = response.sentence;
+
             // Count how many words are already saved as flashcards
             let wordsSavedCount = 0;
             if (Array.isArray(response.words) && savedWordKeys.size > 0) {
@@ -260,18 +266,31 @@ export const IndexPage = () => {
                     wordsSavedCount,
                     responsePayload: response
                 });
-                lastAutoSavedSentenceRef.current = response.sentence;
             } catch (error) {
                 console.error('Error auto-saving sentence:', error);
+                // Allow retry if the request failed
+                if (lastAutoSavedSentenceRef.current === response.sentence) {
+                    lastAutoSavedSentenceRef.current = null;
+                }
             }
         };
 
         autoSave();
     }, [user, response, inputText, fromLanguage, savedWordKeys]);
 
+    // Auto-scroll to flashcard section when a word is hovered
+    useEffect(() => {
+        if (hoveredFlashcardFi && wordDetailsRef.current) {
+            // Smooth scroll to the word details section
+            wordDetailsRef.current.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+        }
+    }, [hoveredFlashcardFi]);
+
     return (
-        <TranslationHoverProvider>
-            <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white">
                 <div className="max-w-5xl mx-auto px-6 md:px-8 py-8 md:py-12">
                     {/* Title Section */}
                     <div className="mb-8">
@@ -378,6 +397,7 @@ export const IndexPage = () => {
                     {/* Word Details */}
                     {(response?.words || isTourActive) && (
                         <div 
+                            ref={wordDetailsRef}
                             className={`mb-6 transition-all duration-700 ease-out transform ${
                                 isTourActive && !response?.words 
                                     ? 'animate-in fade-in slide-in-from-bottom-4' 
@@ -475,26 +495,33 @@ export const IndexPage = () => {
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Welcome Tour Modal */}
-            <WelcomeTourModal onStartTour={() => {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.set('tour', 'true');
-                navigate(newUrl.pathname + newUrl.search);
-            }} />
+                {/* Welcome Tour Modal */}
+                <WelcomeTourModal onStartTour={() => {
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('tour', 'true');
+                    navigate(newUrl.pathname + newUrl.search);
+                }} />
 
-            {/* Onboarding Coach Marks */}
-            {isTourActive && (
-                <CoachMark
-                    step={currentStep}
-                    totalSteps={totalSteps}
-                    onNext={handleNext}
-                    onPrev={handlePrev}
-                    onSkip={handleSkip}
-                    onFinish={handleFinish}
-                />
-            )}
+                {/* Onboarding Coach Marks */}
+                {isTourActive && (
+                    <CoachMark
+                        step={currentStep}
+                        totalSteps={totalSteps}
+                        onNext={handleNext}
+                        onPrev={handlePrev}
+                        onSkip={handleSkip}
+                        onFinish={handleFinish}
+                    />
+                )}
+        </div>
+    );
+}
+
+export const IndexPage = () => {
+    return (
+        <TranslationHoverProvider>
+            <IndexPageContent />
         </TranslationHoverProvider>
-    )
+    );
 }

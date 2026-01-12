@@ -107,7 +107,7 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
                 </div>
             )}
             <div className="pr-20">
-                <p className="text-gray-800 text-lg">
+                <p className="text-gray-800 text-lg whitespace-pre-wrap">
                     {renderHighlightedText()}
                 </p>
             </div>
