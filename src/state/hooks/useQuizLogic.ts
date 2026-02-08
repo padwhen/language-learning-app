@@ -7,13 +7,13 @@ interface UseQuizLogicReturn {
     answers: Answer[];
     quizdone: boolean;
     score: number;
-    saveAnswer: (answerIndex: number, correct: boolean, cardId: string) => void;
+    saveAnswer: (answerIndex: number, correct: boolean, cardId: string, userAnswerText?: string, isPartial?: boolean) => void;
     cards: Card[];
     nextQuizDate?: Date | null;
     loading: boolean;
 }
 
-const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, mapInput?: Record<string, number>, isResumeMode: boolean = false, resumeData?: { currentQuestion: number, answers: Answer[], score: number }, originalQuizItems?: QuizItem[], isQuizStarted: boolean = false): UseQuizLogicReturn => {
+const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = false, _mapInput?: Record<string, number>, isResumeMode: boolean = false, resumeData?: { currentQuestion: number, answers: Answer[], score: number }, originalQuizItems?: QuizItem[], isQuizStarted: boolean = false): UseQuizLogicReturn => {
     const userId = localStorage.getItem('userId')
     const [question, setQuestion] = useState<number>(1) // Always start from 1 for current quiz
     const [answers, setAnswers] = useState<Answer[]>(resumeData?.answers || [])
@@ -22,9 +22,9 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
     const [cards, setCards] = useState<Card[]>([])
     const [nextQuizDate, setNextQuizDate] = useState<Date | null>(null)
     const [loading, setLoading] = useState(true)
-    const map = useRef<Record<string, number>>(mapInput || {});
 
     const startTimeRef = useRef<number>(0)
+    const loadingRef = useRef(true)
     const [quizStartTime, setQuizStartTime] = useState<number>(0)
 
     useEffect(() => {
@@ -47,6 +47,7 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
             console.error('Error fetching cards:', error);
         } finally {
             setLoading(false)
+            loadingRef.current = false
         }
     };
 
@@ -80,7 +81,7 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
                 deckId: deckId,
                 cardsStudied: allAnswers.length, 
                 correctAnswers: allAnswers.filter(a => a.correct).length,
-                quizType: isResumeMode ? 'resume' : (isReviewMode ? 'review': 'learn'),
+                quizType: isReviewMode ? 'review' : 'learn',
                 quizDetails: quizDetails
             })
             setNextQuizDate(new Date(response.data.nextQuizDate))
@@ -90,55 +91,29 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
     }, [userId, deckId, quiz, answers, isReviewMode, isResumeMode, originalQuizItems])
 
     const saveAnswer = async (
-        userAnswerIndex: number, 
-        correct: boolean, 
+        userAnswerIndex: number,
+        correct: boolean,
         cardId: string,
+        userAnswerText?: string,
+        isPartial?: boolean,
     ) => {
-        if (loading) return
+        if (loadingRef.current) return
         const currentQuestion = quiz[question - 1]
         const endTime = Date.now()
         const timeTaken = endTime - startTimeRef.current
-
-        if (isReviewMode && correct && map.current[cardId] > 0) {
-            map.current[cardId]--
-        }      
 
         // Update card score
         const updatedCards = cards.map(card => {
             if (card._id === cardId) {
                 let newScore = card.cardScore
-                let scoreUpdated = false
 
-                if (isReviewMode) {
-                    // Enhanced review mode logic with SRS algorithm
-                    const reviewStatus = map.current[cardId] || 0
-                    if (reviewStatus === 0 && correct) {
-                        // Correct answer in review mode - increase score
-                        newScore = Math.min(card.cardScore + 1, 5)
-                        scoreUpdated = true
-                        console.log(`Review: Card ${cardId} score increased to ${newScore}`)
-                    } else if (reviewStatus === 2 && !correct) {
-                        // Incorrect answer in review mode - decrease score
-                        newScore = Math.max(card.cardScore - 1, 0)
-                        scoreUpdated = true
-                        console.log(`Review: Card ${cardId} score decreased to ${newScore}`)
-                    }
-                    
-                    // Remove card from map if score was updated
-                    if (scoreUpdated) {
-                        delete map.current[cardId]
-                    }
+                // Correct = +1 (max 5), Partial = +0.5 (max 5), Wrong = -1 (min 0)
+                if (correct && isPartial) {
+                    newScore = Math.min(card.cardScore + 0.5, 5)
+                } else if (correct) {
+                    newScore = Math.min(card.cardScore + 1, 5)
                 } else {
-                    // Enhanced learn mode logic with SRS algorithm
-                    if (correct) {
-                        // Correct answer in learn mode - increase score
-                        newScore = Math.min(card.cardScore + 1, 5)
-                        console.log(`Learn: Card ${cardId} score increased to ${newScore}`)
-                    } else {
-                        // Incorrect answer in learn mode - don't reset, just don't increase
-                        newScore = card.cardScore
-                        console.log(`Learn: Card ${cardId} score unchanged at ${newScore}`)
-                    }
+                    newScore = Math.max(card.cardScore - 1, 0)
                 }
 
                 // Always set learning to true the first time the card is interacted with
@@ -166,7 +141,7 @@ const useQuizLogic = (quiz: QuizItem[], deckId: any, isReviewMode: boolean = fal
             // In resume mode, the question number is adjusted by adding the number of answers already provided.
             // This ensures the question numbering continues correctly from where the user left off.
             question: isResumeMode ? (answers.length + question) : question,
-            userAnswer: currentQuestion.options[userAnswerIndex],
+            userAnswer: userAnswerText ?? currentQuestion.options[userAnswerIndex] ?? '',
             correctAnswer: currentQuestion.correctAnswer,
             correct: correct,
             cardId: cardId,
