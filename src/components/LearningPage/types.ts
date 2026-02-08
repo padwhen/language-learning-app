@@ -6,7 +6,7 @@ export interface SavedProgress {
     score: number
 }
 
-export type CardTypeToLearn = 'All' | 'Completed' | 'Not studied' | 'Learning'
+export type CardTypeToLearn = 'All' | 'Completed' | 'Not studied' | 'Learning' | 'Due for Review'
 
 export interface QuizSettingsType {
     includeCompleteCards: boolean;

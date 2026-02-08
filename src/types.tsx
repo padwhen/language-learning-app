@@ -41,7 +41,19 @@ export interface Card {
     cardScore: number;
     favorite?: boolean;
     learning?: boolean;
+    nextReviewDate?: string | null;
+    lastReviewDate?: string | null;
+    reviewInterval?: number;
+    easeFactor?: number;
 }
+
+export type QuestionType =
+    | 'multiple-choice'
+    | 'reverse-mc'
+    | 'word-scramble'
+    | 'type-answer'
+    | 'reverse-type'
+    | 'listening';
 
 export interface QuizItem {
     userLangCard: string;
@@ -50,6 +62,8 @@ export interface QuizItem {
     correctIndex: number;
     cardId: string;
     cardScore: number;
+    questionType: QuestionType;
+    audioLang?: string;
 }
 
 export interface Answer {
