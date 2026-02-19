@@ -157,15 +157,15 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
     }
 
     return (
-        <motion.div 
-            className={`space-y-8 p-8 ${animationClass}`}
+        <motion.div
+            className={`space-y-4 sm:space-y-8 p-4 sm:p-8 ${animationClass}`}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
         >
             <motion.div className="text-center space-y-2" variants={itemVariants}>
-                <h2 className="text-3xl font-bold text-blue-500">Customize Your Learning Session</h2>
-                <p className="text-gray-600">Choose how many new words to learn today</p>
+                <h2 className="text-xl sm:text-3xl font-bold text-blue-500">Customize Your Learning Session</h2>
+                <p className="text-gray-600 text-sm sm:text-base">Choose how many new words to learn today</p>
             </motion.div>
 
             {/* Validation Errors */}
@@ -375,7 +375,7 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                 </motion.div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
                 className="flex justify-between pt-4"
                 variants={itemVariants}
             >
@@ -383,7 +383,7 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                     <Button
                         variant="outline"
                         onClick={() => nextStep('intro')}
-                        className="px-8 py-3 text-lg"
+                        className="px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg"
                     >
                         ← Back
                     </Button>
@@ -391,7 +391,7 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                         onClick={handleNextStep}
-                        className="px-8 py-3 text-lg"
+                        className="px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg"
                         disabled={validationErrors.length > 0}
                     >
                         Preview Cards →

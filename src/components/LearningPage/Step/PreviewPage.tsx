@@ -17,10 +17,10 @@ export const PreviewPage: React.FC<PreviewPageProps> = ({
     nextStep
 }) => {
     return (
-        <div className={`space-y-8 p-8 ${animationClass}`}>
+        <div className={`space-y-4 sm:space-y-8 p-4 sm:p-8 ${animationClass}`}>
             <div className="text-center space-y-2">
-                <h2 className="text-3xl font-bold text-gray-800">Your Learning Sessions</h2>
-                <p className="text-gray-600">Here's what you'll be practicing today</p>
+                <h2 className="text-xl sm:text-3xl font-bold text-gray-800">Your Learning Sessions</h2>
+                <p className="text-gray-600 text-sm sm:text-base">Here's what you'll be practicing today</p>
             </div>
             <div className="">
                 <div className="flex items-center justify-between mb-4"> 
@@ -58,23 +58,23 @@ export const PreviewPage: React.FC<PreviewPageProps> = ({
                     ))}
                     {filteredAndSortedCards.length > 5 && (
                         <div className="text-center py-4 text-gray-600 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                            <span className="text-lg">... and {filteredAndSortedCards.length - 5} more cards waiting for you! 🎉</span>
+                            <span className="text-sm sm:text-lg">... and {filteredAndSortedCards.length - 5} more cards waiting for you! 🎉</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-4 gap-2">
                 <Button
                     variant="outline"
                     onClick={() => nextStep('settings')}
-                    className="px-8 py-3 text-lg"
+                    className="px-3 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg"
                 >
-                    ← Back to Settings
+                    ← Back
                 </Button>
                 <Button
                     onClick={handleStartQuiz}
-                    className="px-8 py-3 text-lg bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200"
+                    className="px-3 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200"
                 >
                     Start Learning! 🚀
                 </Button>
