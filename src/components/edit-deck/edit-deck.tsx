@@ -101,7 +101,7 @@ export const EditPage = () => {
 
     return (
         <div className="pt-4 md:pt-8">
-            <div className="container sticky top-0 w-full flex flex-col md:flex-row justify-between bg-white z-10 md:py-4 py-2 md:px-8">
+            <div className="container sticky top-14 md:top-0 w-full flex flex-col md:flex-row justify-between bg-white z-10 md:py-4 py-2 md:px-8 border-b border-gray-100">
                 <div className="flex-col md:flex-row flex md:gap-16 gap-4 mb-4 md:mb-0">
                     <Button data-testid="done-button" className="flex gap-2 items-center justify-center md:text-xl text-lg" onClick={handleDone}>
                         <IoIosDoneAll />
@@ -160,7 +160,7 @@ export const EditPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col space-y-8 pt-16">
+                <div className="flex flex-col space-y-8 pt-6 md:pt-16">
                     <EditCardDetails 
                         deckName={deckName} 
                         cards={cards} 
@@ -174,7 +174,7 @@ export const EditPage = () => {
                     />
                     <div data-testid="add-card-button" className="w-full rounded-xl h-34 flex flex-col cursor-pointer" onClick={addCard}>
                         <span className="flex justify-center items-center">
-                            <h1 className="text-3xl border-b-4 pb-1 hover:border-blue-500">+ Add Card</h1>
+                            <h1 className="text-xl sm:text-3xl border-b-4 pb-1 hover:border-blue-500">+ Add Card</h1>
                         </span>
                     </div>
                 </div>

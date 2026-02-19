@@ -64,7 +64,7 @@ export const FlashcardPage = () => {
 
 
     return (
-        <div className="flex flex-col items-center justify-center mt-16 w-full max-w-3xl mx-auto">
+        <div className="flex flex-col items-center justify-center mt-4 sm:mt-16 w-full max-w-3xl mx-auto px-4 sm:px-0">
             <div className="w-full mb-4">
                 <div className="flex justify-between items-center mb-2">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{deck.deckName}</h2>
