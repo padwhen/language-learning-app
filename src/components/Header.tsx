@@ -20,8 +20,8 @@ export const Header = ({ onStartTour, highlightUser }: { onStartTour?: () => voi
     }, []);
 
     return (
-        <div className="pt-6">
-            <div className="container flex flex-wrap justify-between items-center">
+        <div className="py-2 px-4 border-b border-gray-100 bg-white sticky top-0 z-30">
+            <div className="flex flex-wrap justify-between items-center">
                 {isMobile ? <MobileNav /> : <MainNav onStartTour={onStartTour} highlightUser={highlightUser} />}
             </div>
         </div>

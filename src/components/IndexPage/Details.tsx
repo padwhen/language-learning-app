@@ -211,13 +211,13 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
                         {fi}
                     </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[95vw] w-full max-w-6xl max-h-[90vh] overflow-hidden p-0 flex flex-col bg-white">
-                    <DialogHeader className="px-8 pt-6 pb-5 border-b border-gray-200">
-                        <DialogTitle className="text-2xl font-bold text-gray-900">{fi}</DialogTitle>
+                <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] overflow-hidden p-0 flex flex-col bg-white">
+                    <DialogHeader className="px-4 sm:px-8 pt-4 sm:pt-6 pb-4 sm:pb-5 border-b border-gray-200">
+                        <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900">{fi}</DialogTitle>
                     </DialogHeader>
                     <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
                         {/* Left side - Word Details */}
-                        <div className={`${showDeckSelection && !saveSuccess ? 'md:w-1/2' : 'w-full'} p-8 overflow-y-auto transition-all duration-300 flex items-start`}>
+                        <div className={`${showDeckSelection && !saveSuccess ? 'md:w-1/2' : 'w-full'} p-4 sm:p-8 overflow-y-auto transition-all duration-300 flex items-start`}>
                             {saveSuccess ? (
                                 <div className="w-full flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in-0 zoom-in-95 duration-300">
                                     <div className="relative">
@@ -328,7 +328,7 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
                         {showDeckSelection && !saveSuccess && (
                             <>
                                 <div className="hidden md:block w-px bg-gray-200 flex-shrink-0"></div>
-                                <div className="md:w-1/2 p-8 overflow-hidden bg-white flex-shrink-0 flex flex-col">
+                                <div className="w-full md:w-1/2 p-4 sm:p-8 overflow-y-auto bg-white flex-shrink-0 flex flex-col border-t border-gray-200 md:border-t-0 min-h-[200px]">
                                     {!isCreatingNewDeck && (
                                         <div className="flex items-center justify-between mb-4 flex-shrink-0">
                                             <h3 className="text-lg font-semibold text-gray-900">Save to deck</h3>
@@ -350,7 +350,7 @@ const WordPill: React.FC<{ word: Word; wordIndex: number; onWordRemoved?: () => 
                             </>
                         )}
                     </div>
-                    <DialogFooter className="px-8 py-4 border-t border-gray-200 bg-white">
+                    <DialogFooter className="px-4 sm:px-8 py-4 border-t border-gray-200 bg-white">
                         <DialogClose asChild>
                             <Button variant="outline" className="w-full sm:w-auto">Close</Button>
                         </DialogClose>

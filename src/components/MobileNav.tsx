@@ -10,7 +10,7 @@ import { useContext } from "react"
 import { UserContext } from "@/contexts/UserContext"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { LoginPage } from "./UsersComponents/LoginPage"
-import { Home, LogOut, Settings, Library, BookOpen, Edit3 } from "lucide-react"
+import { Home, LogOut, Settings, Library, BookOpen, Edit3, Bookmark } from "lucide-react"
 import axios from "axios"
 
 export function MobileNav() {
@@ -136,15 +136,25 @@ export function MobileNav() {
                     <LogOut className="w-4 h-4" aria-hidden="true" />
                     Log Out
                   </button>
-                  <MobileLink 
-                    to="/vocabulary" 
-                    onOpenChange={setOpen} 
+                  <MobileLink
+                    to="/vocabulary"
+                    onOpenChange={setOpen}
                     className="flex items-center gap-2"
                     aria-label="All saved terms"
                     data-testid="mobile-nav-vocabulary"
                   >
                     <Library className="w-4 h-4" aria-hidden="true" />
                     All saved terms
+                  </MobileLink>
+                  <MobileLink
+                    to="/saved-sentences"
+                    onOpenChange={setOpen}
+                    className="flex items-center gap-2"
+                    aria-label="Saved sentences"
+                    data-testid="mobile-nav-saved-sentences"
+                  >
+                    <Bookmark className="w-4 h-4" aria-hidden="true" />
+                    Saved sentences
                   </MobileLink>
                 </>
               ) : (
