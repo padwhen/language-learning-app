@@ -50,9 +50,9 @@ export const VocabularyPage = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold p-4">All saved terms & definitions in decks 📚</h1>
-                <form className="relative flex-grow max-w-md">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 justify-between mb-4">
+                <h1 className="text-xl sm:text-3xl font-bold p-2 sm:p-4">All saved terms & definitions in decks 📚</h1>
+                <form className="relative w-full sm:flex-grow sm:max-w-md">
                     <Input type="text"
                             placeholder="Find any term/definition..."
                             className="w-full pl-3 pr-10 py-2 rounded-full

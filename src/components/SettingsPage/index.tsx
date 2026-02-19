@@ -44,9 +44,9 @@ export const SettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-8">
-      <div className="w-full max-w-screen-2xl mx-auto p-6 space-y-6 bg-white rounded-2xl shadow-lg overflow-auto">
-        <h1 className="text-3xl font-bold flex items-center gap-3">⚙️ Settings</h1>
+    <div className="min-h-screen bg-white pt-4 sm:pt-8">
+      <div className="w-full max-w-screen-2xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white rounded-2xl shadow-lg overflow-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">⚙️ Settings</h1>
         {/* Profile Picture Card */}
         <Card className={`overflow-hidden transition-all duration-300 ${
           tourProps.highlightedElement === 'profile-picture' ? 'ring-4 ring-blue-500 ring-opacity-75 shadow-lg' : ''
