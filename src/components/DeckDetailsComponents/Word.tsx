@@ -29,32 +29,32 @@ export const Word = ({ engCard, userLangCard, cardId, deckId, favorite }: Props)
 
 
     return (
-        <div className={`w-full max-w-[850px] shadow-md rounded-lg p-4 ${isFavorite ? 'favorite-card' : 'border border-r'}`}>
-            <div className="flex items-center">
-                <div className="w-[250px] sm:w-[300px] text-xl sm:text-2xl text-blue-500">
+        <div className={`w-full max-w-[850px] shadow-md rounded-lg p-3 sm:p-4 ${isFavorite ? 'favorite-card' : 'border border-r'}`}>
+            <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2/5 sm:w-[250px] md:w-[300px] flex-shrink-0 text-sm sm:text-xl md:text-2xl text-blue-500 font-medium break-words min-w-0">
                     {userLangCard}
                 </div>
-                <div className="flex-grow text-xl sm:text-2xl">
+                <div className="flex-1 min-w-0 text-sm sm:text-xl md:text-2xl break-words">
                     {engCard}
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
                     <ToolTip trigger={
-                        <Star className={`w-6 h-6 cursor-pointer ${isFavorite ? 'text-yellow-400 fill-yellow-400' : ''}`}
+                        <Star className={`w-4 h-4 sm:w-6 sm:h-6 cursor-pointer ${isFavorite ? 'text-yellow-400 fill-yellow-400' : ''}`}
                         onClick={handleFavoriteToggle}
                         />
-                    } 
+                    }
                         content={isFavorite ? "Remove from favorites" : "Mark as favorite"} />
                     <Dialog>
                         <DialogTrigger asChild>
                             <div>
-                                <ToolTip trigger={<Pencil className="w-6 h-6" />} content="Edit this word" />
+                                <ToolTip trigger={<Pencil className="w-4 h-4 sm:w-6 sm:h-6" />} content="Edit this word" />
                             </div>
                         </DialogTrigger>
-                        <DialogContent className="max-w-[425px]">
+                        <DialogContent className="max-w-[95vw] sm:max-w-[425px]">
                             <EditCard deckId={deckId} cardId={cardId} engCard={engCard} userLangCard={userLangCard} />
                         </DialogContent>
-                    </Dialog>                    
-                    <ToolTip trigger={<Speaker className="w-6 h-6" />} content="Speak" />                    
+                    </Dialog>
+                    <ToolTip trigger={<Speaker className="w-4 h-4 sm:w-6 sm:h-6" />} content="Speak" />
                 </div>
             </div>
             {error && <p className="text-red-500 mt-2">{error}</p>}
