@@ -291,11 +291,11 @@ const IndexPageContent = () => {
 
     return (
         <div className="min-h-screen bg-white">
-                <div className="max-w-5xl mx-auto px-6 md:px-8 py-8 md:py-12">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-8 md:py-12">
                     {/* Title Section */}
                     <div className="mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-3">Translate & Create</h1>
-                        <p className="text-gray-600 text-lg">Enter a sentence to translate and generate flashcards instantly.</p>
+                        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3">Translate & Create</h1>
+                        <p className="text-gray-600 text-base sm:text-lg">Enter a sentence to translate and generate flashcards instantly.</p>
                     </div>
                     {/* Language Selection */}
                     <div className="mb-6">

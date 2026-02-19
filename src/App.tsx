@@ -51,22 +51,20 @@ function App() {
   )
 }
 
-const AppContent = ({ location, handleStartTour }: { location: any, handleStartTour: () => void }) => {
-  const { sidebarWidth } = useSidebar();
+const AppContent = ({ location: _location, handleStartTour }: { location: any, handleStartTour: () => void }) => {
+  const { effectiveSidebarWidth } = useSidebar();
 
   return (
     <div className="flex min-h-screen">
       <Sidebar onStartTour={handleStartTour} />
-      <div 
-        className="flex-1 transition-all duration-300"
-        style={{ marginLeft: `${sidebarWidth}px` }}
+      <div
+        className="flex-1 transition-all duration-300 min-w-0"
+        style={{ marginLeft: `${effectiveSidebarWidth}px` }}
       >
-        {/* Show Header on mobile */}
-        {location.pathname !== '/' && (
-          <div className="md:hidden">
-            <Header onStartTour={handleStartTour} />
-          </div>
-        )}
+        {/* Show Header on mobile for all pages */}
+        <div className="md:hidden">
+          <Header onStartTour={handleStartTour} />
+        </div>
         <Routes>
           {/* Routes that need deck context */}
           <Route index element={<IndexPage />} />
