@@ -87,7 +87,7 @@ export const TestPage =  () => {
     };
 
     return (
-        <div className='flex h-screen p-4'>
+        <div className='flex flex-col md:flex-row min-h-screen p-4 gap-4'>
             <WordSelectionDialog
                 isOpen={isWordSelectionOpen}
                 onClose={handleWordSelectionClose}
@@ -100,29 +100,31 @@ export const TestPage =  () => {
                 </div>
             ): (
                 <>
-            <div className='w-1/4 pr-4'>
-                <h2 className='text-2xl font-bold mb-4'>Sections</h2>
-                <Button 
+            <div className='w-full md:w-1/4 md:pr-4'>
+                <h2 className='text-xl md:text-2xl font-bold mb-4'>Sections</h2>
+                <div className='flex md:flex-col gap-2'>
+                <Button
                     onClick={() => setCurrentSection("passage")}
-                    className='mb-2 w-full justify-start'
+                    className='flex-1 md:flex-none md:mb-2 w-full justify-start text-sm md:text-base'
                     variant={currentSection === 'passage' ? 'default' : 'outline'}
                 >
                     Passage
                 </Button>
-                <Button 
+                <Button
                     onClick={() => setCurrentSection("synonym")}
-                    className='mb-2 w-full justify-start'
+                    className='flex-1 md:flex-none md:mb-2 w-full justify-start text-sm md:text-base'
                     variant={currentSection === 'synonym' ? 'default' : 'outline'}
                 >
-                    Synonym Matching
+                    Synonym
                 </Button>
                 <Button
                     onClick={() => setCurrentSection('scramble')}
-                    className='mb-2 w-full justify-start'
+                    className='flex-1 md:flex-none md:mb-2 w-full justify-start text-sm md:text-base'
                     variant={currentSection === 'scramble' ? 'default' : 'outline'}
                 >
-                    Word Scramble    
-                </Button> 
+                    Scramble
+                </Button>
+                </div> 
                 <div className='mt-4'>
                     <p>Time left: <Countdown date={endTime} renderer={renderer} /></p>
                 </div>
@@ -159,7 +161,7 @@ export const TestPage =  () => {
                     </Dialog>
                 )}
             </div>
-            <div className='w-3/4 overflow-y-auto'>
+            <div className='w-full md:w-3/4 overflow-y-auto'>
                 {currentSection === 'passage' && <PassageSection passage={test.passage} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
                 {currentSection === 'synonym' && <SynonymMatchingSections questions={test.questions.synonym_matching} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
                 {currentSection === 'scramble' && <WordScramble questions={test.questions.word_scramble} handleAnswer={handleAnswer} isSubmitted={isSubmitted} answers={answers} />}
