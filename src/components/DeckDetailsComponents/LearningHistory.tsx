@@ -38,14 +38,8 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
 
     const groupedHistory = history?.reduce((groups, item) => {
         // Extract base name (e.g., "peach_jay" from "peach_jay_Review01")
-        let baseName;
-        if (item.quizType === 'resume') {
-            // For resume sessions, use the full randomName as they should be grouped with their original learn session
-            baseName = item.randomName;
-        } else {
-            baseName = item.randomName.split('_Review')[0];
-        }
-        
+        const baseName = item.randomName.split('_Review')[0];
+
         if (!groups[baseName]) {
           groups[baseName] = [];
         }
@@ -65,14 +59,10 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                             {Object.entries(groupedHistory).map(([groupName, items]) => {
                                 const isExpanded = expandedGroups.has(groupName)
                                 const learningSession = items.find(item => item.quizType === 'learn')
-                                const resumeSessions = items.filter(item => item.quizType === 'resume')
                                 const reviewSessions = items.filter(item => item.quizType === 'review')
-                                
-                                // Merge learn and resume sessions for display
-                                const mainSession = learningSession || resumeSessions[0]
-                                const totalCardsStudied = learningSession ? 
-                                    learningSession.cardsStudied + resumeSessions.reduce((sum, session) => sum + session.cardsStudied, 0) :
-                                    resumeSessions.reduce((sum, session) => sum + session.cardsStudied, 0)
+
+                                const mainSession = learningSession || items[0]
+                                const totalCardsStudied = mainSession?.cardsStudied || 0
                                 return (
                                     <li key={groupName} className="border rounded-lg p-4">
                                         <div
@@ -86,9 +76,6 @@ export const LearningHistory = ({ deckId }: { deckId: any }) => {
                                                 </div>
                                                 <div className="text-sm text-gray-600">
                                                 Started: {format(new Date(mainSession!.date), 'dd.MM.yyyy')} • {totalCardsStudied} cards
-                                                {resumeSessions.length > 0 && (
-                                                    <span className="text-blue-600 ml-2">(Resumed session)</span>
-                                                )}
                                                 </div>
                                             </div>
                                             {reviewSessions.length > 0 && (

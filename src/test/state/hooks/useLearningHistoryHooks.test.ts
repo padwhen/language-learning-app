@@ -70,17 +70,43 @@ describe('Learning History Hooks', () => {
     it('should set error when API call fails', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       mockedAxios.get.mockRejectedValueOnce(new Error('Network error'))
-      
+
       const { result } = renderHook(() => useFetchHistory('user-123', 'deck-123'))
-      
+
       await act(async () => {
         await result.current.fetchHistory()
       })
-      
+
       expect(result.current.error).toBe('Error fetching learning history')
       expect(consoleErrorSpy).toHaveBeenCalled()
-      
+
       consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle empty history response without error', async () => {
+      mockedAxios.get.mockResolvedValueOnce({ data: { history: [] } })
+
+      const { result } = renderHook(() => useFetchHistory('user-123', 'deck-123'))
+
+      await act(async () => {
+        await result.current.fetchHistory()
+      })
+
+      expect(result.current.history).toEqual([])
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should default to empty array if response history is undefined', async () => {
+      mockedAxios.get.mockResolvedValueOnce({ data: {} })
+
+      const { result } = renderHook(() => useFetchHistory('user-123', 'deck-123'))
+
+      await act(async () => {
+        await result.current.fetchHistory()
+      })
+
+      expect(result.current.history).toEqual([])
+      expect(result.current.error).toBeNull()
     })
   })
 
@@ -127,18 +153,32 @@ describe('Learning History Hooks', () => {
     it('should set error when API call fails and set loading to false', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       mockedAxios.get.mockRejectedValueOnce(new Error('Network error'))
-      
+
       const { result } = renderHook(() => useFetchNextQuizDate('user-123', 'deck-123'))
-      
+
       await act(async () => {
         await result.current.fetchNextQuizDate()
       })
-      
+
       expect(result.current.error).toBe('Error fetching next quiz date')
       expect(result.current.loading).toBe(false)
       expect(consoleErrorSpy).toHaveBeenCalled()
-      
+
       consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle null nextQuizDate without creating invalid Date', async () => {
+      mockedAxios.get.mockResolvedValueOnce({ data: { nextQuizDate: null, _id: null } })
+
+      const { result } = renderHook(() => useFetchNextQuizDate('user-123', 'deck-123'))
+
+      await act(async () => {
+        await result.current.fetchNextQuizDate()
+      })
+
+      expect(result.current.nextQuizDate).toBeNull()
+      expect(result.current.error).toBeNull()
+      expect(result.current.loading).toBe(false)
     })
   })
 

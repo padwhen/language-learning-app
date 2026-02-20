@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { QuizItem } from "@/types";
-import { CheckCircle2, Save, Settings, X, Zap, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
+import { QuizItem, Answer } from "@/types";
+import { CheckCircle2, Save, Settings, X, Zap, Target, TrendingUp, Calendar, BookOpen, AlertCircle } from "lucide-react";
 import ConfettiExplosion from "react-confetti-explosion";
 import { Question } from "../Question";
+import { TypeAnswerQuestion } from "../TypeAnswerQuestion";
+import { WordScrambleQuestion } from "../WordScrambleQuestion";
+import { ListeningQuestion } from "../ListeningQuestion";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import React from "react";
@@ -29,8 +32,9 @@ interface QuizPageProps {
     animationClass: string
     nextQuizDate: Date | null | undefined
     quizNextDate: Date | null | undefined
-    saveAnswer: (answerIndex: number, correct: boolean, cardId: string) => void
+    saveAnswer: (answerIndex: number, correct: boolean, cardId: string, userAnswerText?: string, isPartial?: boolean) => void
     id: string | undefined
+    answers: Answer[]
 }
 
 const confettiOptions = { force: 0.9, duration: 6000, particleCount: 100, width: 1600, height: 1600 }
@@ -51,8 +55,10 @@ export const QuizPage: React.FC<QuizPageProps> = ({
     nextQuizDate,
     quizNextDate,
     saveAnswer,
-    id
+    id,
+    answers
 }) => {
+    const wrongAnswers = answers.filter(a => !a.correct);
     return (
         <>
         <CardHeader className="relative flex-shrink-0">
@@ -227,8 +233,35 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                     </motion.div>
 
 
+                    {/* Wrong Answer Review */}
+                    {wrongAnswers.length > 0 && (
+                        <motion.div
+                            className="space-y-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.6 }}
+                        >
+                            <div className="flex items-center gap-2 mb-2">
+                                <AlertCircle className="h-5 w-5 text-red-500" />
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Review Mistakes ({wrongAnswers.length})
+                                </h3>
+                            </div>
+                            {wrongAnswers.map((answer, i) => {
+                                const quizItem = quiz.find(q => q.cardId === answer.cardId);
+                                return (
+                                    <div key={i} className="border border-red-200 bg-red-50 rounded-lg p-4">
+                                        <p className="font-medium text-gray-900 mb-1">{quizItem?.userLangCard}</p>
+                                        <p className="text-sm text-red-600">Your answer: {answer.userAnswer}</p>
+                                        <p className="text-sm text-green-600">Correct: {answer.correctAnswer}</p>
+                                    </div>
+                                );
+                            })}
+                        </motion.div>
+                    )}
+
                     {/* Next Review Schedule */}
-                    <motion.div 
+                    <motion.div
                         className="bg-white p-6 rounded-xl shadow-sm border"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -327,18 +360,59 @@ export const QuizPage: React.FC<QuizPageProps> = ({
                     }}
                 >
                     {quiz.map((quizItem, index) => (
-                        index + 1 === question && (
-                            <Question
-                                key={index}
-                                data={quizItem}
-                                save={(answerIndex: number, correct: boolean, cardId: string) => 
-                                    saveAnswer(answerIndex, correct, cardId)
-                                } 
-                                isReviewMode={false}
-                                currentQuestionIndex={question}
-                                totalQuestions={quiz.length}
-                            />
-                        )
+                        index + 1 === question && (() => {
+                            switch (quizItem.questionType) {
+                                case 'word-scramble':
+                                    return (
+                                        <WordScrambleQuestion
+                                            key={index}
+                                            data={quizItem}
+                                            save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                            }
+                                            isReviewMode={false}
+                                        />
+                                    );
+                                case 'listening':
+                                    return (
+                                        <ListeningQuestion
+                                            key={index}
+                                            data={quizItem}
+                                            save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                            }
+                                            isReviewMode={false}
+                                        />
+                                    );
+                                case 'type-answer':
+                                case 'reverse-type':
+                                    return (
+                                        <TypeAnswerQuestion
+                                            key={index}
+                                            data={quizItem}
+                                            save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                            }
+                                            isReviewMode={false}
+                                        />
+                                    );
+                                case 'multiple-choice':
+                                case 'reverse-mc':
+                                default:
+                                    return (
+                                        <Question
+                                            key={index}
+                                            data={quizItem}
+                                            save={(answerIndex: number, correct: boolean, cardId: string) =>
+                                                saveAnswer(answerIndex, correct, cardId)
+                                            }
+                                            isReviewMode={false}
+                                            currentQuestionIndex={question}
+                                            totalQuestions={quiz.length}
+                                        />
+                                    );
+                            }
+                        })()
                     ))}
                 </motion.div>
             )}

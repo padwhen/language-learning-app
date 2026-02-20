@@ -100,8 +100,10 @@ export const QuizReport = () => {
                             <h1 className="text-3xl font-bold text-gray-900">Learning Report</h1>
                             <p className="text-gray-600 mt-1">Review your performance and track your progress</p>
                         </div>
-                        <Button 
-                            onClick={() => navigate(`/review-page/${id}`)}
+                        <Button
+                            onClick={() => navigate(`/review-page/${id}`, {
+                                state: { cardIds: quizData.quizDetails.map(q => q.cardId) }
+                            })}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2"
                         >
                             <CheckCircle className="h-4 w-4" />

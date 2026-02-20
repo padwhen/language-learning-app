@@ -7,7 +7,7 @@ export interface HistoryItem {
     correctAnswers?: number;
     date: string;
     cardsStudied: number;
-    quizType: 'learn' | 'review' | 'resume';
+    quizType: 'learn' | 'review';
     randomName: string;
 }
 
@@ -24,7 +24,7 @@ export const useFetchHistory = (userId: string | null, deckId: any) => {
         try {
             if (userId && deckId) {
                 const response = await axios.get(`/learning-history/${userId}/${deckId}`)
-                setHistory(response.data.history)
+                setHistory(response.data.history || [])
             }
         } catch (error) {
             console.error('Error fetching learning history: ', error)
@@ -44,7 +44,11 @@ export const useFetchNextQuizDate = (userId: string | null, deckId: any) => {
         try {
             if (userId && deckId) {
                 const response = await axios.get(`/learning-history/next-quiz-date/${userId}/${deckId}`)
-                setNextQuizDate(new Date(response.data.nextQuizDate))
+                if (response.data.nextQuizDate) {
+                    setNextQuizDate(new Date(response.data.nextQuizDate))
+                } else {
+                    setNextQuizDate(null)
+                }
             }
         } catch (error) {
             console.error('Error fetching next quiz date', error)

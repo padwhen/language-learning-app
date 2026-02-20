@@ -24,7 +24,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export const LearningPage: React.FC = () => {
     const { id } = useParams<{ id: string }>()
-    const { cards, deckName } = useFetchDeck(id)
+    const { cards, deckName, deckTags } = useFetchDeck(id)
     const userId = localStorage.getItem('userId')
     const navigate = useNavigate()
     const { toast } = useToast()
@@ -155,7 +155,7 @@ export const LearningPage: React.FC = () => {
 
     useEffect(() => {
         if (filteredAndSortedCards.length > 0 && currentStep === 'preview') {
-            const newQuiz = generateQuiz(filteredAndSortedCards)
+            const newQuiz = generateQuiz(filteredAndSortedCards, deckTags[0])
             setQuiz(newQuiz)
         }
     }, [filteredAndSortedCards, currentStep])
@@ -318,6 +318,7 @@ export const LearningPage: React.FC = () => {
                         nextQuizDate={nextQuizDate}
                         quizNextDate={quizNextDate}
                         id={id}
+                        answers={answers}
                     />
                 )
 

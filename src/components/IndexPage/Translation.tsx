@@ -43,7 +43,8 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
                             return (
                                 <span 
                                     key={index} 
-                                    className="bg-yellow-300 text-yellow-900 px-1 rounded transition-all duration-200 font-semibold"
+                                    className="bg-yellow-300 text-yellow-900 rounded transition-all duration-200"
+                                    style={{ boxShadow: '0 0 0 2px rgba(253, 224, 71, 0.5)' }}
                                 >
                                     {part}
                                 </span>
@@ -55,7 +56,8 @@ export const Translation: React.FC<{text: string; highlighted?: boolean; transla
                             return (
                                 <span 
                                     key={index} 
-                                    className="bg-yellow-300 text-yellow-900 px-1 rounded transition-all duration-200 font-semibold"
+                                    className="bg-yellow-300 text-yellow-900 rounded transition-all duration-200"
+                                    style={{ boxShadow: '0 0 0 2px rgba(253, 224, 71, 0.5)' }}
                                 >
                                     {part}
                                 </span>

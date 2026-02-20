@@ -4,45 +4,109 @@ import { Card, CardContent, CardTitle, CardHeader } from "../ui/card";
 import { Progress } from "../ui/progress";
 import { Badge } from "../ui/badge";
 import useQuizLogic from "@/state/hooks/useQuizLogic";
+import useFetchDeck from "@/state/hooks/useFetchDeck";
 import { generateQuiz } from "@/utils/generateQuiz";
-import { QuizItem } from "@/types";
+import { QuizItem, Answer, Card as CardType } from "@/types";
 import { Question } from "../LearningPage/Question";
+import { TypeAnswerQuestion } from "../LearningPage/TypeAnswerQuestion";
+import { WordScrambleQuestion } from "../LearningPage/WordScrambleQuestion";
+import { ListeningQuestion } from "../LearningPage/ListeningQuestion";
 import { Button } from "../ui/button";
 import { useFetchNextQuizDate } from '@/state/hooks/useLearningHistoryHooks';
-import { 
-    Target, 
-    TrendingUp, 
+import {
+    Target,
+    TrendingUp,
     Calendar,
     Brain,
-    Award
+    Award,
+    AlertCircle
 } from "lucide-react";
 import { format } from "date-fns";
+
+const getReviewCards = (cards: CardType[], specificCardIds?: string[]): CardType[] => {
+    if (specificCardIds && specificCardIds.length > 0) {
+        // Review specific cards (e.g. from a learning report)
+        const idSet = new Set(specificCardIds);
+        return cards.filter(c => idSet.has(c._id));
+    }
+
+    const now = new Date();
+
+    // Cards due for SRS review (nextReviewDate has passed), excluding fully learned (score 5)
+    const dueCards = cards.filter(c =>
+        c.nextReviewDate && new Date(c.nextReviewDate) <= now && c.cardScore < 5
+    );
+    if (dueCards.length > 0) return dueCards;
+
+    // Fallback: cards with score 1-4 (in progress), sorted weakest first
+    return cards
+        .filter(c => c.cardScore >= 1 && c.cardScore < 5)
+        .sort((a, b) => a.cardScore - b.cardScore);
+};
 
 export const ReviewPage = () => {
     const { id } = useParams<{ id: string }>();
     const userId = localStorage.getItem('userId');
     const location = useLocation();
-    const { shuffledArray } = location.state || { shuffledArray: [] };
+
+    // Accept specific card IDs from router state (e.g. from learning report)
+    const [specificCardIds] = useState<string[] | undefined>(
+        () => location.state?.cardIds || location.state?.shuffledArray?.map((c: CardType) => c._id) || undefined
+    );
+
+    const { cards: deckCards, deckTags } = useFetchDeck(id);
+
+    const reviewCards = useMemo(
+        () => getReviewCards(deckCards, specificCardIds),
+        [deckCards, specificCardIds]
+    );
+
     const [quiz, setQuiz] = useState<QuizItem[]>([]);
-    
-    const { question, quizdone, score, saveAnswer, nextQuizDate: quizNextDate } = useQuizLogic(quiz, id, true);
+
+    useEffect(() => {
+        if (reviewCards.length > 0 && quiz.length === 0) {
+            setQuiz(generateQuiz(reviewCards, deckTags[0]));
+        }
+    }, [reviewCards, quiz.length]);
+
+    const { question, answers, quizdone, score, saveAnswer, nextQuizDate: quizNextDate } = useQuizLogic(
+        quiz, id, true,
+        undefined, false, undefined, undefined,
+        quiz.length > 0
+    );
     const { nextQuizDate, fetchNextQuizDate } = useFetchNextQuizDate(userId, id);
 
-    // Fetch next quiz date on mount and when quiz is completed
     useEffect(() => {
         if (userId && id) {
             fetchNextQuizDate();
         }
-    }, [id, quizdone]); // Add quizdone as a dependency
+    }, [id, quizdone]);
 
-    // Memoize the quiz generation
-    const quizMemo = useMemo(() => generateQuiz(shuffledArray), [shuffledArray]);
+    if (deckCards.length === 0) return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading cards...</p>
+            </div>
+        </div>
+    );
 
-    useEffect(() => {
-        if (!quizdone) {
-            setQuiz(quizMemo);
-        }
-    }, [quizMemo, quizdone]);
+    if (reviewCards.length === 0) return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center max-w-md">
+                <Award className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Nothing to review!</h2>
+                <p className="text-gray-600 mb-6">
+                    All your cards are up to date. Come back when cards are due for review, or learn new cards first.
+                </p>
+                <Link to={`/view-decks/${id}`}>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Back to Deck
+                    </Button>
+                </Link>
+            </div>
+        </div>
+    );
 
     if (!quiz.length) return (
         <div className="flex items-center justify-center min-h-screen">
@@ -55,6 +119,7 @@ export const ReviewPage = () => {
 
     const accuracyRate = Math.round((score / quiz.length) * 100);
     const nextReviewDate = nextQuizDate || quizNextDate;
+    const wrongAnswers = answers.filter(a => !a.correct);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -115,6 +180,28 @@ export const ReviewPage = () => {
                                     </Card>
                                 </div>
 
+                                {/* Wrong Answer Review */}
+                                {wrongAnswers.length > 0 && (
+                                    <div className="space-y-3 mb-8">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <AlertCircle className="h-5 w-5 text-red-500" />
+                                            <h3 className="text-lg font-semibold text-gray-900">
+                                                Review Mistakes ({wrongAnswers.length})
+                                            </h3>
+                                        </div>
+                                        {wrongAnswers.map((answer: Answer, i: number) => {
+                                            const quizItem = quiz.find(q => q.cardId === answer.cardId);
+                                            return (
+                                                <div key={i} className="border border-red-200 bg-red-50 rounded-lg p-4">
+                                                    <p className="font-medium text-gray-900 mb-1">{quizItem?.userLangCard}</p>
+                                                    <p className="text-sm text-red-600">Your answer: {answer.userAnswer}</p>
+                                                    <p className="text-sm text-green-600">Correct: {answer.correctAnswer}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
                                 {/* SRS Algorithm Feedback */}
                                 <Card className="mb-8">
                                     <CardHeader>
@@ -127,16 +214,16 @@ export const ReviewPage = () => {
                                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-3 h-3 rounded-full ${
-                                                    accuracyRate >= 80 ? 'bg-green-500' : 
+                                                    accuracyRate >= 80 ? 'bg-green-500' :
                                                     accuracyRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                                                 }`}></div>
                                                 <span className="font-medium">Performance Level</span>
                                             </div>
                                             <Badge className={
-                                                accuracyRate >= 80 ? 'bg-green-100 text-green-800' : 
+                                                accuracyRate >= 80 ? 'bg-green-100 text-green-800' :
                                                 accuracyRate >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                                             }>
-                                                {accuracyRate >= 80 ? 'Excellent' : 
+                                                {accuracyRate >= 80 ? 'Excellent' :
                                                  accuracyRate >= 60 ? 'Good' : 'Needs Improvement'}
                                             </Badge>
                                         </div>
@@ -144,7 +231,7 @@ export const ReviewPage = () => {
                                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                             <h4 className="font-semibold text-blue-900 mb-2">Algorithm Adjustment</h4>
                                             <p className="text-sm text-blue-800">
-                                                {accuracyRate >= 80 ? 
+                                                {accuracyRate >= 80 ?
                                                     "Your performance is excellent! The next review interval will be extended to reinforce long-term retention." :
                                                     accuracyRate >= 60 ?
                                                     "Good performance! The review interval will be maintained to ensure solid understanding." :
@@ -196,8 +283,8 @@ export const ReviewPage = () => {
                                             Back to Deck
                                         </Button>
                                     </Link>
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="w-full sm:w-auto px-8 py-3"
                                         onClick={() => window.location.reload()}
                                     >
@@ -217,9 +304,9 @@ export const ReviewPage = () => {
                                             Question {question}/{quiz.length}
                                         </Badge>
                                     </div>
-                                    <Progress 
-                                        className="h-3 mb-4" 
-                                        value={(question / quiz.length) * 100} 
+                                    <Progress
+                                        className="h-3 mb-4"
+                                        value={(question / quiz.length) * 100}
                                     />
                                     <div className="flex items-center justify-between text-sm text-gray-600">
                                         <span>Spaced Repetition Review</span>
@@ -229,16 +316,57 @@ export const ReviewPage = () => {
 
                                 {/* Question Component */}
                                 {quiz.map((quizItem, index) => (
-                                    index + 1 === question && (
-                                        <Question
-                                            key={index}
-                                            data={quizItem}
-                                            save={(answerIndex: number, correct: boolean, cardId: string) => 
-                                                saveAnswer(answerIndex, correct, cardId)
-                                            }
-                                            isReviewMode={true}
-                                        />
-                                    )
+                                    index + 1 === question && (() => {
+                                        switch (quizItem.questionType) {
+                                            case 'word-scramble':
+                                                return (
+                                                    <WordScrambleQuestion
+                                                        key={index}
+                                                        data={quizItem}
+                                                        save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                            saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                                        }
+                                                        isReviewMode={true}
+                                                    />
+                                                );
+                                            case 'listening':
+                                                return (
+                                                    <ListeningQuestion
+                                                        key={index}
+                                                        data={quizItem}
+                                                        save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                            saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                                        }
+                                                        isReviewMode={true}
+                                                    />
+                                                );
+                                            case 'type-answer':
+                                            case 'reverse-type':
+                                                return (
+                                                    <TypeAnswerQuestion
+                                                        key={index}
+                                                        data={quizItem}
+                                                        save={(answerIndex: number, correct: boolean, cardId: string, _cardScore: number, userAnswerText?: string, isPartial?: boolean) =>
+                                                            saveAnswer(answerIndex, correct, cardId, userAnswerText, isPartial)
+                                                        }
+                                                        isReviewMode={true}
+                                                    />
+                                                );
+                                            case 'multiple-choice':
+                                            case 'reverse-mc':
+                                            default:
+                                                return (
+                                                    <Question
+                                                        key={index}
+                                                        data={quizItem}
+                                                        save={(answerIndex: number, correct: boolean, cardId: string) =>
+                                                            saveAnswer(answerIndex, correct, cardId)
+                                                        }
+                                                        isReviewMode={true}
+                                                    />
+                                                );
+                                        }
+                                    })()
                                 ))}
                             </div>
                         )}

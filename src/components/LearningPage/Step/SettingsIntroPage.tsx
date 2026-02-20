@@ -2,8 +2,9 @@ import { toast } from "@/components/ui/use-toast";
 import { Card } from "@/types";
 import React, { useState } from "react";
 import { LearningStep } from "../types";
-import { CheckCircle, Lightbulb, AlertCircle, Info } from "lucide-react";
+import { CheckCircle, Lightbulb, AlertCircle, Info, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CardTypeToLearn } from "../types";
@@ -33,17 +34,21 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
     const [showRecommendationCard, setShowRecommendationCard] = useState(true)
     const [_isCardFadingOut, setIsCardFadingOut] = useState(false)
     const [validationErrors, setValidationErrors] = useState<string[]>([])
+    const [isCustom, setIsCustom] = useState(false)
+    const [customValue, setCustomValue] = useState('')
 
     const notStudiedCards = cards.filter(card => !card.learning && card.cardScore !== 5).length
     const recommendCount = Math.min(8, Math.max(4, notStudiedCards))
+    const maxNewCards = cards.filter(card => !card.learning && card.cardScore !== 5).length
 
     const getCardCountOptions = () => {
-        const maxNewCards = cards.filter(card => !card.learning && card.cardScore !== 5).length
-        const options = []
-
-        options.push({ value: 4, label: '4 new cards (Quick)', duration: '~5min' })
-        options.push({ value: 8, label: '8 new cards (Recommended)', duration: '~10min' })
-        options.push({ value: 12, label: '12 new cards (Extended)', duration: '~15min' })
+        const options = [
+            { value: 4, label: '4 cards', duration: 'Quick · ~5min' },
+            { value: 8, label: '8 cards', duration: 'Recommended · ~10min' },
+            { value: 12, label: '12 cards', duration: 'Extended · ~15min' },
+            { value: 16, label: '16 cards', duration: 'Intensive · ~20min' },
+            { value: 20, label: '20 cards', duration: 'Marathon · ~25min' },
+        ]
 
         return options.filter(option => option.value <= maxNewCards)
     }
@@ -86,6 +91,8 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
         )
 
         setCardsToLearn(closestOption.value)
+        setIsCustom(false)
+        setCustomValue('')
         setCardTypeToLearn('Not studied')
         setValidationErrors([]) // Clear any existing validation errors
         triggerAnimation('animate-pulse')
@@ -227,47 +234,104 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                     <Label className={`text-lg font-semibold ${validationErrors.some(e => e.includes('cards to learn')) ? 'text-red-600' : 'text-gray-700'}`}>
                         How many new words to learn today? *
                     </Label>
-                    <motion.div 
-                        className="grid grid-cols-1 md:grid-cols-2 gap-3"
+                    <motion.div
+                        className="grid grid-cols-2 md:grid-cols-3 gap-3"
                         variants={containerVariants}
                     >
-                        {getCardCountOptions().map((option, _index) => (
-                            <motion.button
-                                key={option.value}
-                                variants={itemVariants}
-                                whileHover={{ scale: 1.02, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => {
-                                    setCardsToLearn(option.value)
-                                    setValidationErrors(prev => prev.filter(e => !e.includes('cards to learn')))
-                                }}
-                                className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                                    cardsToLearn === option.value
-                                    ? 'border-blue-500 bg-blue-50 shadow-lg'
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                }`}
-                            >
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <div className="font-semibold text-gray-800">{option.label}</div>
-                                        <div className="text-sm text-gray-600">{option.duration}</div>
+                        {getCardCountOptions().map((option) => {
+                            const isSelected = !isCustom && cardsToLearn === option.value
+                            return (
+                                <motion.button
+                                    key={option.value}
+                                    variants={itemVariants}
+                                    whileHover={{ scale: 1.02, y: -2 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        setIsCustom(false)
+                                        setCustomValue('')
+                                        setCardsToLearn(option.value)
+                                        setValidationErrors(prev => prev.filter(e => !e.includes('cards to learn')))
+                                    }}
+                                    className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                                        isSelected
+                                        ? 'border-blue-500 bg-blue-50 shadow-lg'
+                                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="font-semibold text-gray-800">{option.label}</div>
+                                            <div className="text-sm text-gray-600">{option.duration}</div>
+                                        </div>
+                                        <AnimatePresence>
+                                            {isSelected && (
+                                                <motion.div
+                                                    initial={{ scale: 0, rotate: -180 }}
+                                                    animate={{ scale: 1, rotate: 0 }}
+                                                    exit={{ scale: 0, rotate: 180 }}
+                                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                >
+                                                    <CheckCircle className="w-6 h-6 text-blue-500" />
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
-                                    <AnimatePresence>
-                                        {cardsToLearn === option.value && (
-                                            <motion.div
-                                                initial={{ scale: 0, rotate: -180 }}
-                                                animate={{ scale: 1, rotate: 0 }}
-                                                exit={{ scale: 0, rotate: 180 }}
-                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                            >
-                                                <CheckCircle className="w-6 h-6 text-blue-500" />
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                </motion.button>
+                            )
+                        })}
+                        {/* Custom input option */}
+                        <motion.div
+                            variants={itemVariants}
+                            className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                                isCustom
+                                ? 'border-blue-500 bg-blue-50 shadow-lg'
+                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                            {isCustom ? (
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={maxNewCards}
+                                        value={customValue}
+                                        onChange={(e) => {
+                                            const val = e.target.value
+                                            setCustomValue(val)
+                                            const num = parseInt(val)
+                                            if (num > 0 && num <= maxNewCards) {
+                                                setCardsToLearn(num)
+                                                setValidationErrors(prev => prev.filter(e => !e.includes('cards to learn')))
+                                            }
+                                        }}
+                                        placeholder={`1-${maxNewCards}`}
+                                        autoFocus
+                                        className="h-9 text-center font-semibold"
+                                    />
+                                    <span className="text-sm text-gray-600 whitespace-nowrap">cards</span>
                                 </div>
-                            </motion.button>
-                        ))}
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        setIsCustom(true)
+                                        setCustomValue('')
+                                    }}
+                                    className="w-full text-left"
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="font-semibold text-gray-800">Custom</div>
+                                            <div className="text-sm text-gray-600">Pick your own number</div>
+                                        </div>
+                                        <Pencil className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                </button>
+                            )}
+                        </motion.div>
                     </motion.div>
+                    {maxNewCards > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">{maxNewCards} cards available</p>
+                    )}
                 </div>
 
                 {/* Focus Selection */}
@@ -290,6 +354,7 @@ export const SettingsIntroPage: React.FC<SettingsIntroPageProps> = ({
                         <SelectContent>
                             <SelectItem value='Not studied'>🌟 Not Studied (New)</SelectItem>
                             <SelectItem value='Learning'>🔄 Reset Cards</SelectItem>
+                            <SelectItem value='Due for Review'>📅 Due for Review</SelectItem>
                         </SelectContent>
                     </Select>
                 </motion.div>
