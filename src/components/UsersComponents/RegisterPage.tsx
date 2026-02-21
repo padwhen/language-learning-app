@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog"
 import { LoginPage } from "./LoginPage";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { FaExclamationTriangle } from "react-icons/fa";
+import { useToast } from "../ui/use-toast";
 
 
 export function RegisterPage() {
@@ -17,6 +18,7 @@ export function RegisterPage() {
     const [errors, setErrors] = useState<{[key: string]: string}>({
         name: '', username: '', pin: ''
     })
+    const { toast } = useToast();
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -52,11 +54,17 @@ export function RegisterPage() {
         }
         try {
             await axios.post('/register', formData)
-            alert('Registeration successful. Now you can login!');
+            toast({
+                title: "Account created! 🎊",
+                description: `Welcome ${formData.name}! You can now log in.`,
+                duration: 2000,
+            });
             setFormData({ name: '', username: '', pin: ''})
             setErrorMessage('')
             setErrors({ name: '', username: '', pin: ''})
-            window.location.reload()
+            setTimeout(() => {
+                window.location.reload()
+            }, 500);
         } catch (error) {
             console.error('Error registerating: ', error)
             setErrorMessage('Error registerating. Please try again later');
@@ -76,12 +84,12 @@ export function RegisterPage() {
             <div className="grid grid-cols-4 items-center gap-4 w-full max-w-xs">
                 <Label htmlFor="password" className="text-right text-lg w-4">PIN</Label>
                 <div className="mt-2 col-span-3 ml-4" data-testid="pin-input">
-                    <InputOTP maxLength={4} type="password" onChange={handlePinChange} value={formData.pin}>
+                    <InputOTP maxLength={4} onChange={handlePinChange} value={formData.pin}>
                         <InputOTPGroup>
-                            <InputOTPSlot index={0} className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
-                            <InputOTPSlot index={1} className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
-                            <InputOTPSlot index={2} className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
-                            <InputOTPSlot index={3} className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
+                            <InputOTPSlot index={0} maskChar="●" className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
+                            <InputOTPSlot index={1} maskChar="●" className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
+                            <InputOTPSlot index={2} maskChar="●" className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
+                            <InputOTPSlot index={3} maskChar="●" className={`w-[55px] ${errors.pin && 'border-red-500'}`} />
                         </InputOTPGroup>
                     </InputOTP>
                 </div>

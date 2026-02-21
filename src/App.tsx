@@ -22,8 +22,19 @@ import { SettingsPage } from './components/SettingsPage'
 import { Sidebar } from './components/Sidebar'
 import { SavedSentencesPage } from './components/SavedSentencesPage'
 
-axios.defaults.baseURL = 'http://localhost:2323/api/'
+// Set baseURL based on environment
+// Priority: VITE_API_URL env var > auto-detection (dev/prod)
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || (
+  import.meta.env.DEV 
+    ? 'http://localhost:2323/api/' 
+    : 'https://padwhen-learningapp.fly.dev/api/'
+)
 axios.defaults.withCredentials = true
+
+// Log the current API URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('🔧 Development Mode - API URL:', axios.defaults.baseURL)
+}
 
 function App() {
   const location = useLocation();
