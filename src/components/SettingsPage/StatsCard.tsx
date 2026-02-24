@@ -1,6 +1,6 @@
 import { Trophy } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "../ui/dialog";
 
 interface StatsCardProps {
     user: any;
@@ -36,6 +36,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
                         <Trophy className="w-5 h-5" />
                         Experience History
                     </DialogTitle>
+                    <DialogDescription>View your XP gains and activity history</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
                     {experienceHistory.length > 0 ? experienceHistory.map((entry, index) => (

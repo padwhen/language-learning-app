@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../../ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "../../ui/dialog";
 import { Badge } from "../../ui/badge";
 import { CalendarIcon, Trophy } from "lucide-react";
 import { Calendar } from "../../ui/calendar";
@@ -54,6 +54,7 @@ export const UserStatsCard = ({
                   <Trophy className="h-5 w-5" />
                   Experience History
                 </DialogTitle>
+                <DialogDescription>View your XP gains and activity history</DialogDescription>
               </DialogHeader>
               <div className="space-y-3 max-h-80 overflow-y-auto">
                 {experienceHistory.length > 0 ? experienceHistory.map((entry, index) => (
@@ -89,6 +90,7 @@ export const UserStatsCard = ({
                   <CalendarIcon className="w-5 h-5" />
                   Login Calendar
                 </DialogTitle>
+                <DialogDescription>View your login history and streaks</DialogDescription>
               </DialogHeader>
               <div className="p-4">
                 <Calendar

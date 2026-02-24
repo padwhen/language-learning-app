@@ -9,7 +9,7 @@ import { SubmitButton } from './SubmitButton'
 import { GradeStatistics } from './GradeStatistics'
 import { Statistics } from '@/types'
 import { useTestSubmit } from '@/state/hooks/useTestSubmit'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ResponsiveBar } from '@nivo/bar'
 import { generateTest } from './createTest'
 import { WordSelectionDialog } from './WordSectionDialog'
@@ -141,6 +141,10 @@ export const TestPage =  () => {
                             <Button variant="link" className="mt-4 w-full">Click here to see the result</Button>
                         </DialogTrigger>
                         <DialogContent className='sm:max-w-[425px]'>
+                            <DialogHeader>
+                                <DialogTitle>Test Results</DialogTitle>
+                                <DialogDescription>Your performance breakdown by section</DialogDescription>
+                            </DialogHeader>
                             <GradeStatistics grade={grade} statistics={statistics} />
                             <div style={{ height: 300}}>
                                 <ResponsiveBar 

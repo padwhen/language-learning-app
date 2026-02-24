@@ -12,9 +12,6 @@ jobs:
   build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: language-learning-client
     steps:  
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +41,6 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies and run e2e tests
-        working-directory: language-learning-client
         run: |
           npm install
           # Create a temporary script to run e2e tests with 50% threshold
@@ -80,17 +76,26 @@ jobs:
         with:
           node-version: '20'
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Build client and copy to backend
-        working-directory: language-learning-client
+      - name: Build client
         run: |
           npm install
           npm run build
-          cp -r dist ../backend
-      - name: Deploy backend
-        working-directory: backend
+      - name: Copy dist to backend (if backend folder exists)
         run: |
-          npm install
-          flyctl deploy --remote-only
+          if [ -d "backend" ]; then
+            cp -r dist backend/
+          else
+            echo "No backend folder found, skipping copy"
+          fi
+      - name: Deploy backend
+        run: |
+          if [ -d "backend" ]; then
+            cd backend
+            npm install
+            flyctl deploy --remote-only
+          else
+            echo "No backend folder found, skipping deployment"
+          fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}

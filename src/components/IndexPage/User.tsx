@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { RegisterPage } from "../UsersComponents/RegisterPage";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
@@ -56,6 +56,7 @@ const UserLoggedOut = () => (
                     <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle className="text-4xl flex items-center justify-center mt-2">Register</DialogTitle>
+                            <DialogDescription className="sr-only">Create a new account</DialogDescription>
                         </DialogHeader>
                         <RegisterPage />
                         <DialogFooter />
@@ -70,6 +71,7 @@ const UserLoggedOut = () => (
                     <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                            <DialogDescription className="sr-only">Log in to access your account</DialogDescription>
                         </DialogHeader>
                         <LoginPage />
                     </DialogContent>

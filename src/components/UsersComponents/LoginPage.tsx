@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { ChangeEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogHeader, DialogDescription } from "../ui/dialog";
 import { RegisterPage } from "./RegisterPage";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { FaExclamationTriangle } from "react-icons/fa";
@@ -110,7 +110,10 @@ export function LoginPage() {
                         <h1 className="mb-[21px] underline cursor-pointer hover:text-blue-400 mt-[3px]">Register here</h1>
                     </DialogTrigger>
                     <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
-                        <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
+                        <DialogHeader>
+                            <DialogTitle className="text-4xl flex items-center justify-center mt-8">Register</DialogTitle>
+                            <DialogDescription className="sr-only">Create a new account</DialogDescription>
+                        </DialogHeader>
                         <RegisterPage />
                     </DialogContent>
                 </Dialog>

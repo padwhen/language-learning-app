@@ -18,7 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 
 const IndexPageContent = () => {
-    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, response, handleTranslationStream, refreshResponseFromStorage } = useTranslation();
+    const { fromLanguage, setFromLanguage, inputText, setInputText, ready, isStreaming, validationError, response, handleTranslation, refreshResponseFromStorage } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { decks } = useDeckContext();
@@ -311,7 +311,7 @@ const IndexPageContent = () => {
                         <InputBar 
                             inputText={inputText} 
                             setInputText={setInputText} 
-                            handleTranslation={handleTranslationStream} 
+                            handleTranslation={handleTranslation} 
                             ready={ready}
                             highlighted={highlightedElement === 'input-bar'}
                             isStreaming={isStreaming}
@@ -319,7 +319,7 @@ const IndexPageContent = () => {
                             currentWordIndex={-1}
                             confidence={response?.confidence}
                             confidenceDetails={response?.confidenceDetails}
-                            onRerun={handleTranslationStream}
+                            onRerun={handleTranslation}
                             onClear={() => {
                                 localStorage.removeItem('response');
                                 setInputText('');

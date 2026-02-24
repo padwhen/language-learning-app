@@ -137,9 +137,22 @@ export const Modal: React.FC<{word: Word}> = ({word}) => {
             </DialogTrigger>
               <DialogContent className={user ? "p-0 flex gap-4 flex-grow-1" : ""}>
                 {user ? (
-                  <DisplayCurrentDecks onSelectDeck={saveWordToDeck} />) : (<>
-                <DialogTitle className="text-2xl sm:text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
-                <LoginPage /></>)}
+                  <>
+                    <DialogHeader className="sr-only">
+                      <DialogTitle>Select a Deck</DialogTitle>
+                      <DialogDescription>Choose a deck to save this word to</DialogDescription>
+                    </DialogHeader>
+                    <DisplayCurrentDecks onSelectDeck={saveWordToDeck} />
+                  </>
+                ) : (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl sm:text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                      <DialogDescription className="sr-only">Please log in to save words to your decks</DialogDescription>
+                    </DialogHeader>
+                    <LoginPage />
+                  </>
+                )}
                 {openNewDeck && <NewDeckCard setOpenNewDeck={setOpenNewDeck} />}
               </DialogContent>
           </Dialog>

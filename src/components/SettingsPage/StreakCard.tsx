@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
@@ -28,6 +28,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({ user, loginDays }) => {
             <CalendarIcon className="w-5 h-5" />
             Login Calendar
           </DialogTitle>
+          <DialogDescription>View your login history and streaks</DialogDescription>
         </DialogHeader>
         <div className="p-4">
           <Calendar

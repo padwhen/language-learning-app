@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useContext } from "react"
 import { UserContext } from "@/contexts/UserContext"
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog"
 import { LoginPage } from "./UsersComponents/LoginPage"
 import { Home, LogOut, Settings, Library, BookOpen, Edit3, Bookmark } from "lucide-react"
 import axios from "axios"
@@ -176,6 +176,7 @@ export function MobileNav() {
                   >
                     <DialogHeader>
                       <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                      <DialogDescription className="sr-only">Log in to access your account</DialogDescription>
                     </DialogHeader>
                     <LoginPage />
                   </DialogContent>

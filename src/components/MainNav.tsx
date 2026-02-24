@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import axios from "axios";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { motion, AnimatePresence } from "framer-motion";
 import { LLAnguageLogo } from "./Logo";
@@ -286,6 +286,7 @@ export const MainNav = ({ onStartTour, highlightUser }: { onStartTour?: () => vo
                         <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                                <DialogDescription className="sr-only">Log in to access your account</DialogDescription>
                             </DialogHeader>
                             <LoginPage />
                         </DialogContent>

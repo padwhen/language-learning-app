@@ -18,7 +18,7 @@ import {
     Bookmark
 } from "lucide-react";
 import axios from "axios";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "./ui/dialog";
 import { LoginPage } from "./UsersComponents/LoginPage";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
@@ -311,6 +311,7 @@ export const Sidebar = ({ onStartTour }: SidebarProps) => {
                                         <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                                             <DialogHeader>
                                                 <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                                                <DialogDescription className="sr-only">Log in to access your account</DialogDescription>
                                             </DialogHeader>
                                             <LoginPage />
                                         </DialogContent>
@@ -332,6 +333,7 @@ export const Sidebar = ({ onStartTour }: SidebarProps) => {
                                 <DialogContent className="max-w-[555px] max-h-[570px] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                                        <DialogDescription className="sr-only">Log in to access your account</DialogDescription>
                                     </DialogHeader>
                                     <LoginPage />
                                 </DialogContent>

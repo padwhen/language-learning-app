@@ -5,7 +5,7 @@ import { ChangeEvent, useState } from "react";
 import { FormData } from "@/types";
 import axios from "axios";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogHeader, DialogDescription } from "../ui/dialog";
 import { LoginPage } from "./LoginPage";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { FaExclamationTriangle } from "react-icons/fa";
@@ -120,7 +120,10 @@ export function RegisterPage() {
                         </h1>                        
                     </DialogTrigger>
                     <DialogContent className="max-w-[555px] h-[370px]">
-                        <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                        <DialogHeader>
+                            <DialogTitle className="text-4xl flex items-center justify-center mt-8">Log In</DialogTitle>
+                            <DialogDescription className="sr-only">Log in to your account</DialogDescription>
+                        </DialogHeader>
                         <LoginPage />
                     </DialogContent>
                 </Dialog>

@@ -4,6 +4,7 @@ import { Label } from "../ui/label";
 import { useState } from "react";
 import axios from "axios";
 import { useToast } from "../ui/use-toast"
+import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 
 interface Props {
     engCard: string;
@@ -40,9 +41,13 @@ export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
     if (error) return <div>Error...</div>
 
     return (
-        <div>
-            <h1 className="text-2xl font-bold">Edit "{userLangCard}" 🔗</h1>
-            <p className="my-1 text-red-500 font-bold text-sm">Note: Edit the card will reset your progress, meaning that you have to learn it again!</p>
+        <>
+            <DialogHeader>
+                <DialogTitle className="text-2xl font-bold">Edit "{userLangCard}" 🔗</DialogTitle>
+                <DialogDescription className="my-1 text-red-500 font-bold text-sm">
+                    Note: Edit the card will reset your progress, meaning that you have to learn it again!
+                </DialogDescription>
+            </DialogHeader>
             <form className="mt-2" onSubmit={handleSubmit}>
                 <div className="grid w-full items-center gap-4">
                     <div className="flex flex-col space-y-1.5">
@@ -62,6 +67,6 @@ export const EditCard = ({ engCard, userLangCard, cardId, deckId }: Props) => {
             <div className="flex justify-end mt-3">
                 <Button variant="default" className="text-lg" onClick={handleSubmit}>Edit</Button>
             </div>
-        </div>
+        </>
     )
 }
